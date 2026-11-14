@@ -1294,7 +1294,7 @@ state.tierRole = ""; state.tierEl = [];
 function renderTierlist() {
   const T = computeTiers();
   main.innerHTML = `<h2 class="section-title">Tier list</h2>
-    <p class="lede">Ranking computed by the wiki for the ${T.rows.length} playable units, at their best form. The player-voted tier list exists on the game's site, but no unit has the 15 votes it needs yet: <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">see the tier list de la communauté</a>.</p>
+    <p class="lede">Ranking computed by the wiki for the ${T.rows.length} playable units, at their best form. The player-voted tier list exists on the game's site, but no unit has the 15 votes it needs yet: <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">see the community tier list</a>.</p>
     <div class="toolbar"><select id="tr" aria-label="Role"><option value="">All roles</option>${Object.entries(ROLE_FR).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>${elChips(state.tierEl, "tier")}</div>
     <div id="tl"></div>
     <section class="panel box" style="margin-top:14px"><h3>How the score is computed</h3>
