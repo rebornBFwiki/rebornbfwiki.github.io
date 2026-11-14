@@ -1,0 +1,5 @@
+# Mots isolés restants, appliqués après en-1-phrases.tsv.
+<html lang="fr">§§<html lang="en">
+"Rechercher"§§"Search"
+>Types<§§>Types<
+· ${EL_FR[u.element] || u.element} ·§§· ${EL_FR[u.element] || u.element} ·

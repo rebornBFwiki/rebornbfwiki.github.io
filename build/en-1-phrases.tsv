@@ -1,0 +1,418 @@
+# Traduction anglaise : « texte français§§texte anglais », une entrée par ligne, appliquées dans l'ordre.
+# Les phrases longues d'abord ; en-2-words.tsv traite ensuite les mots isolés.
+<div class="empty">Chargement des données du jeu…</div>§§<div class="empty">Loading game data…</div>
+Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/__REPO__">code source sur GitHub</a>. Données et vignettes lues dans les fichiers publics du jeu Brave Frontier: Reborn (version du 14 novembre 2026). Brave Frontier appartient à ses ayants droit ; ce site n'est affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn.§§Reborn Wiki is an unofficial fan wiki, <a href="https://github.com/__REPO__">source code on GitHub</a>. Data and thumbnails come from the public files of Brave Frontier: Reborn (November 14, 2026 version). Brave Frontier belongs to its rights holders; this site is not affiliated with Alim, gumi or the Reborn team.
+const EL_FR = { fire: "Feu", water: "Eau", earth: "Terre", thunder: "Foudre", light: "Lumière", dark: "Ténèbres" };§§const EL_FR = { fire: "Fire", water: "Water", earth: "Earth", thunder: "Thunder", light: "Light", dark: "Dark" };
+const STAT_FR = { hp: "PV", atk: "ATQ", def: "DÉF", rec: "REC" };§§const STAT_FR = { hp: "HP", atk: "ATK", def: "DEF", rec: "REC" };
+const AIL_FR = { poison: "Poison", weak: "Faiblesse", sick: "Maladie", injury: "Blessure", curse: "Malédiction", paralysis: "Paralysie" };§§const AIL_FR = { poison: "Poison", weak: "Weak", sick: "Sick", injury: "Injury", curse: "Curse", paralysis: "Paralysis" };
+const TARGET_FR = { party: "équipe", self: "soi", enemies: "tous les ennemis", enemy: "un ennemi" };§§const TARGET_FR = { party: "party", self: "self", enemies: "all foes", enemy: "one foe" };
+"Type neutre : aucun bonus, aucun malus. Les statistiques de la fiche sont celles d'un Lord."§§"Neutral type: no bonus, no penalty. The stats shown on unit pages are a Lord's."
+"Beaucoup plus de PV, un peu moins de REC. Idéal pour les unités qui doivent tenir debout : mitigateurs, soutiens de BB."§§"Much more HP, slightly less REC. Ideal for units that must stay alive: mitigators and BB support."
+"Plus d'ATQ, moins de DÉF. Le choix des attaquants et des boosteurs d'ATQ."§§"More ATK, less DEF. The pick for attackers and ATK buffers."
+"Plus de DÉF, un peu moins de REC. Pour les tanks et les unités qui convertissent la DÉF en ATQ."§§"More DEF, slightly less REC. For tanks and units that convert DEF into ATK."
+"Plus de REC, un peu moins de DÉF. Le choix des soigneurs : leurs soins montent avec la REC."§§"More REC, slightly less DEF. The pick for healers: their heals scale with REC."
+"Bonus partout, sans malus. Le meilleur type, mais il ne s'obtient pas avec une Type Frog."§§"Bonuses everywhere, no penalty. The best type, but a Type Frog cannot give it."
+const ROLE_FR = { heal: "Soigneur", mitig: "Défenseur", bc: "Soutien BB", buff: "Boosteur", status: "Anti-statut", inflict: "Altérations", dmg: "Attaquant" };§§const ROLE_FR = { heal: "Healer", mitig: "Defender", bc: "BB support", buff: "Buffer", status: "Status guard", inflict: "Ailments", dmg: "Attacker" };
+const fmt = (n) => Number(n).toLocaleString("fr-FR");§§const fmt = (n) => Number(n).toLocaleString("en-US");
+bits.push(`${e.turns} tour${e.turns > 1 ? "s" : ""}`);§§bits.push(`${e.turns} turn${e.turns > 1 ? "s" : ""}`);
+bits.push(`${e.chance}% de chance`);§§bits.push(`${e.chance}% chance`);
+`${f(e.min)} à ${f(e.max)}`§§`${f(e.min)} to ${f(e.max)}`
+return `Inflige ${AIL_FR[a] || a} (${v}% de chance)${tail({ ...e, chance: 0 })}`;§§return `Inflicts ${AIL_FR[a] || a} (${v}% chance)${tail({ ...e, chance: 0 })}`;
+`+${pct(v)} ${STAT_FR[id.split("_")[1]]} pour soi${t}`§§`+${pct(v)} ${STAT_FR[id.split("_")[1]]} to self${t}`
+`+${pct(v)} PV max${t}`§§`+${pct(v)} max HP${t}`
+`+${pct(v)} dégâts d'étincelle${t}`§§`+${pct(v)} Spark damage${t}`
+`+${pct(v)} taux de critique${t}`§§`+${pct(v)} critical rate${t}`
+`+${pct(v)} dégâts critiques${t}`§§`+${pct(v)} critical damage${t}`
+`+${pct(v)} dégâts de BB${t}`§§`+${pct(v)} BB damage${t}`
+`+${pct(v)} dégâts sur faiblesse élémentaire${t}`§§`+${pct(v)} elemental weakness damage${t}`
+`Convertit ${pct(v)} de la DÉF en ATQ${t}`§§`Converts ${pct(v)} of DEF into ATK${t}`
+`Convertit ${pct(v)} des PV en ATQ${t}`§§`Converts ${pct(v)} of HP into ATK${t}`
+`Convertit ${pct(v)} de la REC en ATQ${t}`§§`Converts ${pct(v)} of REC into ATK${t}`
+`Convertit ${pct(v)} de la REC en DÉF${t}`§§`Converts ${pct(v)} of REC into DEF${t}`
+`Convertit ${pct(v)} de l'ATQ en DÉF${t}`§§`Converts ${pct(v)} of ATK into DEF${t}`
+`Convertit ${pct(v)} des PV en DÉF${t}`§§`Converts ${pct(v)} of HP into DEF${t}`
+`Convertit ${pct(v)} des PV en REC${t}`§§`Converts ${pct(v)} of HP into REC${t}`
+`Ajoute un élément aux attaques${t}`§§`Adds an element to attacks${t}`
+`Les attaques infligent ${AIL_FR[e.ailment] || e.ailment} (${v}%)${tail({ ...e, chance: 0 })}`§§`Attacks inflict ${AIL_FR[e.ailment] || e.ailment} (${v}%)${tail({ ...e, chance: 0 })}`
+`Les attaques réduisent ${STAT_FR[e.stat] || e.stat} de ${pct(v)}${t}`§§`Attacks lower ${STAT_FR[e.stat] || e.stat} by ${pct(v)}${t}`
+`Contre-statut ${AIL_FR[e.ailment] || ""} (${v}%)${tail({ ...e, chance: 0 })}`§§`${AIL_FR[e.ailment] || ""} counter (${v}%)${tail({ ...e, chance: 0 })}`
+`+${pct(v)} dégâts contre les ennemis sous statut${t}`§§`+${pct(v)} damage to foes with ailments${t}`
+`Les étincelles peuvent faire des critiques${t}`§§`Sparks can land critical hits${t}`
+`Attaque de zone, puissance ${Math.round(v * 100)}%§§`AoE attack, ${Math.round(v * 100)}% power
+`Attaque sur une cible, puissance ${Math.round(v * 100)}%§§`Single-target attack, ${Math.round(v * 100)}% power
+`Attaques aléatoires, puissance ${Math.round(v * 100)}%`§§`Random attacks, ${Math.round(v * 100)}% power`
+`Attaque plus forte selon les PV, jusqu'à ${Math.round(v * 100)}%`§§`Attack scales with HP, up to ${Math.round(v * 100)}%`
+`${v}% de chance d'ignorer la DÉF ennemie${tail({ ...e, chance: 0 })}`§§`${v}% chance to ignore enemy DEF${tail({ ...e, chance: 0 })}`
+`Attaque ciblant un élément${t}`§§`Attack targeting an element${t}`
+`Soigne ${range(e)} PV${e.recBonus ? ` + ${pct(e.recBonus)} de la REC` : ""}${t}`§§`Heals ${range(e)} HP${e.recBonus ? ` + ${pct(e.recBonus)} of REC` : ""}${t}`
+`Soigne ${range(e)} PV par tour${e.recBonus ? ` + ${pct(e.recBonus)} de la REC` : ""}${t}`§§`Heals ${range(e)} HP per turn${e.recBonus ? ` + ${pct(e.recBonus)} of REC` : ""}${t}`
+`Soigne à chaque étincelle${t}`§§`Heals on every Spark${t}`
+`Convertit ${e.min ? `${pct(e.min)} à ${pct(e.max)}` : pct(v)} des dégâts reçus en soin${t}`§§`Converts ${e.min ? `${pct(e.min)} to ${pct(e.max)}` : pct(v)} of damage taken into HP${t}`
+`Vol de vie de ${e.min ? `${pct(e.min)} à ${pct(e.max)}` : pct(v)} des dégâts${t}`§§`Drains ${e.min ? `${pct(e.min)} to ${pct(e.max)}` : pct(v)} of damage dealt as HP${t}`
+`+${pct(v)} efficacité des HC${t}`§§`+${pct(v)} HC efficacy${t}`
+`Réduit les dégâts reçus de ${pct(v)}${t}`§§`Reduces damage taken by ${pct(v)}${t}`
+`Peut réduire les dégâts de ${pct(v)}${t}`§§`May reduce damage taken by ${pct(v)}${t}`
+`Réduction des dégâts en garde${t}`§§`Damage reduction while guarding${t}`
+`Réduction des dégâts après un coup reçu${t}`§§`Damage reduction after being hit${t}`
+`−${pct(v)} dégâts reçus ${e.element ? "de " + (EL_FR[e.element] || e.element) : "élémentaires"}${t}`§§`−${pct(v)} ${e.element ? (EL_FR[e.element] || e.element) : "elemental"} damage taken${t}`
+`Résiste aux dégâts de faiblesse élémentaire${t}`§§`Resists elemental weakness damage${t}`
+`Résiste aux coups critiques${t}`§§`Resists critical hits${t}`
+`Barrière de ${fmt(v)} PV${§§`${fmt(v)} HP barrier${
+`Ange gardien : survit à un coup fatal${t}`§§`Angel Idol: survives a fatal blow${t}`
+`Ange gardien passif${t}`§§`Passive Angel Idol${t}`
+`Ressuscite les alliés${t}`§§`Revives allies${t}`
+`Immunité aux altérations${t}`§§`Negates status ailments${t}`
+`Soigne les altérations${t}`§§`Cures status ailments${t}`
+`Immunité aux baisses de statistiques${t}`§§`Negates stat reductions${t}`
+`Résistance aux altérations${t}`§§`Status ailment resistance${t}`
+`−${pct(v)} ATQ ennemie${t}`§§`−${pct(v)} enemy ATK${t}`
+`−${pct(v)} DÉF ennemie${t}`§§`−${pct(v)} enemy DEF${t}`
+`Vulnérabilité aux étincelles +${pct(v)}${t}`§§`Spark vulnerability +${pct(v)}${t}`
+`Vulnérabilité aux critiques +${pct(v)}${t}`§§`Critical vulnerability +${pct(v)}${t}`
+`Vulnérabilité élémentaire +${pct(v)}${t}`§§`Elemental vulnerability +${pct(v)}${t}`
+`Dégâts en fin de tour (${v}%)${t}`§§`End-of-turn damage (${v}%)${t}`
+`Remplit entièrement la jauge de BB${t}` : `Remplit ${v} BC${t}`§§`Fills the BB gauge completely${t}` : `Fills ${v} BC${t}`
+`+${pct(v)} efficacité des BC${t}`§§`+${pct(v)} BC efficacy${t}`
+`+${v} BC à chaque tour${t}`§§`+${v} BC every turn${t}`
+`+${range(e)} BC quand l'unité est touchée${t}`§§`+${range(e)} BC when hit${t}`
+`+${range(e)} BC par étincelle${t}`§§`+${range(e)} BC per Spark${t}`
+`+${range(e)} BC par critique${t}`§§`+${range(e)} BC per critical hit${t}`
+`+${range(e)} BC à chaque attaque normale${t}`§§`+${range(e)} BC on each normal attack${t}`
+`BC en infligeant des dégâts${t}`§§`BC when dealing damage${t}`
+`BC en recevant des dégâts${t}`§§`BC when taking damage${t}`
+`−${pct(v)} coût des BB${t}`§§`−${pct(v)} BB cost${t}`
+`−${pct(v)} consommation de BB${t}`§§`−${pct(v)} BB consumption${t}`
+`+${v}% de BC ramassés${t}`§§`+${v}% BC drop rate${t}`
+`+${v}% de HC ramassés${t}`§§`+${v}% HC drop rate${t}`
+`+${v}% de BC sur les étincelles${t}`§§`+${v}% BC from Sparks${t}`
+`+${v}% de HC sur les étincelles${t}`§§`+${v}% HC from Sparks${t}`
+`+${v}% de Karma sur les étincelles${t}`§§`+${v}% Karma from Sparks${t}`
+`+${v}% de Zel sur les étincelles${t}`§§`+${v}% Zel from Sparks${t}`
+`Remplit ${pct(v)} de la jauge d'Overdrive${t}`§§`Fills ${pct(v)} of the Overdrive gauge${t}`
+`+${pct(v)} remplissage de l'Overdrive${t}`§§`+${pct(v)} Overdrive fill rate${t}`
+`+${v} coup${v > 1 ? "s" : ""} aux attaques normales${t}`§§`+${v} hit${v > 1 ? "s" : ""} to normal attacks${t}`
+`Plafond d'ATQ relevé${t}`§§`Raised ATK cap${t}`
+`Si l'équipe a ${v} éléments différents :`§§`If the party has ${v} different elements:`
+`Si les PV sont au-dessus de ${v}% :`§§`If HP is above ${v}%:`
+`Si la jauge de BB dépasse ${v}% :`§§`If the BB gauge is above ${v}%:`
+`Pendant les ${v} premiers tours :`§§`During the first ${v} turns:`
+`Avec sa sphère signature équipée :`§§`With its signature sphere equipped:`
+`Avec une sphère équipée :`§§`With a sphere equipped:`
+`Avec ce type de sphère équipé :`§§`With this sphere type equipped:`
+`Ajoute à ses BB :`§§`Adds to its BBs:`
+"Ses BB convertissent la DÉF en ATQ : chaque point de DÉF gagné rend toute l'équipe plus forte."§§"Its BBs convert DEF into ATK: every DEF point gained makes the whole party stronger."
+"Ses BB convertissent les PV en ATQ : le gros bonus de PV d'Anima profite à toute l'équipe."§§"Its BBs convert HP into ATK: Anima's big HP bonus benefits the whole party."
+"Ses BB convertissent la REC en ATQ : Oracle augmente directement ce bonus."§§"Its BBs convert REC into ATK: Oracle raises that bonus directly."
+"C'est un soigneur : ses soins montent avec la REC, et Oracle donne +2 à +4 REC par niveau."§§"It is a healer: its heals scale with REC, and Oracle gives +2 to +4 REC per level."
+"C'est un défenseur : il doit survivre pour protéger l'équipe, et Anima donne +5 à +10 PV par niveau."§§"It is a defender: it must survive to protect the party, and Anima gives +5 to +10 HP per level."
+"Son rôle est de remplir les jauges de BB : il doit rester en vie, d'où les PV d'Anima."§§"Its job is to fill BB gauges: it has to stay alive, hence Anima's HP."
+"Il protège des altérations : sa survie compte plus que ses dégâts."§§"It protects against status ailments: its survival matters more than its damage."
+"Il booste l'attaque de l'équipe et frappe fort lui-même : Breaker donne +1 à +3 ATQ par niveau."§§"It buffs the party's attack and hits hard itself: Breaker gives +1 to +3 ATK per level."
+"C'est un attaquant : Breaker augmente son ATQ, au prix d'un peu de DÉF."§§"It is an attacker: Breaker raises its ATK at the cost of some DEF."
+"Augmente ses dégâts : ATQ, étincelles, critiques ou faiblesse élémentaire."§§"Raises its damage: ATK, Sparks, criticals or elemental weakness."
+"Augmente ses dégâts tout en gardant ses buffs d'équipe."§§"Raises its damage while it keeps buffing the party."
+"Augmente ses dégâts et ses chances d'infliger des altérations."§§"Raises its damage and its chance to inflict ailments."
+"Monte la REC, donc la puissance de ses soins."§§"Raises REC, and with it the power of its heals."
+"Le rend plus solide pour qu'il reste en vie et protège l'équipe."§§"Makes it sturdier so it stays alive and protects the party."
+"Le rend plus solide et renforce la protection contre les altérations."§§"Makes it sturdier and strengthens ailment protection."
+"Remplit plus vite les jauges de BB."§§"Fills BB gauges faster."
+`Sa sphère signature${g.length > 1 ? ` (aussi appelée ${g.slice(1).map((x) => x.name).join(", ")})` : ""} : ses bonus et sa compétence extra s'activent avec elle.`§§`Its signature sphere${g.length > 1 ? ` (also called ${g.slice(1).map((x) => x.name).join(", ")})` : ""}: its bonuses and Extra Skill activate with it.`
+Toutes les unités du jeu, de leur première forme à l'Omni. Ouvre une fiche pour voir statistiques, compétences, évolutions, où l'obtenir et le type conseillé.§§Every unit in the game, from first form to Omni. Open a unit page for stats, skills, evolutions, where to get it and the recommended type.
+placeholder="Rechercher une unité ou une forme"§§placeholder="Search a unit or a form"
+>Trier par rareté max<§§>Sort by max rarity<
+>Trier par ATQ max<§§>Sort by max ATK<
+>Trier par PV max<§§>Sort by max HP<
+>Trier par nom<§§>Sort by name<
+aria-label="Trier"§§aria-label="Sort"
+Afficher les unités de fusion et d'évolution§§Show fusion and evolution material units
+`${list.length} unité${list.length > 1 ? "s" : ""}`§§`${list.length} unit${list.length > 1 ? "s" : ""}`
+Aucune unité ne correspond à ces filtres.§§No unit matches these filters.
+Fusion / évolution§§Fusion / evolution
+title="Dans ta collection"§§title="In your collection"
+`Invocation : ${s.bannerName}§§`Summon: ${s.bannerName}
+`Évolution de ${s.fromName}`§§`Evolves from ${s.fromName}`
+`Capture : ${s.missionName} (${s.dungeonName}, ${s.areaName})`§§`Capture: ${s.missionName} (${s.dungeonName}, ${s.areaName})`
+`Récompense de niveau ${s.level}`§§`Level ${s.level} reward`
+`Boutique de mérite : ${fmt(s.cost)} points`§§`Merit shop: ${fmt(s.cost)} points`
+`Première victoire : ${s.missionName || "mission " + s.mission}`§§`First clear: ${s.missionName || "mission " + s.mission}`
+`Rang de chasseur${s.rank ? " " + s.rank : ""}`§§`Hunter rank${s.rank ? " " + s.rank : ""}`
+"Compétence de leader : active quand l'unité est leader ou ami, pour toute l'équipe."§§"Leader Skill: active when the unit is leader or friend, for the whole party."
+"Compétence extra : bonus passif propre à l'unité."§§"Extra Skill: a passive bonus specific to the unit."
+"Brave Burst : se lance quand la jauge est pleine."§§"Brave Burst: cast when the gauge is full."
+"Super Brave Burst : version renforcée, avec une jauge plus longue."§§"Super Brave Burst: the stronger version, with a longer gauge."
+"Ultimate Brave Burst : l'attaque ultime, une fois la jauge d'Overdrive pleine."§§"Ultimate Brave Burst: the ultimate attack, once the Overdrive gauge is full."
+title="${p} % de la meilleure unité"§§title="${p}% of the best unit"
+Barres : niveau max, comparé à la meilleure unité jouable du jeu.§§Bars: max level, compared with the best playable unit in the game.
+`<a href="#collection">Importe ta collection</a>`§§`<a href="#collection">Import your collection</a>`
+`Oui : ${§§`Yes: ${
+`, ${ownedCount(u.id)} exemplaires`§§`, ${ownedCount(u.id)} copies`
+`Pas encore. ${esc(firstSource)}`§§`Not yet. ${esc(firstSource)}`
+"Source inconnue"§§"Unknown source"
+.join(" et ") : "Matériau de fusion ou d'évolution"§§.join(" and ") : "Fusion or evolution material"
+voir la tier list§§see the tier list
+<div class="k">Type conseillé</div>§§<div class="k">Recommended type</div>
+<div class="k">Duo de sphères</div>§§<div class="k">Sphere pair</div>
+<div class="k">Fort contre</div>§§<div class="k">Strong against</div>
+<div class="k">Dans ma collection</div>§§<div class="k">In my collection</div>
+<div class="k">Rôle</div>§§<div class="k">Role</div>
+← Toutes les unités§§← All units
+Cette unité n'existe pas dans les données du jeu.§§This unit does not exist in the game data.
+"Compétence de leader", f.leaderSkill.name§§"Leader Skill", f.leaderSkill.name
+"Compétence extra", f.extraSkill.name§§"Extra Skill", f.extraSkill.name
+`<p>Vers <strong>${esc(next ? next.name : "la forme suivante")}</strong> :</p>§§`<p>Into <strong>${esc(next ? next.name : "the next form")}</strong>:</p>
+Forme finale : pas d'évolution.§§Final form: no evolution.
+· Coût ${f.cost ?? "?"} · Niv. max ${f.maxLevel} · 2 emplacements de sphère§§· Cost ${f.cost ?? "?"} · Max level ${f.maxLevel} · 2 sphere slots
+aria-label="Formes"§§aria-label="Forms"
+<h3>Type conseillé : ${TYPE_FR[rec.type]}</h3>§§<h3>Recommended type: ${TYPE_FR[rec.type]}</h3>
+<th>Type au niv. ${f.maxLevel}</th>§§<th>Type at level ${f.maxLevel}</th>
+Gains moyens par niveau, sans imps ni sphères. Le type se change avec une Type Frog, sauf vers Rex.§§Average gains per level, without imps or spheres. A Type Frog changes the type, except into Rex.
+<h3>Statistiques</h3>§§<h3>Stats</h3>
+<tr><td>Niv. 1</td>§§<tr><td>Level 1</td>
+<tr><td>Niv. ${f.maxLevel}</td>§§<tr><td>Level ${f.maxLevel}</td>
+<tr><td>Imps max</td>§§<tr><td>Max imps</td>
+<dt>Revente</dt>§§<dt>Sells for</dt>
+<dt>XP de fusion</dt>§§<dt>Fusion XP</dt>
+<dt>Genre</dt><dd>${{ male: "Masculin", female: "Féminin", genderless: "Aucun" }§§<dt>Gender</dt><dd>${{ male: "Male", female: "Female", genderless: "None" }
+<h3>Compétences</h3>§§<h3>Skills</h3>
+Aucune compétence.§§No skills.
+<h3>Sphères conseillées</h3>§§<h3>Recommended spheres</h3>
+`Duo · sphère ${k + 1}` : "Alternative"§§`Pair · sphere ${k + 1}` : "Alternative"
+2 emplacements : le premier est ouvert, le second se débloque sur chaque unité. Le jeu refuse deux sphères Status Boost (dont les sphères « toutes stats ») sur la même unité ; le duo conseillé respecte cette règle.§§2 slots: the first is open, the second unlocks on each unit. The game refuses two Status Boost spheres (including all-stat spheres) on the same unit; the recommended pair follows that rule.
+<h3>Éléments</h3>§§<h3>Elements</h3>
+<p>Fait <strong class="up">×1,5</strong> de dégâts contre :§§<p>Deals <strong class="up">×1.5</strong> damage to:
+<p>Reçoit <strong class="down">×1,5</strong> de dégâts de :§§<p>Takes <strong class="down">×1.5</strong> damage from:
+Règle du jeu : ×1,5 sur l'élément dominé, ×0,5 dans l'autre sens. La Lumière et les Ténèbres se dominent mutuellement.§§Game rule: ×1.5 against the weaker element, ×0.5 the other way. Light and Dark are each strong against the other.
+<h3>Évolution</h3>§§<h3>Evolution</h3>
+<h3>Où l'obtenir</h3>§§<h3>Where to get it</h3>
+Aucune source connue dans les données du jeu.§§No known source in the game data.
+<h3>Répliques</h3>§§<h3>Quotes</h3>
+`<p class="quote">« ${esc(q)} »</p>`§§`<p class="quote">“${esc(q)}”</p>`
+`${a[0] > 0 ? "+" : ""}${a[0]} à ${a[1] > 0 ? "+" : ""}${a[1]}`§§`${a[0] > 0 ? "+" : ""}${a[0]} to ${a[1] > 0 ? "+" : ""}${a[1]}`
+<h2 class="section-title">Types d'unité</h2>§§<h2 class="section-title">Unit types</h2>
+Chaque unité a un type. À chaque niveau, il ajoute ou retire des points de statistiques. Au niveau 150, un Breaker peut donc avoir jusqu'à environ +450 ATQ et −450 DÉF par rapport à un Lord.§§Every unit has a type. Each level, it adds or removes stat points. At level 150, a Breaker can have up to about +450 ATK and −450 DEF compared with a Lord.
+par niveau : <strong>§§per level: <strong>
+`Conseillé pour ${counts[t]} unité${counts[t] > 1 ? "s" : ""} du wiki.`§§`Recommended for ${counts[t]} unit${counts[t] > 1 ? "s" : ""} in the wiki.`
+<h3>Comment le wiki choisit le type</h3>§§<h3>How the wiki picks the type</h3>
+<li>Une unité qui convertit la DÉF en ATQ prend <strong>Guardian</strong>, les PV en ATQ <strong>Anima</strong>, la REC en ATQ <strong>Oracle</strong>.</li>§§<li>A unit that converts DEF into ATK takes <strong>Guardian</strong>, HP into ATK <strong>Anima</strong>, REC into ATK <strong>Oracle</strong>.</li>
+<li>Un soigneur prend <strong>Oracle</strong> : ses soins augmentent avec la REC.</li>§§<li>A healer takes <strong>Oracle</strong>: its heals grow with REC.</li>
+<li>Un défenseur, un soutien BB ou un anti-statut prend <strong>Anima</strong> : il doit survivre pour faire son travail.</li>§§<li>A defender, BB support or status guard takes <strong>Anima</strong>: it has to survive to do its job.</li>
+<li>Un attaquant ou un boosteur d'ATQ prend <strong>Breaker</strong>.</li>§§<li>An attacker or ATK buffer takes <strong>Breaker</strong>.</li>
+<li><strong>Rex</strong> est toujours le meilleur s'il tombe, mais il ne peut pas être choisi avec une Type Frog.</li>§§<li><strong>Rex</strong> is always best if you roll it, but a Type Frog cannot pick it.</li>
+Ces règles viennent de l'analyse des compétences de chaque unité. Ce sont des conseils, pas une règle du jeu.§§These rules come from analysing each unit's skills. They are advice, not a game rule.
+const SLOTS = ["Leader", "Membre 2", "Membre 3", "Membre 4", "Membre 5", "Ami"];§§const SLOTS = ["Leader", "Member 2", "Member 3", "Member 4", "Member 5", "Friend"];
+`La compétence de leader « ${ls.name} » demande ${e.value} éléments différents : l'équipe n'en a que ${els.size}.`§§`The Leader Skill “${ls.name}” needs ${e.value} different elements: the party only has ${els.size}.`
+"Personne ne soigne : ajoute un soigneur, ou compte sur les HC et les objets."§§"Nobody heals: add a healer, or rely on HC and items."
+"Aucune réduction de dégâts : un défenseur évite les morts sur les gros coups des boss."§§"No damage reduction: a defender prevents deaths on big boss hits."
+"Aucun soutien BB : les BB tourneront moins souvent."§§"No BB support: BBs will come up less often."
+"Aucun boost d'ATQ ou d'étincelle pour l'équipe : les dégâts seront plus faibles."§§"No ATK or Spark buff for the party: damage will be lower."
+`Aucune protection contre les altérations : ajoute une unité anti-statut${best ? `, ou équipe une sphère comme ${best.name}` : ""}.`§§`No ailment protection: add a status guard${best ? `, or equip a sphere such as ${best.name}` : ""}.`
+Compose une équipe de cinq unités et un ami. Le wiki conseille un type pour chacune selon son rôle, vérifie les rôles couverts et lit les compétences de leader.§§Build a party of five units and a friend. The wiki recommends a type for each one based on its role, checks which roles are covered and reads the Leader Skills.
+" <strong>Exemple de départ :</strong> remplace les unités par les tiennes."§§" <strong>Starter example:</strong> replace the units with your own."
+<h3>Rôles couverts</h3>§§<h3>Roles covered</h3>
+.join(" ") || "aucun"} · Coût des cinq membres :§§.join(" ") || "none"} · Cost of the five members:
+<p class="note" style="margin-top:8px">Éléments :§§<p class="note" style="margin-top:8px">Elements:
+<h3>Conseils</h3>§§<h3>Advice</h3>
+L'équipe couvre tous les rôles essentiels.§§The party covers every key role.
+<h3>Compétences de leader actives</h3>§§<h3>Active Leader Skills</h3>
+[[0, "Leader"], [5, "Ami"]]§§[[0, "Leader"], [5, "Friend"]]
+"Pas de compétence de leader"§§"No Leader Skill"
+<span class="muted">Aucune unité</span>§§<span class="muted">No unit</span>
+Vider l'équipe§§Clear the party
+`Sphère ${k + 1}${k === 1 ? " (emplacement à débloquer)" : ""}`§§`Sphere ${k + 1}${k === 1 ? " (slot to unlock)" : ""}`
+<option value="">Aucune</option>§§<option value="">None</option>
+(équipée)</option>§§(equipped)</option>
+<optgroup label="Conseillées">§§<optgroup label="Recommended">
+<optgroup label="Toutes les sphères">§§<optgroup label="All spheres">
++ Choisir une unité§§+ Pick a unit
+Le jeu refuse deux sphères Status Boost sur la même unité : seule la première compte dans les stats.§§The game refuses two Status Boost spheres on the same unit: only the first counts in the stats.
+>Forme</label>§§>Form</label>
+<strong>Conseil : ${TYPE_FR[rec.type]}</strong>§§<strong>Advice: ${TYPE_FR[rec.type]}</strong>
+Type de ton unité§§Your unit's type
+>Comme conseillé (${TYPE_FR[rec.type]})<§§>As recommended (${TYPE_FR[rec.type]})<
+`Une Type Frog vers ${TYPE_FR[rec.type]} conviendrait mieux§§`A Type Frog into ${TYPE_FR[rec.type]} would suit it better
+Niv. ${x.f.maxLevel}, type seul : PV ${fmt(s.hp)} · ATQ ${fmt(s.atk)} · DÉF ${fmt(s.def)} · REC ${fmt(s.rec)}§§Level ${x.f.maxLevel}, type only: HP ${fmt(s.hp)} · ATK ${fmt(s.atk)} · DEF ${fmt(s.def)} · REC ${fmt(s.rec)}
+<strong>En combat</strong> (leaders, sphères, compétence extra) :<br>PV ${fmt(fin.hp)}${bonus("hp")} · ATQ ${fmt(fin.atk)}${bonus("atk")}<br>DÉF ${fmt(fin.def)}${bonus("def")} · REC§§<strong>In battle</strong> (leaders, spheres, Extra Skill):<br>HP ${fmt(fin.hp)}${bonus("hp")} · ATK ${fmt(fin.atk)}${bonus("atk")}<br>DEF ${fmt(fin.def)}${bonus("def")} · REC
+>Changer</button>§§>Change</button>
+>Retirer</button>§§>Remove</button>
+aria-label="Choisir une unité pour ${SLOTS[slot]}"§§aria-label="Pick a unit for ${SLOTS[slot]}"
+${SLOTS[slot]} : choisir une unité§§${SLOTS[slot]}: pick a unit
+>Fermer</button>§§>Close</button>
+placeholder="Rechercher" aria-label="Rechercher une unité"§§placeholder="Search" aria-label="Search a unit"
+Seulement mes unités§§Only my units
+`<div class="empty">Aucune unité.</div>`§§`<div class="empty">No unit.</div>`
+name: "Histoire",§§name: "Story",
+"Les huit terres de Grand Gaia, de Mistral à Cordelica. Coûte de l'énergie, les continues sont permis."§§"The eight lands of Grand Gaia, from Mistral to Cordelica. Costs energy; continues are allowed."
+"Aligne des unités qui dominent l'élément des boss de la zone : ×1,5 de dégâts pour toi, ×0,5 pour eux."§§"Field units strong against the zone's boss element: ×1.5 damage for you, ×0.5 for them."
+"Monte une équipe équilibrée : deux attaquants, un soigneur, un défenseur et un soutien BB."§§"Build a balanced party: two attackers, a healer, a defender and a BB support."
+"Capture les unités de chaque zone : elles servent souvent de matériaux d'évolution."§§"Capture the units of each zone: they are often evolution materials."
+name: "Donjons de farm",§§name: "Farming dungeons",
+"Rassemblement des âmes, Renforcement, Ruines et Jardin de la parade. Certaines parades sont limitées à 5 tours par jour."§§"Gathering of Souls, Enhancement, the Ruins and Parade Garden. Some parades are limited to 5 runs a day."
+"Toujours le niveau 3 : c'est le plus rentable en Zel comme en Karma."§§"Always level 3: it pays best for both Zel and Karma."
+"Contre les métaux et les joyaux, très résistants, privilégie les unités qui ignorent la DÉF et frappent souvent."§§"Against metal and jewel units, which are very tough, favour units that ignore DEF and hit often."
+"Revends les unités Jewel capturées : jusqu'à 300 000 Zel le Golden God."§§"Sell the Jewel units you capture: up to 300,000 Zel for a Golden God."
+name: "Vortex élémentaires",§§name: "Elemental vortex",
+"Six donjons, un par élément : Flammes, Zéro absolu, Voix de Gaia, Tonnerre, Ciel et Lune."§§"Six dungeons, one per element: Flames, Absolute Zero, Gaia's Voice, Thunder, Sky and Moon."
+"Chaque donjon a un élément : amène l'élément qui le domine, et laisse au banc celui qu'il domine."§§"Each dungeon has an element: bring the element that beats it and bench the one it beats."
+"Une mitigation élémentaire du bon élément réduit encore les dégâts reçus."§§"Elemental mitigation for the right element cuts damage taken even more."
+"Combats contre les boss marquants de l'histoire, plus durs que la version d'origine."§§"Fights against the story's major bosses, harder than the originals."
+"Les boss se soignent ou changent de phase : garde tes BB et UBB pour les finir d'un coup."§§"Bosses heal or change phase: save your BBs and UBB to finish them in one go."
+"Prévois une immunité aux altérations : plusieurs boss en infligent beaucoup."§§"Bring ailment immunity: several bosses inflict a lot of them."
+"Tour en dix paliers, plus sa face sombre. Les derniers paliers et le Prologue XE interdisent les continues et limitent les objets à 2."§§"A ten-stage tower plus its Dark Side. The last stages and the XE Prologue forbid continues and limit items to 2."
+"Sans continue, une seule erreur coûte la course : mitigation, soins et Ange gardien sont obligatoires."§§"With no continues, one mistake ends the run: mitigation, healing and Angel Idol are a must."
+"Avec 2 objets seulement, choisis des soins de groupe et un remède aux altérations."§§"With only 2 items, pick party heals and an ailment cure."
+"Une unité Anima ou Guardian en défenseur évite les morts sur les gros coups."§§"An Anima or Guardian defender prevents deaths on big hits."
+name: "Épreuves",§§name: "Trials",
+"Épreuve des dieux, Épreuves de test et La tromperie de Leon : peu de combats, des boss très résistants."§§"Trial of the Gods, the Test Trials and Leon's Deception: few battles, very tough bosses."
+"Peu de vagues mais beaucoup de PV : les dégâts d'étincelle et les UBB font la différence."§§"Few waves but lots of HP: Spark damage and UBBs make the difference."
+"Regarde les altérations du boss avant de partir et équipe une sphère d'immunité si personne ne la donne."§§"Check the boss's ailments before you go, and equip an immunity sphere if nobody provides it."
+"Saison 6 de l'Uncharted Frontier : quatre étapes, sans continue."§§"Uncharted Frontier season 6: four stages, no continues."
+"Toutes les altérations sont présentes : l'immunité est indispensable."§§"Every ailment shows up: immunity is essential."
+"Les boss volent les jauges de BB et retirent les buffs : garde des soutiens BB et relance tes buffs."§§"Bosses drain BB gauges and remove buffs: bring BB support and reapply your buffs."
+"Vide vos jauges de BB : garde des soutiens BB et des sphères de remplissage."§§"Drains your BB gauges: bring BB support and BB-fill spheres."
+"Retire vos buffs : relance mitigation et boosts juste après."§§"Removes your buffs: reapply mitigation and buffs right after."
+"Attaques en pourcentage de PV : la DÉF ne protège pas, prévois des soins et un Ange gardien."§§"Percentage-of-HP attacks: DEF does not help, bring healing and an Angel Idol."
+"Le boss se soigne : garde tes BB et UBB pour finir une phase d'un coup."§§"The boss heals itself: save your BBs and UBB to finish a phase in one go."
+"Attaques très puissantes : garde une réduction de dégâts active au bon tour."§§"Very strong attacks: keep damage reduction up on the right turn."
+"Baisse vos statistiques : une immunité aux baisses de stats aide."§§"Lowers your stats: stat-reduction immunity helps."
+Aucune unité trouvée.§§No unit found.
+>Pas de continue</span>§§>No continues</span>
+objets max</span>§§items max</span>
+`<span class="flag info">${c.battles} combats · ${c.energy} énergie</span>`§§`<span class="flag info">${c.battles} battles · ${c.energy} energy</span>`
+`Le boss principal est ${EL_FR[sg.mainEl]} : amène des unités ${sg.counters.map((e) => EL_FR[e]).join(" ou ")}, qui lui font ×1,5 de dégâts.`§§`The main boss is ${EL_FR[sg.mainEl]}: bring ${sg.counters.map((e) => EL_FR[e]).join(" or ")} units, which deal ×1.5 damage to it.`
+`Lumière et Ténèbres se font ×1,5 mutuellement : tes unités ${mutual.map((e) => EL_FR[e]).join(" et ")} frapperont fort mais prendront aussi plus cher, garde un défenseur.`§§`Light and Dark deal ×1.5 to each other: your ${mutual.map((e) => EL_FR[e]).join(" and ")} units will hit hard but also take more damage, keep a defender.`
+`Évite les unités ${avoidOnly.map((e) => EL_FR[e]).join(" et ")} : elles prennent ×1,5 de dégâts de la part des boss.`§§`Avoid ${avoidOnly.map((e) => EL_FR[e]).join(" and ")} units: they take ×1.5 damage from the bosses.`
+`Altérations infligées : ${c.ailments.map((a) => AIL_FR[a] || a).join(", ")}. Prends une immunité aux altérations.`§§`Ailments inflicted: ${c.ailments.map((a) => AIL_FR[a] || a).join(", ")}. Bring ailment immunity.`
+`Les ennemis résistent à : ${c.immune.map((a) => AIL_FR[a] || a).join(", ")}. Inutile de miser sur ces altérations.`§§`Enemies resist: ${c.immune.map((a) => AIL_FR[a] || a).join(", ")}. Don't count on those ailments.`
+>Difficulté ${Math.round(c.score)}<§§>Difficulty ${Math.round(c.score)}<
+<th>Boss</th><th>Élément</th>§§<th>Boss</th><th>Element</th>
+Attaquants qui dominent le boss§§Attackers strong against the boss
+<div class="small muted">Immunité aux altérations</div>§§<div class="small muted">Ailment immunity</div>
+<div class="small muted">Réduction des dégâts</div>§§<div class="small muted">Damage reduction</div>
+<div class="small muted">Soigneurs</div>§§<div class="small muted">Healers</div>
+Préparer cette équipe dans le team builder§§Set up this party in the team builder
+<h2 class="section-title">Défis</h2>§§<h2 class="section-title">Challenges</h2>
+Les quêtes les plus dures du jeu, classées d'après leurs boss : PV, attaque, altérations et mécaniques dangereuses. Pour chacune, le wiki propose les éléments à amener et des unités adaptées.§§The hardest quests in the game, ranked by their bosses: HP, attack, ailments and dangerous mechanics. For each one, the wiki suggests which elements to bring and which units fit.
+placeholder="Rechercher une quête ou un boss" aria-label="Rechercher une quête"§§placeholder="Search a quest or a boss" aria-label="Search a quest"
+aria-label="Mode de jeu"><option value="">Tous les modes</option>§§aria-label="Game mode"><option value="">All modes</option>
+Afficher plus de quêtes§§Show more quests
+La note de difficulté combine les PV totaux, l'attaque maximale des ennemis, leurs altérations, leurs mécaniques et l'absence de continue. Elle sert à comparer les quêtes entre elles.§§The difficulty score combines total HP, the enemies' highest attack, their ailments, their mechanics and the lack of continues. It is meant to compare quests with each other.
+`${list.length} quête${list.length > 1 ? "s" : ""}, de la plus dure à la plus facile`§§`${list.length} quest${list.length > 1 ? "s" : ""}, hardest first`
+Aucune quête ne correspond.§§No quest matches.
+<h2 class="section-title">Modes de jeu</h2>§§<h2 class="section-title">Game modes</h2>
+Les règles de chaque mode, tirées des données du jeu, et les conseils pour s'y préparer. Chaque carte montre les trois quêtes les plus dures du mode.§§Each mode's rules, taken from the game data, and tips to prepare. Each card lists the mode's three hardest quests.
+`${list.length} quête${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} sans continue` : ""}`§§`${list.length} quest${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} without continues` : ""}`
+Les plus dures :§§Hardest:
+Voir les défis de ce mode§§See this mode's challenges
+<h3>Arène</h3>§§<h3>Arena</h3>
+Les combats d'arène sont joués par l'IA : chaque unité a son propre comportement d'arène dans les données du jeu.§§Arena battles are played by the AI: each unit has its own arena behaviour in the game data.
+Privilégie les attaques de zone et les unités qui remplissent vite les jauges de BB : l'IA lance les BB dès qu'ils sont prêts.§§Favour AoE attacks and units that fill BB gauges quickly: the AI casts BBs as soon as they are ready.
+Une compétence de leader qui monte les PV et l'ATQ de toute l'équipe aide plus qu'un effet sous condition.§§A Leader Skill that boosts the whole party's HP and ATK helps more than a conditional effect.
+Les règles détaillées de l'arène ne sont pas dans les fichiers lus : ces conseils restent généraux.§§The detailed arena rules are not in the files we read: this advice stays general.
+"Ce texte ne vient pas du script d'export : il doit commencer par BFRCODEX1."§§"This text does not come from the export script: it must start with BFRCODEX1."
+"Mettre à jour ma collection" : "Importer ma collection"§§"Update my collection" : "Import my collection"
+<li>Installe le script <strong>bfr-collection.user.js</strong> dans Tampermonkey, comme la macro.</li>§§<li>Install the <strong>bfr-collection.user.js</strong> script in Tampermonkey (<a href="https://github.com/__REPO__/tree/main/tools">download it here</a>).</li>
+<li>Dans le jeu, ouvre <strong>Unité › Voir les unités</strong>, puis clique sur <strong>Copier ma collection pour le wiki</strong> en bas à droite.</li>§§<li>In the game, open <strong>Unit › View Units</strong>, then click <strong>Copy my collection for the wiki</strong> at the bottom right.</li>
+<li>Colle le texte ici, puis clique sur Importer.</li>§§<li>Paste the text here, then click Import.</li>
+Texte copié depuis le jeu§§Text copied from the game
+>Importer</button>§§>Import</button>
+Effacer ma collection§§Clear my collection
+La collection reste dans ton navigateur : elle n'est envoyée nulle part.§§Your collection stays in your browser: it is not sent anywhere.
+Importe ta liste d'unités pour voir ton taux de collection, les unités qui te manquent, celles prêtes à évoluer, et filtrer le team builder sur tes unités.§§Import your unit list to see your collection rate, the units you are missing, those ready to evolve, and to filter the team builder on your units.
+`Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}.§§`Imported on ${new Date(COLL.date).toLocaleString("en-US")}.
+`${COLL.unknown.length} nom${COLL.unknown.length > 1 ? "s" : ""} non reconnu${COLL.unknown.length > 1 ? "s" : ""} :§§`${COLL.unknown.length} unrecognised name${COLL.unknown.length > 1 ? "s" : ""}:
+unités jouables possédées (${pctOf(ownedHeroes.length, heroes.length)} %)§§playable units owned (${pctOf(ownedHeroes.length, heroes.length)}%)
+<span>unités en forme Omni</span>§§<span>units in Omni form</span>
+<span>formes différentes possédées</span>§§<span>different forms owned</span>
+<span>évolutions prêtes</span>§§<span>evolutions ready</span>
+<h3>Par élément</h3>§§<h3>By element</h3>
+<h3>Prêtes à évoluer</h3>§§<h3>Ready to evolve</h3>
+Aucune évolution n'a tous ses matériaux pour l'instant.§§No evolution has all its materials yet.
+<h3>Presque prêtes</h3>§§<h3>Almost ready</h3>
+Rien à signaler.§§Nothing to report.
+>Mes unités (${ownedHeroes.length})<§§>My units (${ownedHeroes.length})<
+>Il te manque (${missingHeroes.length})<§§>Missing (${missingHeroes.length})<
+"Aucune unité reconnue dans ce texte."§§"No recognised unit in this text."
+"Import impossible."§§"Import failed."
+Classement calculé par le wiki pour les ${T.rows.length} unités jouables, à leur meilleure forme. La tier list votée par les joueurs existe sur le site du jeu, mais aucune unité n'y a encore les 15 votes nécessaires :§§Ranking computed by the wiki for the ${T.rows.length} playable units, at their best form. The player-voted tier list exists on the game's site, but no unit has the 15 votes it needs yet:
+voir la tier list de la communauté§§see the community tier list
+aria-label="Rôle"><option value="">Tous les rôles</option>§§aria-label="Role"><option value="">All roles</option>
+<h3>Comment la note est calculée</h3>§§<h3>How the score is computed</h3>
+<li>35 % statistiques au niveau max (ATQ, PV, REC, DÉF).</li><li>25 % utilité : soins, réduction des dégâts, remplissage des BB, immunités et boosts d'équipe.</li><li>20 % compétence de leader.</li><li>20 % puissance des SBB et UBB.</li><li>Petit bonus pour les formes Omni et 7★.</li>§§<li>35% stats at max level (ATK, HP, REC, DEF).</li><li>25% utility: healing, damage reduction, BB fill, immunities and party buffs.</li><li>20% Leader Skill.</li><li>20% SBB and UBB power.</li><li>Small bonus for Omni and 7★ forms.</li>
+S = 10 % les mieux notées, A = 25 % suivantes, B = 35 %, C = le reste. Survole une unité pour voir sa note. Une ✓ verte signale une unité de ta collection.§§S = top 10%, A = next 25%, B = 35%, C = the rest. Hover a unit to see its score. A green ✓ marks a unit from your collection.
+title="Note ${Math.round(x.score * 100)} · stats ${Math.round(x.parts.stat * 100)} · utilité ${Math.round(x.parts.util * 100)}§§title="Score ${Math.round(x.score * 100)} · stats ${Math.round(x.parts.stat * 100)} · utility ${Math.round(x.parts.util * 100)}
+`<span class="muted small" style="padding:14px">Aucune unité.</span>`§§`<span class="muted small" style="padding:14px">No unit.</span>`
+["BB, SBB, UBB", "Brave Burst : l'attaque spéciale d'une unité. SBB est sa version améliorée, UBB l'ultime."]§§["BB, SBB, UBB", "Brave Burst: a unit's special attack. SBB is its upgraded version, UBB the ultimate one."]
+["BC", "Brave Crystals, les cristaux bleus qui remplissent la jauge de BB."]§§["BC", "Brave Crystals, the blue crystals that fill the BB gauge."]
+["HC", "Heart Crystals, les cristaux roses qui soignent."]§§["HC", "Heart Crystals, the pink crystals that heal."]
+["LS", "Compétence de leader : s'applique à toute l'équipe quand l'unité est leader ou ami."]§§["LS", "Leader Skill: applies to the whole party when the unit is leader or friend."]
+["ES", "Compétence extra : un bonus passif propre à l'unité."]§§["ES", "Extra Skill: a passive bonus specific to the unit."]
+["Étincelle", "Deux coups qui touchent au même moment : ils font plus de dégâts et donnent plus de cristaux."]§§["Spark", "Two hits landing at the same moment: they deal more damage and drop more crystals."]
+["Omni", "La forme ultime d'une unité, au-dessus du 7★."]§§["Omni", "A unit's ultimate form, above 7★."]
+["Type", "Lord, Anima, Breaker, Guardian, Oracle ou Rex : change les stats gagnées à chaque niveau."]§§["Type", "Lord, Anima, Breaker, Guardian, Oracle or Rex: changes the stats gained each level."]
+["Type Frog", "Objet qui change le type d'une unité (sauf vers Rex)."]§§["Type Frog", "Item that changes a unit's type (except into Rex)."]
+["Imps", "Bonus de stats permanents donnés en fusionnant des unités spéciales."]§§["Imps", "Permanent stat bonuses granted by fusing special units."]
+["Mitigation", "Réduction des dégâts reçus par l'équipe."]§§["Mitigation", "Reduction of the damage the party takes."]
+<h2>Bienvenue sur Reborn Wiki</h2>§§<h2>Welcome to Reborn Wiki</h2>
+<p>Le wiki de Brave Frontier: Reborn : ${heroes.length} unités jouables, leurs compétences, le meilleur type et les meilleures sphères pour chacune, et des conseils pour les quêtes les plus dures.</p>§§<p>The Brave Frontier: Reborn wiki: ${heroes.length} playable units, their skills, the best type and spheres for each, and advice for the hardest quests.</p>
+<span>Fiches complètes, de la première forme à l'Omni.</span>§§<span>Full unit pages, from first form to Omni.</span>
+`${owned}/${heroes.length} unités possédées.` : "Importe ton compte pour voir ce qui te manque."§§`${owned}/${heroes.length} units owned.` : "Import your account to see what you are missing."
+<span>Compose une équipe, choisis types et sphères, vois les stats en combat.</span>§§<span>Build a party, pick types and spheres, see battle stats.</span>
+<span>Les unités classées de S à C.</span>§§<span>Units ranked from S to C.</span>
+<span>Les quêtes les plus dures et comment les préparer.</span>§§<span>The hardest quests and how to prepare for them.</span>
+<span>Où gagner Zel, Karma et XP le plus vite.</span>§§<span>Where to earn Zel, Karma and XP fastest.</span>
+<h3>Les mieux classées</h3>§§<h3>Top ranked</h3>
+<h3>Pour bien démarrer</h3>§§<h3>Getting started</h3>
+<li>Importe ta collection pour savoir ce que tu as et ce qu'il te manque.</li>§§<li>Import your collection to see what you have and what you are missing.</li>
+<li>Ouvre la fiche de tes meilleures unités : type conseillé, duo de sphères et éléments.</li>§§<li>Open the pages of your best units: recommended type, sphere pair and elements.</li>
+<li>Compose ton équipe dans le team builder et vérifie les rôles couverts.</li>§§<li>Build your party in the team builder and check the roles covered.</li>
+<li>Avant une quête difficile, regarde sa fiche dans Défis : éléments à amener et altérations à prévoir.</li>§§<li>Before a hard quest, check its card in Challenges: elements to bring and ailments to expect.</li>
+<h3>Lexique</h3>§§<h3>Glossary</h3>
+const KIND = { "all-stat": "Toutes stats", typed: "Spécialisée", signature: "Signature" };§§const KIND = { "all-stat": "All stats", typed: "Specialised", signature: "Signature" };
+`${D.spheres.length} sphères. Les sphères signature ne s'activent qu'avec l'unité prévue.`§§`${D.spheres.length} spheres. Signature spheres only work on their own unit.`
+<p class="lede">${D.spheres.length} sphères. Les sphères signature ne s'activent qu'avec l'unité prévue.</p>§§<p class="lede">${D.spheres.length} spheres. Signature spheres only work on their own unit.</p>
+placeholder="Rechercher une sphère ou un effet" aria-label="Rechercher une sphère"§§placeholder="Search a sphere or an effect" aria-label="Search a sphere"
+aria-label="Catégorie"><option value="">Toutes les catégories</option>§§aria-label="Category"><option value="">All categories</option>
+<th>Sphère</th><th>Catégorie</th><th>Effets</th>§§<th>Sphere</th><th>Category</th><th>Effects</th>
+`${list.length} sphère${list.length > 1 ? "s" : ""}`§§`${list.length} sphere${list.length > 1 ? "s" : ""}`
+`Soigne ${fmt(e.amount)} PV`§§`Heals ${fmt(e.amount)} HP`
+`Soigne ${(e.ailments || []).map((a) => AIL_FR[a] || a).join(", ")}`§§`Cures ${(e.ailments || []).map((a) => AIL_FR[a] || a).join(", ")}`
+`${D.items.length} objets du jeu, avec leur description d'origine.`§§`${D.items.length} items from the game, with their original description.`
+<p class="lede">${D.items.length} objets du jeu, avec leur description d'origine.</p>§§<p class="lede">${D.items.length} items from the game, with their original description.</p>
+placeholder="Rechercher un objet" aria-label="Rechercher un objet"§§placeholder="Search an item" aria-label="Search an item"
+<th>Objet</th><th>Description</th><th>Effet</th>§§<th>Item</th><th>Description</th><th>Effect</th>
+`${list.length} objet${list.length > 1 ? "s" : ""}`§§`${list.length} item${list.length > 1 ? "s" : ""}`
+<h2 class="section-title">Boutique de mérite</h2>§§<h2 class="section-title">Merit shop</h2>
+Les unités échangeables contre des points de mérite. Pour rappel : 1 point = 5 000 Zel ou 2 500 Karma.§§Units you can trade for merit points. Reminder: 1 point = 5,000 Zel or 2,500 Karma.
+<th>Unité</th><th>Rareté</th><th>Élément</th><th class="n">Points</th><th class="n">En Zel</th><th class="n">En Karma</th>§§<th>Unit</th><th>Rarity</th><th>Element</th><th class="n">Points</th><th class="n">In Zel</th><th class="n">In Karma</th>
+<h2 class="section-title">Où farmer</h2>§§<h2 class="section-title">Where to farm</h2>
+Les meilleures quêtes repérées dans les données du jeu et lors de tests réels. Les gains marqués « estimé » viennent du fichier du jeu, pas d'une mesure.§§The best quests found in the game data and in real test runs. Gains marked “estimated” come from the game file, not from a measurement.
+<th>Quête</th><th>Pour</th><th>Gains par tour</th><th>Limite</th>§§<th>Quest</th><th>For</th><th>Gains per run</th><th>Limit</th>
+<tr><td><strong>Méga parade de joyaux</strong> (100652)</td><td>Zel</td><td>Environ 670 000 Zel en revendant les Golden God et Jewel God (estimé)</td><td>5 par jour, 0 énergie</td></tr>§§<tr><td><strong>Mega Jewel Parade</strong> (100652)</td><td>Zel</td><td>About 670,000 Zel by selling the Golden Gods and Jewel Gods (estimated)</td><td>5 a day, 0 energy</td></tr>
+<tr><td><strong>Vallée dorée Lv. 3</strong> (100502)</td><td>Zel</td><td>33 000 Zel mesurés, environ 90 000 avec la revente des Jewel (estimé)</td><td>Aucune</td></tr>§§<tr><td><strong>Gold Valley Lv. 3</strong> (100502)</td><td>Zel</td><td>33,000 Zel measured, about 90,000 when selling the Jewels (estimated)</td><td>None</td></tr>
+<tr><td><strong>Terre sacrée des âmes Lv. 3</strong> (100002)</td><td>Karma</td><td>25 524 Karma mesurés</td><td>Aucune</td></tr>§§<tr><td><strong>Sacred Land of the Souls Lv. 3</strong> (100002)</td><td>Karma</td><td>25,524 Karma measured</td><td>None</td></tr>
+<tr><td><strong>Méga parade de métal</strong> (100614)</td><td>XP de fusion</td><td>Environ 3 God et 2 Crystal capturés (estimé)</td><td>Aucune, 0 énergie</td></tr>§§<tr><td><strong>Mega Metal Parade</strong> (100614)</td><td>Fusion XP</td><td>About 3 Gods and 2 Crystals captured (estimated)</td><td>None, 0 energy</td></tr>
+<tr><td><strong>Le démon qui appelle la mort</strong> (354)</td><td>Mifune</td><td>Environ 10 % de chance de capturer Mifune (estimé)</td><td>Aucune</td></tr>§§<tr><td><strong>The Death-beckoning Devil</strong> (354)</td><td>Mifune</td><td>About a 10% chance to capture Mifune (estimated)</td><td>None</td></tr>
+<h3>Revente des unités Jewel</h3>§§<h3>Jewel unit sale prices</h3>
+<th>Unité</th><th class="n">Revente</th>§§<th>Unit</th><th class="n">Sells for</th>
+`<div class="empty">Les données du jeu n'ont pas pu être chargées (${esc(e.message)}). Recharge la page.</div>`§§`<div class="empty">The game data could not be loaded (${esc(e.message)}). Reload the page.</div>`
+<a href="#accueil">Accueil</a>§§<a href="#accueil">Home</a>
+<a href="#unites">Unités</a>§§<a href="#unites">Units</a>
+<a href="#collection">Ma collection</a>§§<a href="#collection">My collection</a>
+<a href="#defis">Défis</a>§§<a href="#defis">Challenges</a>
+<a href="#spheres">Sphères</a>§§<a href="#spheres">Spheres</a>
+<a href="#objets">Objets</a>§§<a href="#objets">Items</a>
+<a href="#merite">Mérite</a>§§<a href="#merite">Merit</a>
+<strong>Unités</strong>§§<strong>Units</strong>
+<strong>Ma collection</strong>§§<strong>My collection</strong>
+<strong>Défis</strong>§§<strong>Challenges</strong>
+<h2 class="section-title">Unités</h2>§§<h2 class="section-title">Units</h2>
+<h2 class="section-title">Ma collection</h2>§§<h2 class="section-title">My collection</h2>
+<h2 class="section-title">Sphères</h2>§§<h2 class="section-title">Spheres</h2>
+<h2 class="section-title">Objets</h2>§§<h2 class="section-title">Items</h2>
+<h2 class="section-title">Types d'unité</h2>§§<h2 class="section-title">Unit types</h2>
+aria-label="Rechercher"§§aria-label="Search"
+<th class="n">PV</th><th class="n">ATQ</th><th class="n">DÉF</th>§§<th class="n">HP</th><th class="n">ATK</th><th class="n">DEF</th>
+<p class="note">Conseillé pour ${counts[t]} unité${counts[t] > 1 ? "s" : ""} du wiki.</p>§§<p class="note">Recommended for ${counts[t]} unit${counts[t] > 1 ? "s" : ""} in the wiki.</p>
+Sphère ${k + 1}${k === 1 ? " (emplacement à débloquer)" : ""}§§Sphere ${k + 1}${k === 1 ? " (slot to unlock)" : ""}
+${list.length} quête${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} sans continue` : ""}§§${list.length} quest${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} without continues` : ""}
+Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}.§§Imported on ${new Date(COLL.date).toLocaleString("en-US")}.

@@ -1,0 +1,1463 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Wiki de fan non officiel de Brave Frontier: Reborn : unités, types, sphères, team builder, tier list et défis.">
+<title>Reborn Wiki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout : bandeau doré fixe, puis une colonne de liste et un panneau de fiche, comme les cadres du jeu. */
+:root {
+  color-scheme: dark;
+  --bg: #0b1222;
+  --panel: #131c33;
+  --panel-2: #1a2543;
+  --line: #2c3b62;
+  --gold: #d6b25b;
+  --gold-hi: #f2d68b;
+  --fg: #e8ecf6;
+  --mute: #95a2c2;
+  --good: #63c98a;
+  --bad: #e07a6a;
+  --fire: #ee6a48;
+  --water: #4ba7ef;
+  --earth: #69c062;
+  --thunder: #efcb45;
+  --light: #f1e7c4;
+  --dark: #a46ee0;
+  --display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+a { color: var(--gold-hi); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: .01em; text-wrap: balance; margin: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1240px; margin: 0 auto; }
+
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--panel);
+  border-bottom: 2px solid var(--gold);
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.topbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-block: 10px; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand h1 { font-size: 24px; color: var(--gold-hi); text-shadow: 0 2px 0 #00000080; }
+.brand span { color: var(--mute); font-size: 13px; }
+.lang { font-weight: 700; text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+nav.tabs a {
+  text-decoration: none; color: var(--fg); padding: 6px 12px; border-radius: 999px;
+  border: 1px solid transparent; font-weight: 600; font-size: 14px;
+}
+nav.tabs a:hover { border-color: var(--line); }
+nav.tabs a[aria-current="page"] { background: var(--gold); color: #1a1406; }
+
+main { padding-top: 20px; }
+.lede { color: var(--mute); max-width: 70ch; margin: 6px 0 18px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.frame { background: var(--panel); border: 2px solid var(--gold); border-radius: var(--radius); box-shadow: inset 0 0 0 1px #00000060; }
+.section-title { font-size: 22px; color: var(--gold-hi); }
+.muted { color: var(--mute); }
+.small { font-size: 13px; }
+
+/* Barre d'outils */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.toolbar input[type="search"], .toolbar select, .field {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0;
+}
+.toolbar input[type="search"] { flex: 1 1 220px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font-size: 13px; font-weight: 600;
+}
+.chip[aria-pressed="true"] { border-color: var(--gold); background: #2b2412; color: var(--gold-hi); }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--mute); }
+
+/* Cartes d'unités */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.card {
+  display: grid; grid-template-columns: 46px 1fr; gap: 10px; align-items: center;
+  padding: 10px; text-decoration: none; color: var(--fg);
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0;
+}
+.card:hover { border-color: var(--gold); }
+.card .name { font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.card .meta { font-size: 12px; color: var(--mute); display: flex; gap: 8px; flex-wrap: wrap; }
+.sigil {
+  width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+  font-family: var(--display); font-size: 20px; color: #10131c;
+  box-shadow: inset 0 -4px 0 #00000040, 0 0 0 2px var(--gold);
+}
+.sigil.big { width: 72px; height: 72px; font-size: 32px; border-radius: 16px; }
+.el-fire { --el: var(--fire); } .el-water { --el: var(--water); } .el-earth { --el: var(--earth); }
+.el-thunder { --el: var(--thunder); } .el-light { --el: var(--light); } .el-dark { --el: var(--dark); }
+.sigil { background: var(--el, var(--mute)); overflow: hidden; }
+.sigil img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.sigil.has-img { background: var(--panel-2); }
+.dot { background: var(--el, var(--mute)); }
+.rar { color: var(--gold-hi); font-weight: 700; }
+.role { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--fg); }
+.role.main { border-color: var(--gold); color: var(--gold-hi); }
+.count { color: var(--mute); font-size: 13px; margin-bottom: 8px; }
+
+/* Fiche */
+.detail { display: grid; gap: 14px; }
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; padding: 16px; }
+.hero h2 { font-size: 30px; color: var(--gold-hi); }
+.forms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.forms button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 13px; }
+.forms button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-hi); background: #2b2412; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+.box { padding: 14px 16px; min-width: 0; }
+.box h3 { font-size: 18px; color: var(--gold-hi); margin-bottom: 8px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 14px; }
+.kv dt { color: var(--mute); }
+.kv dd { margin: 0; font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--mute); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr.best td { background: #2b2412; }
+.up { color: var(--good); } .down { color: var(--bad); }
+.skill { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.skill:last-child { border-bottom: 0; }
+.skill .tag { font-family: var(--display); color: var(--gold); font-size: 14px; margin-right: 6px; }
+.skill .sname { font-weight: 700; }
+.skill .desc { color: var(--mute); font-size: 13px; margin: 2px 0 4px; }
+.fx { margin: 0; padding-left: 18px; font-size: 14px; }
+.fx li { margin: 2px 0; }
+.advice { border-left: 3px solid var(--gold); padding: 8px 12px; background: var(--panel-2); border-radius: 0 8px 8px 0; }
+.quote { font-style: italic; color: var(--mute); }
+.back { display: inline-block; margin-bottom: 10px; text-decoration: none; font-weight: 600; }
+
+/* Types */
+.types { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.type-card { padding: 12px 14px; }
+.type-card h3 { font-size: 20px; color: var(--gold-hi); }
+.gain { font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* Équipe */
+.team { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.slot { padding: 10px; display: grid; gap: 8px; align-content: start; min-height: 180px; min-width: 0; }
+.slot .label { font-family: var(--display); color: var(--gold); font-size: 14px; }
+.slot button.pick {
+  border: 1px dashed var(--line); background: transparent; border-radius: 8px; padding: 20px 8px; cursor: pointer; color: var(--mute);
+}
+.slot .who { display: grid; grid-template-columns: 46px 1fr; gap: 8px; align-items: center; }
+.slot .who .name { font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.slot select { width: 100%; }
+.slot .row { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-weight: 600; font-size: 13px; }
+.btn:hover { border-color: var(--gold); }
+.btn.primary { background: var(--gold); color: #1a1406; border-color: var(--gold); }
+.status { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.pill { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); font-size: 14px; }
+.pill.ok { border-color: #2f6b47; }
+.pill.miss { border-color: #7a3a31; }
+.pill .mark { font-weight: 700; }
+.pill.ok .mark { color: var(--good); }
+.pill.miss .mark { color: var(--bad); }
+
+/* Sélecteur */
+.overlay { position: fixed; inset: 0; background: #050913cc; z-index: 20; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.picker { width: min(760px, 100%); max-height: 86vh; display: grid; grid-template-rows: auto auto 1fr; gap: 10px; padding: 14px; }
+.picker .list { overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; align-content: start; min-height: 0; }
+.picker .card { cursor: pointer; text-align: left; font: inherit; }
+
+.flag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid #7a3a31; color: #f0a596; background: #2a1512; }
+.flag.info { border-color: var(--line); color: var(--fg); background: var(--panel-2); }
+.challenge { padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.challenge h3 { font-size: 19px; color: var(--gold-hi); }
+.challenge .head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.diff { font-family: var(--display); color: var(--gold); font-size: 15px; white-space: nowrap; }
+.mini { display: flex; flex-wrap: wrap; gap: 6px; }
+.mini a { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px 2px 2px; font-size: 13px; }
+.mini a:hover { border-color: var(--gold); }
+.mini .sigil { width: 26px; height: 26px; font-size: 12px; border-radius: 50%; box-shadow: none; }
+.sph { display: grid; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.sph:last-child { border-bottom: 0; }
+.sph .why { font-size: 13px; color: var(--mute); }
+.mode { padding: 14px 16px; }
+.mode h3 { font-size: 20px; color: var(--gold-hi); margin-bottom: 6px; }
+.empty { padding: 30px; text-align: center; color: var(--mute); }
+.note { font-size: 13px; color: var(--mute); }
+/* Accueil */
+.welcome { padding: 22px 20px; background: linear-gradient(160deg, #1d2a4d 0%, var(--panel) 60%); border: 2px solid var(--gold); border-radius: 14px; }
+.welcome h2 { font-size: clamp(26px, 5vw, 38px); color: var(--gold-hi); text-shadow: 0 2px 0 #00000080; }
+.welcome p { max-width: 62ch; color: var(--fg); margin: 8px 0 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 14px; }
+.tile { display: grid; gap: 4px; padding: 14px; text-decoration: none; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.tile:hover { border-color: var(--gold); }
+.tile strong { font-family: var(--display); font-weight: 400; font-size: 19px; color: var(--gold-hi); }
+.tile span { color: var(--mute); font-size: 14px; }
+.gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 16px; margin: 0; }
+.gloss div { min-width: 0; }
+.gloss dt { font-family: var(--display); color: var(--gold); }
+.gloss dd { margin: 0; color: var(--mute); font-size: 14px; }
+abbr[title] { text-decoration: underline dotted; cursor: help; }
+
+/* En bref */
+.brief { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; padding: 14px 16px; }
+.brief div { min-width: 0; }
+.brief .k { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); }
+.brief .v { font-weight: 600; }
+.bar { height: 6px; background: var(--panel-2); border-radius: 999px; overflow: hidden; margin-top: 3px; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-hi)); border-radius: inherit; }
+.stats { display: grid; gap: 8px; }
+.stats .row { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
+
+/* Tier list */
+.tier { display: grid; grid-template-columns: 64px 1fr; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); }
+.tier + .tier { margin-top: 8px; }
+.tier .t { display: grid; place-items: center; font-family: var(--display); font-size: 30px; color: #1a1406; }
+.tier .units { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; min-width: 0; }
+.tier .units a { position: relative; display: grid; justify-items: center; gap: 2px; width: 74px; text-decoration: none; color: var(--fg); font-size: 11px; text-align: center; line-height: 1.15; }
+.tier .units a .sigil { width: 52px; height: 52px; }
+.tier .units a.owned::after { content: "✓"; position: absolute; top: -4px; right: 6px; background: var(--good); color: #0b1222; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.t-S { background: #f2d68b; } .t-A { background: #e8a85a; } .t-B { background: #8fb4e8; } .t-C { background: #8b96b3; }
+.tierbadge { font-family: var(--display); font-size: 12px; color: #1a1406; padding: 0 6px; border-radius: 6px; }
+
+/* Collection */
+.bigstat { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.bigstat div { padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.bigstat b { display: block; font-family: var(--display); font-weight: 400; font-size: 28px; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
+.bigstat span { color: var(--mute); font-size: 13px; }
+textarea.field { width: 100%; min-height: 110px; font: 12px/1.4 ui-monospace, Consolas, monospace; }
+.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.have { color: var(--good); font-weight: 700; }
+.lack { color: var(--bad); font-weight: 700; }
+footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--mute); font-size: 12px; }
+
+@media (max-width: 560px) {
+  .hero { grid-template-columns: 1fr; }
+  .brand h1 { font-size: 20px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card, .btn, .chip { transition: border-color .15s ease; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap topbar">
+    <div class="brand"><h1>Reborn Wiki</h1><span>Brave Frontier: Reborn · <a class="lang" href="en/" hreflang="en">English</a></span></div>
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <a href="#accueil">Accueil</a>
+      <a href="#unites">Unités</a>
+      <a href="#collection">Ma collection</a>
+      <a href="#equipe">Team builder</a>
+      <a href="#tierlist">Tier list</a>
+      <a href="#defis">Défis</a>
+      <a href="#modes">Modes</a>
+      <a href="#types">Types</a>
+      <a href="#spheres">Sphères</a>
+      <a href="#objets">Objets</a>
+      <a href="#merite">Mérite</a>
+      <a href="#farm">Farm</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="empty">Chargement des données du jeu…</div>
+</main>
+
+<footer class="wrap">
+  Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données et vignettes lues dans les fichiers publics du jeu Brave Frontier: Reborn (version du 14 novembre 2026). Brave Frontier appartient à ses ayants droit ; ce site n'est affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn.
+</footer>
+
+<script>
+"use strict";
+/* ---------- Libellés ---------- */
+const ELEMENTS = ["fire", "water", "earth", "thunder", "light", "dark"];
+const EL_FR = { fire: "Feu", water: "Eau", earth: "Terre", thunder: "Foudre", light: "Lumière", dark: "Ténèbres" };
+const STAT_FR = { hp: "PV", atk: "ATQ", def: "DÉF", rec: "REC" };
+const AIL_FR = { poison: "Poison", weak: "Faiblesse", sick: "Maladie", injury: "Blessure", curse: "Malédiction", paralysis: "Paralysie" };
+const TARGET_FR = { party: "équipe", self: "soi", enemies: "tous les ennemis", enemy: "un ennemi" };
+const TYPES = ["lord", "anima", "breaker", "guardian", "oracle", "rex"];
+const TYPE_FR = { lord: "Lord", anima: "Anima", breaker: "Breaker", guardian: "Guardian", oracle: "Oracle", rex: "Rex" };
+// Gains par niveau, tirés du code du jeu (TYPE_GAIN_RANGES).
+const TYPE_GAINS = {
+  lord: { hp: [0, 0], atk: [0, 0], def: [0, 0], rec: [0, 0] },
+  anima: { hp: [5, 10], atk: [0, 0], def: [0, 0], rec: [-3, -1] },
+  breaker: { hp: [0, 0], atk: [1, 3], def: [-3, -1], rec: [0, 0] },
+  guardian: { hp: [0, 0], atk: [0, 0], def: [1, 3], rec: [-2, 0] },
+  oracle: { hp: [0, 0], atk: [0, 0], def: [-2, 0], rec: [2, 4] },
+  rex: { hp: [10, 15], atk: [1, 2], def: [1, 2], rec: [1, 2] },
+};
+const TYPE_TEXT = {
+  lord: "Type neutre : aucun bonus, aucun malus. Les statistiques de la fiche sont celles d'un Lord.",
+  anima: "Beaucoup plus de PV, un peu moins de REC. Idéal pour les unités qui doivent tenir debout : mitigateurs, soutiens de BB.",
+  breaker: "Plus d'ATQ, moins de DÉF. Le choix des attaquants et des boosteurs d'ATQ.",
+  guardian: "Plus de DÉF, un peu moins de REC. Pour les tanks et les unités qui convertissent la DÉF en ATQ.",
+  oracle: "Plus de REC, un peu moins de DÉF. Le choix des soigneurs : leurs soins montent avec la REC.",
+  rex: "Bonus partout, sans malus. Le meilleur type, mais il ne s'obtient pas avec une Type Frog.",
+};
+const RAR = (r) => (r === "omni" ? "Omni" : r + "★");
+const ROLE_FR = { heal: "Soigneur", mitig: "Défenseur", bc: "Soutien BB", buff: "Boosteur", status: "Anti-statut", inflict: "Altérations", dmg: "Attaquant" };
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (n) => Number(n).toLocaleString("fr-FR");
+const pct = (v) => `${Math.round(v * 1000) / 10}%`;
+// Médaillon : la lettre s'affiche tout de suite, la vignette la remplace dès que les images sont chargées.
+const IMG = new Map();
+const sigil = (name, el, big, formId) => {
+  const src = formId && IMG.get(formId);
+  return `<span class="sigil el-${esc(el)}${big ? " big" : ""}${src ? " has-img" : ""}" aria-hidden="true"${formId ? ` data-form-img="${esc(formId)}"` : ""}>${src ? `<img src="${src}" alt="">` : esc((name || "?").trim().charAt(0))}</span>`;
+};
+function paintImages(root) {
+  if (!IMG.size) return;
+  root.querySelectorAll(".sigil[data-form-img]:not(.has-img)").forEach((s) => {
+    const src = IMG.get(s.dataset.formImg);
+    if (!src) return;
+    s.classList.add("has-img");
+    s.innerHTML = `<img src="${src}" alt="">`;
+  });
+}
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+
+/* ---------- Effets en français ---------- */
+function tail(e) {
+  const bits = [];
+  if (e.target && TARGET_FR[e.target]) bits.push(TARGET_FR[e.target]);
+  if (e.turns && e.turns < 99) bits.push(`${e.turns} tour${e.turns > 1 ? "s" : ""}`);
+  if (e.chance) bits.push(`${e.chance}% de chance`);
+  return bits.length ? ` (${bits.join(", ")})` : "";
+}
+function range(e, f = (x) => fmt(x)) { return e.min || e.max ? `${f(e.min)} à ${f(e.max)}` : f(e.value); }
+function effectText(e) {
+  const v = e.value, t = tail(e);
+  const id = e.id || "";
+  if (id.startsWith("ailment.inflict.")) { const a = id.split(".")[2]; return `Inflige ${AIL_FR[a] || a} (${v}% de chance)${tail({ ...e, chance: 0 })}`; }
+  switch (id) {
+    case "passive.stat_pct": return `${v < 0 ? "−" + pct(-v) : "+" + pct(v)} ${STAT_FR[e.stat] || e.stat}${t}`;
+    case "buff.atk": case "buff.def": case "buff.rec": return `+${pct(v)} ${STAT_FR[id.split(".")[1]]}${t}`;
+    case "buff.self_atk": case "buff.self_def": case "buff.self_rec": return `+${pct(v)} ${STAT_FR[id.split("_")[1]]} pour soi${t}`;
+    case "buff.max_hp": return `+${pct(v)} PV max${t}`;
+    case "buff.spark_dmg": case "buff.self_spark_dmg": return `+${pct(v)} dégâts d'étincelle${t}`;
+    case "buff.crit_rate": return `+${pct(v)} taux de critique${t}`;
+    case "buff.crit_dmg": return `+${pct(v)} dégâts critiques${t}`;
+    case "buff.bb_atk": return `+${pct(v)} dégâts de BB${t}`;
+    case "buff.elem_weak_dmg": return `+${pct(v)} dégâts sur faiblesse élémentaire${t}`;
+    case "buff.atk_from_def": return `Convertit ${pct(v)} de la DÉF en ATQ${t}`;
+    case "buff.atk_from_hp": return `Convertit ${pct(v)} des PV en ATQ${t}`;
+    case "buff.atk_from_rec": return `Convertit ${pct(v)} de la REC en ATQ${t}`;
+    case "buff.def_from_rec": return `Convertit ${pct(v)} de la REC en DÉF${t}`;
+    case "buff.def_from_atk": return `Convertit ${pct(v)} de l'ATQ en DÉF${t}`;
+    case "buff.def_from_hp": return `Convertit ${pct(v)} des PV en DÉF${t}`;
+    case "buff.rec_from_hp": return `Convertit ${pct(v)} des PV en REC${t}`;
+    case "buff.add_element": return `Ajoute un élément aux attaques${t}`;
+    case "buff.add_ailment": return `Les attaques infligent ${AIL_FR[e.ailment] || e.ailment} (${v}%)${tail({ ...e, chance: 0 })}`;
+    case "buff.add_stat_down": return `Les attaques réduisent ${STAT_FR[e.stat] || e.stat} de ${pct(v)}${t}`;
+    case "buff.status_counter": return `Contre-statut ${AIL_FR[e.ailment] || ""} (${v}%)${tail({ ...e, chance: 0 })}`;
+    case "buff.atk_vs_ailing": return `+${pct(v)} dégâts contre les ennemis sous statut${t}`;
+    case "buff.spark_crit": return `Les étincelles peuvent faire des critiques${t}`;
+    case "attack.aoe": return `Attaque de zone, puissance ${Math.round(v * 100)}%${e.flatAtk ? ` +${e.flatAtk} ATQ` : ""}`;
+    case "attack.st": return `Attaque sur une cible, puissance ${Math.round(v * 100)}%${e.flatAtk ? ` +${e.flatAtk} ATQ` : ""}`;
+    case "attack.random": return `Attaques aléatoires, puissance ${Math.round(v * 100)}%`;
+    case "attack.hp_scaled": return `Attaque plus forte selon les PV, jusqu'à ${Math.round(v * 100)}%`;
+    case "attack.def_ignore": return `${v}% de chance d'ignorer la DÉF ennemie${tail({ ...e, chance: 0 })}`;
+    case "attack.element_target": return `Attaque ciblant un élément${t}`;
+    case "heal.instant": return `Soigne ${range(e)} PV${e.recBonus ? ` + ${pct(e.recBonus)} de la REC` : ""}${t}`;
+    case "heal.over_time": return `Soigne ${range(e)} PV par tour${e.recBonus ? ` + ${pct(e.recBonus)} de la REC` : ""}${t}`;
+    case "heal.on_spark": return `Soigne à chaque étincelle${t}`;
+    case "damage_to_heal": return `Convertit ${e.min ? `${pct(e.min)} à ${pct(e.max)}` : pct(v)} des dégâts reçus en soin${t}`;
+    case "hp_drain": return `Vol de vie de ${e.min ? `${pct(e.min)} à ${pct(e.max)}` : pct(v)} des dégâts${t}`;
+    case "hc.efficacy": return `+${pct(v)} efficacité des HC${t}`;
+    case "mitigation": return `Réduit les dégâts reçus de ${pct(v)}${t}`;
+    case "chance_mitigation": return `Peut réduire les dégâts de ${pct(v)}${t}`;
+    case "guard_mitigation": return `Réduction des dégâts en garde${t}`;
+    case "mitigation_after_damage": return `Réduction des dégâts après un coup reçu${t}`;
+    case "elemental_mitigation": return `−${pct(v)} dégâts reçus ${e.element ? "de " + (EL_FR[e.element] || e.element) : "élémentaires"}${t}`;
+    case "elem_weak_resist": return `Résiste aux dégâts de faiblesse élémentaire${t}`;
+    case "crit_resist": return `Résiste aux coups critiques${t}`;
+    case "barrier": return `Barrière de ${fmt(v)} PV${e.element ? ` (${EL_FR[e.element] || e.element})` : ""}${t}`;
+    case "angel_idol": return `Ange gardien : survit à un coup fatal${t}`;
+    case "passive.angel_idol": return `Ange gardien passif${t}`;
+    case "revive": return `Ressuscite les alliés${t}`;
+    case "ailment.null": return `Immunité aux altérations${t}`;
+    case "ailment.cure": return `Soigne les altérations${t}`;
+    case "debuff.null": return `Immunité aux baisses de statistiques${t}`;
+    case "passive.ailment_resist": return `Résistance aux altérations${t}`;
+    case "debuff.atk_down": return `−${pct(v)} ATQ ennemie${t}`;
+    case "debuff.def_down": return `−${pct(v)} DÉF ennemie${t}`;
+    case "debuff.spark_vuln": return `Vulnérabilité aux étincelles +${pct(v)}${t}`;
+    case "debuff.crit_vuln": return `Vulnérabilité aux critiques +${pct(v)}${t}`;
+    case "debuff.elem_vuln": return `Vulnérabilité élémentaire +${pct(v)}${t}`;
+    case "debuff.dot": return `Dégâts en fin de tour (${v}%)${t}`;
+    case "bb.fill_instant": return v >= 999 ? `Remplit entièrement la jauge de BB${t}` : `Remplit ${v} BC${t}`;
+    case "bb.fill_rate": return `+${pct(v)} efficacité des BC${t}`;
+    case "bb.fill_per_turn": return `+${v} BC à chaque tour${t}`;
+    case "passive.bc_per_turn": return `+${v} BC à chaque tour${t}`;
+    case "bb.fill_on_hit": return `+${range(e)} BC quand l'unité est touchée${t}`;
+    case "bb.fill_on_spark": return `+${range(e)} BC par étincelle${t}`;
+    case "bb.fill_on_crit": return `+${range(e)} BC par critique${t}`;
+    case "bb.fill_on_normal_attack": return `+${range(e)} BC à chaque attaque normale${t}`;
+    case "bb.fill_on_damage_dealt": return `BC en infligeant des dégâts${t}`;
+    case "bb.fill_on_damage_taken": return `BC en recevant des dégâts${t}`;
+    case "bb.cost_reduction": return `−${pct(v)} coût des BB${t}`;
+    case "bb.consumption_reduction": return `−${pct(v)} consommation de BB${t}`;
+    case "drop.bc": return `+${v}% de BC ramassés${t}`;
+    case "drop.hc": return `+${v}% de HC ramassés${t}`;
+    case "drop.bc_spark": return `+${v}% de BC sur les étincelles${t}`;
+    case "drop.hc_spark": return `+${v}% de HC sur les étincelles${t}`;
+    case "drop.karma_spark": return `+${v}% de Karma sur les étincelles${t}`;
+    case "drop.zel_spark": return `+${v}% de Zel sur les étincelles${t}`;
+    case "od.fill_instant": return `Remplit ${pct(v)} de la jauge d'Overdrive${t}`;
+    case "od.fill_rate": return `+${pct(v)} remplissage de l'Overdrive${t}`;
+    case "hits.add_normal": return `+${v} coup${v > 1 ? "s" : ""} aux attaques normales${t}`;
+    case "passive.atk_cap": return `Plafond d'ATQ relevé${t}`;
+    case "cond.unique_elements": return `Si l'équipe a ${v} éléments différents :`;
+    case "cond.hp_above": return `Si les PV sont au-dessus de ${v}% :`;
+    case "cond.bb_above": return `Si la jauge de BB dépasse ${v}% :`;
+    case "cond.first_turns": return `Pendant les ${v} premiers tours :`;
+    case "cond.signature_sphere": return `Avec sa sphère signature équipée :`;
+    case "cond.sphere_equipped": return `Avec une sphère équipée :`;
+    case "cond.sphere_type_equipped": return `Avec ce type de sphère équipé :`;
+    case "passive.burst_effects": return `Ajoute à ses BB :`;
+    default: {
+      const label = id.replace(/[._]/g, " ");
+      return `${label}${v ? ` ${typeof v === "number" && v < 5 && !Number.isInteger(v) ? pct(v) : v}` : ""}${t}`;
+    }
+  }
+}
+function effectList(effects) {
+  if (!effects || !effects.length) return "";
+  return `<ul class="fx">${effects.map((e) => `<li>${esc(effectText(e))}${e.effects ? effectList(e.effects) : ""}</li>`).join("")}</ul>`;
+}
+
+/* ---------- Données ---------- */
+const D = { units: [], byId: new Map(), formIndex: new Map(), guide: new Map(), items: [], spheres: [], sphereById: new Map(), banners: [], challenges: [] };
+// Faiblesses élémentaires, tirées du code du jeu : l'attaquant fait ×1,5 sur l'élément qu'il domine, ×0,5 dans l'autre sens.
+const STRONG = { fire: ["earth"], earth: ["thunder"], thunder: ["water"], water: ["fire"], light: ["dark"], dark: ["light"] };
+const counterOf = (el) => ELEMENTS.filter((a) => STRONG[a].includes(el));
+const dangerFor = (el) => STRONG[el] || [];
+
+function walk(effects, fn, where) {
+  for (const e of effects || []) { fn(e, where); if (e.effects) walk(e.effects, fn, where); }
+}
+// Rôles calculés à partir de la forme la plus évoluée.
+function rolesOf(f) {
+  const s = { heal: 0, mitig: 0, bc: 0, buff: 0, status: 0, inflict: 0, dmg: 0 };
+  const conv = new Set();
+  const add = (e, w) => {
+    const k = w === "ls" || w === "es" ? 0.6 : 1;
+    const id = e.id || "";
+    if (/^heal\.|damage_to_heal|hc\.efficacy|^drop\.hc$|revive/.test(id)) s.heal += 1.2 * k;
+    if (/^mitigation$|elemental_mitigation|barrier|angel_idol|chance_mitigation|guard_mitigation|^buff\.def$/.test(id)) s.mitig += 1.2 * k;
+    if (/^bb\.fill|^drop\.bc$|bc_per_turn|^od\.fill/.test(id)) s.bc += (id === "bb.fill_instant" && e.value >= 8 ? 1.4 : 1) * k;
+    if (/^buff\.(atk|spark_dmg|crit_rate|crit_dmg|bb_atk|elem_weak_dmg|add_element)$|^attack\.def_ignore$/.test(id) && e.target === "party") s.buff += k;
+    if (/ailment\.null|ailment\.cure|status_counter|debuff\.null|ailment_resist/.test(id)) s.status += k;
+    if (/ailment\.inflict|add_ailment|^debuff\.(atk_down|def_down|spark_vuln|crit_vuln|elem_vuln)/.test(id)) s.inflict += 0.7 * k;
+    if (/^attack\./.test(id) && w === "ubb") s.dmg += Math.min(e.value || 0, 30) / 10;
+    if (/^attack\./.test(id) && w === "sbb") s.dmg += Math.min(e.value || 0, 20) / 10;
+    if (/^buff\.self_(atk|spark)/.test(id)) s.dmg += 1;
+    const m = id.match(/^buff\.atk_from_(def|hp|rec)$/);
+    if (m) conv.add(m[1]);
+  };
+  const b = f.bursts || {};
+  for (const w of ["bb", "sbb", "ubb"]) if (b[w]) walk(b[w].effects, add, w);
+  if (f.leaderSkill) walk(f.leaderSkill.effects, add, "ls");
+  if (f.extraSkill) walk(f.extraSkill.effects, add, "es");
+  const order = Object.entries(s).filter(([k, v]) => v >= 1).sort((a, b) => b[1] - a[1]);
+  const main = order.length ? order[0][0] : "dmg";
+  return { scores: s, list: order.map(([k]) => k), main, conv };
+}
+function recommendType(f, roles) {
+  if (roles.conv.has("def")) return { type: "guardian", why: "Ses BB convertissent la DÉF en ATQ : chaque point de DÉF gagné rend toute l'équipe plus forte." };
+  if (roles.conv.has("hp")) return { type: "anima", why: "Ses BB convertissent les PV en ATQ : le gros bonus de PV d'Anima profite à toute l'équipe." };
+  if (roles.conv.has("rec")) return { type: "oracle", why: "Ses BB convertissent la REC en ATQ : Oracle augmente directement ce bonus." };
+  switch (roles.main) {
+    case "heal": return { type: "oracle", why: "C'est un soigneur : ses soins montent avec la REC, et Oracle donne +2 à +4 REC par niveau." };
+    case "mitig": return { type: "anima", why: "C'est un défenseur : il doit survivre pour protéger l'équipe, et Anima donne +5 à +10 PV par niveau." };
+    case "bc": return { type: "anima", why: "Son rôle est de remplir les jauges de BB : il doit rester en vie, d'où les PV d'Anima." };
+    case "status": return { type: "anima", why: "Il protège des altérations : sa survie compte plus que ses dégâts." };
+    case "buff": return { type: "breaker", why: "Il booste l'attaque de l'équipe et frappe fort lui-même : Breaker donne +1 à +3 ATQ par niveau." };
+    default: return { type: "breaker", why: "C'est un attaquant : Breaker augmente son ATQ, au prix d'un peu de DÉF." };
+  }
+}
+function statsAt(f, type) {
+  const g = TYPE_GAINS[type || "lord"], L = f.maxLevel || 1, out = {};
+  for (const k of ["hp", "atk", "def", "rec"]) {
+    const avg = (g[k][0] + g[k][1]) / 2;
+    out[k] = Math.max(1, Math.round(f.stats.max[k] + avg * (L - 1)));
+  }
+  return out;
+}
+
+/* ---------- Sphères conseillées ---------- */
+// Points d'une sphère pour un rôle donné. Les effets sous condition comptent un peu moins.
+function sphereScore(s, role) {
+  let pts = 0;
+  const add = (e, k) => {
+    const v = e.value || 0, id = e.id;
+    const st = (stat) => (id === "passive.stat_pct" && e.stat === stat ? v : 0);
+    const avg = e.min || e.max ? (e.min + e.max) / 2 : v;
+    if (role === "dmg" || role === "buff" || role === "inflict") {
+      pts += k * (st("atk") * 10 + st("hp") * 2 + (id === "buff.spark_dmg" ? v * 6 : 0) + (id === "buff.crit_dmg" ? v * 4 : 0) + (id === "buff.crit_rate" ? v * 6 : 0)
+        + (id === "buff.bb_atk" ? v * 3 : 0) + (id === "buff.elem_weak_dmg" ? v * 4 : 0) + (id === "attack.def_ignore" ? v / 20 : 0)
+        + (id === "passive.atk_hp_scaled" ? 2.5 : 0) + (id === "hits.add_normal" ? 1 : 0) + (id === "buff.add_ailment" && role === "inflict" ? 1.5 : 0));
+    } else if (role === "heal") {
+      pts += k * (st("rec") * 10 + st("hp") * 4 + st("def") * 2 + (id.startsWith("heal.") ? 2 : 0) + (id === "damage_to_heal" ? 2 : 0) + (id === "drop.hc" ? v / 8 : 0)
+        + (id === "hc.efficacy" ? v * 5 : 0) + (id === "passive.bc_per_turn" ? v : 0));
+    } else if (role === "mitig" || role === "status") {
+      pts += k * (st("hp") * 10 + st("def") * 6 + st("rec") * 2 + (id === "chance_mitigation" ? 3 : 0) + (id === "passive.angel_idol" ? 4 : 0)
+        + (id === "elemental_mitigation" ? 1 : 0) + (id === "ailment.null" ? (role === "status" ? 6 : 2) : 0) + (id === "debuff.null" ? 1.5 : 0)
+        + (id === "passive.stat_hp_scaled" ? 2 : 0) + (id === "damage_to_heal" ? 1.5 : 0));
+    } else if (role === "bc") {
+      pts += k * (st("hp") * 4 + st("def") * 2 + (id === "passive.bc_per_turn" ? v * 2 : 0) + (id === "bb.fill_rate" ? v * 8 : 0) + (id === "bb.fill_on_hit" ? avg : 0)
+        + (id === "drop.bc" ? v / 8 : 0) + (id === "bb.cost_reduction" ? v * 10 : 0) + (id === "od.fill_rate" ? v * 3 : 0) + (id === "bb.fill_on_spark" ? avg * 1.5 : 0)
+        + (id === "bb.fill_on_normal_attack" ? avg : 0));
+    }
+  };
+  for (const e of s.effects || []) { if (e.effects) e.effects.forEach((x) => add(x, 0.6)); else add(e, 1); }
+  return pts;
+}
+const SPHERE_WHY = {
+  dmg: "Augmente ses dégâts : ATQ, étincelles, critiques ou faiblesse élémentaire.",
+  buff: "Augmente ses dégâts tout en gardant ses buffs d'équipe.",
+  inflict: "Augmente ses dégâts et ses chances d'infliger des altérations.",
+  heal: "Monte la REC, donc la puissance de ses soins.",
+  mitig: "Le rend plus solide pour qu'il reste en vie et protège l'équipe.",
+  status: "Le rend plus solide et renforce la protection contre les altérations.",
+  bc: "Remplit plus vite les jauges de BB.",
+};
+// Règle du jeu : deux emplacements au plus (le 2e se débloque), et jamais deux sphères Status Boost.
+const SPHERE_SLOTS = 2;
+const isStatusBoost = (s) => !!s && (s.kind === "all-stat" || s.typeId === 1);
+function sphereAdvice(u, f, roles, n = 3) {
+  const role = roles.main || "dmg";
+  const sig = D.spheres.filter((s) => s.signatureUnit === u.id);
+  const ranked = D.spheres.filter((s) => s.kind !== "signature" && !(s.effects || []).some((e) => /^drop\.(zel|karma|item)$/.test(e.id)))
+    .map((s) => ({ s, p: sphereScore(s, role) })).filter((x) => x.p > 0).sort((a, b) => b.p - a.p || (b.s.rarity || 0) - (a.s.rarity || 0));
+  // Une signature peut exister sous deux noms avec les mêmes effets : on n'en garde qu'une.
+  const sigKey = (s) => JSON.stringify((s.effects || []).map((e) => [e.id, e.stat, e.value]).sort());
+  const sigGroups = new Map();
+  for (const s of sig) { const k = sigKey(s); if (!sigGroups.has(k)) sigGroups.set(k, []); sigGroups.get(k).push(s); }
+  const out = [...sigGroups.values()].map((g) => ({ s: g[0], why: `Sa sphère signature${g.length > 1 ? ` (aussi appelée ${g.slice(1).map((x) => x.name).join(", ")})` : ""} : ses bonus et sa compétence extra s'activent avec elle.` }));
+  const seen = new Set(sig.map((s) => s.name));
+  for (const x of ranked) {
+    if (out.length >= n) break;
+    if (seen.has(x.s.name)) continue;
+    // Les deux premières forment le duo conseillé : pas deux Status Boost ensemble.
+    if (out.length < 2 && isStatusBoost(x.s) && out.some((o) => isStatusBoost(o.s))) continue;
+    seen.add(x.s.name);
+    out.push({ s: x.s, why: SPHERE_WHY[role] });
+  }
+  return out;
+}
+
+async function load() {
+  const get = (n) => fetch(`data/${n}.json`).then((r) => { if (!r.ok) throw new Error(n); return r.json(); });
+  const [units, guide, items, spheres, banners, challenges] = await Promise.all(["units", "guide", "items", "spheres", "banners", "challenges"].map(get));
+  D.challenges = challenges;
+  for (const s of spheres) D.sphereById.set(s.id, s);
+  for (const u of units) {
+    const forms = u.forms || [];
+    const best = forms[forms.length - 1];
+    const hero = forms.some((f) => f.leaderSkill);
+    const roles = rolesOf(best);
+    const unit = { ...u, forms, best, hero, roles, rec: recommendType(best, roles) };
+    D.units.push(unit);
+    D.byId.set(u.id, unit);
+    forms.forEach((f, i) => D.formIndex.set(f.id, { unit, form: f, index: i }));
+  }
+  for (const g of guide) D.guide.set(g.form, g);
+  D.items = items; D.spheres = spheres; D.banners = banners;
+}
+
+/* ---------- Routage ---------- */
+const main = document.getElementById("main");
+const state = { el: store.get("codex-el", []), q: "", fodder: false, sort: "rarity", form: {} };
+function route() {
+  const h = (location.hash || "#accueil").slice(1);
+  const view = h.startsWith("u-") ? "unites" : h;
+  document.querySelectorAll("#tabs a").forEach((a) => a.setAttribute("aria-current", a.getAttribute("href") === "#" + view ? "page" : "false"));
+  if (h.startsWith("u-")) return renderUnit(h.slice(2));
+  ({ accueil: renderAccueil, collection: renderCollection, tierlist: renderTierlist, unites: renderUnits, equipe: renderTeam, defis: renderDefis, modes: renderModes, types: renderTypes, spheres: renderSpheres, objets: renderItems, merite: renderMerit, farm: renderFarm }[view] || renderAccueil)();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Liste des unités ---------- */
+function elChips(active, id) {
+  return ELEMENTS.map((e) => `<button type="button" class="chip el-${e}" data-el="${e}" data-group="${id}" aria-pressed="${active.includes(e)}"><span class="dot"></span>${EL_FR[e]}</button>`).join("");
+}
+function maxRarityNum(u) { const r = u.best.rarity; return r === "omni" ? 8 : Number(r); }
+function renderUnits() {
+  main.innerHTML = `
+    <h2 class="section-title">Unités</h2>
+    <p class="lede">Toutes les unités du jeu, de leur première forme à l'Omni. Ouvre une fiche pour voir statistiques, compétences, évolutions, où l'obtenir et le type conseillé.</p>
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Rechercher une unité ou une forme" value="${esc(state.q)}" aria-label="Rechercher">
+      <select id="sort" aria-label="Trier">
+        <option value="rarity">Trier par rareté max</option>
+        <option value="atk">Trier par ATQ max</option>
+        <option value="hp">Trier par PV max</option>
+        <option value="name">Trier par nom</option>
+      </select>
+    </div>
+    <div class="toolbar">${elChips(state.el, "list")}
+      <label class="check"><input type="checkbox" id="fodder" ${state.fodder ? "checked" : ""}> Afficher les unités de fusion et d'évolution</label>
+    </div>
+    <div class="count" id="count"></div>
+    <div class="grid" id="grid"></div>`;
+  document.getElementById("sort").value = state.sort;
+  const draw = () => {
+    const q = state.q.trim().toLowerCase();
+    let list = D.units.filter((u) => (state.fodder || u.hero) && (!state.el.length || state.el.includes(u.element)) &&
+      (!q || u.name.toLowerCase().includes(q) || u.forms.some((f) => f.name.toLowerCase().includes(q))));
+    const by = { rarity: (a, b) => maxRarityNum(b) - maxRarityNum(a) || a.name.localeCompare(b.name),
+      atk: (a, b) => b.best.stats.max.atk - a.best.stats.max.atk, hp: (a, b) => b.best.stats.max.hp - a.best.stats.max.hp,
+      name: (a, b) => a.name.localeCompare(b.name) }[state.sort];
+    list.sort(by);
+    document.getElementById("count").textContent = `${list.length} unité${list.length > 1 ? "s" : ""}`;
+    document.getElementById("grid").innerHTML = list.length ? list.map((u) => cardHTML(u)).join("") : `<div class="empty">Aucune unité ne correspond à ces filtres.</div>`;
+  };
+  document.getElementById("q").addEventListener("input", (e) => { state.q = e.target.value; draw(); });
+  document.getElementById("sort").addEventListener("change", (e) => { state.sort = e.target.value; draw(); });
+  document.getElementById("fodder").addEventListener("change", (e) => { state.fodder = e.target.checked; draw(); });
+  bindChips("list", state.el, () => { store.set("codex-el", state.el); draw(); });
+  draw();
+}
+function bindChips(group, arr, cb) {
+  document.querySelectorAll(`.chip[data-group="${group}"]`).forEach((b) => b.addEventListener("click", () => {
+    const e = b.dataset.el, i = arr.indexOf(e);
+    if (i >= 0) arr.splice(i, 1); else arr.push(e);
+    b.setAttribute("aria-pressed", String(i < 0));
+    cb();
+  }));
+}
+function cardHTML(u, tag = "a") {
+  const f = u.best, first = u.forms[0];
+  const rr = u.forms.length > 1 ? `${RAR(first.rarity)} → ${RAR(f.rarity)}` : RAR(f.rarity);
+  const roles = u.hero ? u.roles.list.slice(0, 2).map((r, i) => `<span class="role${i === 0 ? " main" : ""}">${ROLE_FR[r]}</span>`).join(" ") : `<span class="role">Fusion / évolution</span>`;
+  const attrs = tag === "a" ? `href="#u-${esc(u.id)}"` : `type="button" data-pick="${esc(u.id)}"`;
+  const t = u.hero ? tierOf(u.id) : null;
+  const mine = COLL && ownedCount(u.id) > 0;
+  return `<${tag} class="card" ${attrs}>${sigil(f.name, u.element, false, f.id)}<div style="min-width:0">
+    <div class="name">${t ? `<span class="tierbadge t-${t}">${t}</span> ` : ""}${esc(f.name)}${mine ? ` <span class="have" title="Dans ta collection">✓</span>` : ""}</div>
+    <div class="meta"><span class="rar">${rr}</span><span>${EL_FR[u.element] || u.element}</span><span class="num">ATQ ${fmt(f.stats.max.atk)}</span></div>
+    <div style="margin-top:4px">${roles}</div></div></${tag}>`;
+}
+
+/* ---------- Fiche d'une unité ---------- */
+function sourceText(s) {
+  switch (s.kind) {
+    case "summon": return `Invocation : ${s.bannerName}${s.tierName ? ` (${s.tierName})` : ""}`;
+    case "evolution": return `Évolution de ${s.fromName}`;
+    case "capture": return `Capture : ${s.missionName} (${s.dungeonName}, ${s.areaName})`;
+    case "level-up": return `Récompense de niveau ${s.level}`;
+    case "merit-exchange": return `Boutique de mérite : ${fmt(s.cost)} points`;
+    case "first-clear": return `Première victoire : ${s.missionName || "mission " + s.mission}`;
+    case "hunter-rank": return `Rang de chasseur${s.rank ? " " + s.rank : ""}`;
+    default: return s.kind;
+  }
+}
+const SKILL_HELP = {
+  LS: "Compétence de leader : active quand l'unité est leader ou ami, pour toute l'équipe.",
+  ES: "Compétence extra : bonus passif propre à l'unité.",
+  BB: "Brave Burst : se lance quand la jauge est pleine.",
+  SBB: "Super Brave Burst : version renforcée, avec une jauge plus longue.",
+  UBB: "Ultimate Brave Burst : l'attaque ultime, une fois la jauge d'Overdrive pleine.",
+};
+// Barres : chaque stat au niveau max, comparée à la meilleure unité jouable du jeu.
+let STAT_MAX = null;
+function statBars(f) {
+  if (!STAT_MAX) { STAT_MAX = {}; for (const k of ["hp", "atk", "def", "rec"]) STAT_MAX[k] = Math.max(...D.units.filter((u) => u.hero).map((u) => u.best.stats.max[k])); }
+  return ["hp", "atk", "def", "rec"].map((k) => { const v = f.stats.max[k], p = Math.min(100, Math.round((v / STAT_MAX[k]) * 100));
+    return `<div class="row"><span class="muted">${STAT_FR[k]}</span><div class="bar" title="${p} % de la meilleure unité"><i style="width:${p}%"></i></div><span class="num">${fmt(v)}</span></div>`; }).join("")
+    + `<p class="note">Barres : niveau max, comparé à la meilleure unité jouable du jeu.</p>`;
+}
+function briefHTML(u, f, roles, rec, g) {
+  const duo = sphereAdvice(u, f, roles).slice(0, 2).map((x) => x.s.name);
+  const t = u.hero ? tierOf(u.id) : null;
+  const mine = COLL ? bestOwned(u.id) : null;
+  const firstSource = g && g.sources && g.sources[0] ? sourceText(g.sources[0]) : "Source inconnue";
+  const own = !COLL ? `<a href="#collection">Importe ta collection</a>` : mine ? `Oui : ${esc(u.forms[mine.form].name)}${mine.type ? ` (${TYPE_FR[mine.type]})` : ""}${ownedCount(u.id) > 1 ? `, ${ownedCount(u.id)} exemplaires` : ""}` : `Pas encore. ${esc(firstSource)}`;
+  return `<section class="panel brief">
+    <div><div class="k">Rôle</div><div class="v">${roles.list.length ? roles.list.slice(0, 2).map((r) => ROLE_FR[r]).join(" et ") : "Matériau de fusion ou d'évolution"}</div></div>
+    ${t ? `<div><div class="k">Tier</div><div class="v"><span class="tierbadge t-${t}">${t}</span> <a href="#tierlist" class="small">voir la tier list</a></div></div>` : ""}
+    <div><div class="k">Type conseillé</div><div class="v">${TYPE_FR[rec.type]}</div></div>
+    <div><div class="k">Duo de sphères</div><div class="v">${esc(duo.join(" + ")) || "—"}</div></div>
+    <div><div class="k">Fort contre</div><div class="v">${dangerFor(u.element).map((e) => EL_FR[e]).join(", ")}</div></div>
+    <div><div class="k">Dans ma collection</div><div class="v">${own}</div></div>
+  </section>`;
+}
+function renderUnit(id) {
+  const u = D.byId.get(id);
+  if (!u) { main.innerHTML = `<a class="back" href="#unites">← Toutes les unités</a><div class="empty">Cette unité n'existe pas dans les données du jeu.</div>`; return; }
+  const idx = state.form[id] ?? u.forms.length - 1;
+  const f = u.forms[idx];
+  const roles = rolesOf(f), rec = recommendType(f, roles);
+  const g = D.guide.get(f.id);
+  const types = TYPES.map((t) => ({ t, s: statsAt(f, t) }));
+  const lord = types[0].s;
+  const diff = (a, b) => a === b ? "" : `<span class="${a > b ? "up" : "down"}"> ${a > b ? "+" : "−"}${fmt(Math.abs(a - b))}</span>`;
+  const skills = [];
+  if (f.leaderSkill) skills.push(["LS", "Compétence de leader", f.leaderSkill.name, "", f.leaderSkill.effects]);
+  if (f.extraSkill) skills.push(["ES", "Compétence extra", f.extraSkill.name, "", f.extraSkill.effects]);
+  const b = f.bursts || {};
+  for (const [k, lab] of [["bb", "BB"], ["sbb", "SBB"], ["ubb", "UBB"]]) if (b[k]) skills.push([lab, `${lab} · ${b[k].cost} BC`, b[k].name, b[k].description, b[k].effects]);
+  const evo = f.evolution;
+  const next = u.forms[idx + 1];
+  const evoHTML = evo ? `<p>Vers <strong>${esc(next ? next.name : "la forme suivante")}</strong> :</p><ul class="fx">${(evo.units || []).map((m) => {
+      const mu = D.byId.get(m.unit);
+      return `<li>${m.count} × ${mu ? `<a href="#u-${esc(mu.id)}">${esc(mu.best.name)}</a>` : esc(m.unit)}</li>`; }).join("")}<li>${fmt(evo.zel || 0)} Zel</li></ul>` : `<p class="muted">Forme finale : pas d'évolution.</p>`;
+  const quotes = (f.quotes && (f.quotes.summon || []).concat(f.quotes.evolution || [])) || [];
+  main.innerHTML = `
+    <a class="back" href="#unites">← Toutes les unités</a>
+    <div class="detail">
+      <section class="frame hero">
+        ${sigil(f.name, u.element, true, f.id)}
+        <div style="min-width:0">
+          <h2>${esc(f.name)}</h2>
+          <div class="meta muted"><span class="rar">${RAR(f.rarity)}</span> · ${EL_FR[u.element] || u.element} · Coût ${f.cost ?? "?"} · Niv. max ${f.maxLevel} · 2 emplacements de sphère</div>
+          <div style="margin-top:6px">${roles.list.map((r, i) => `<span class="role${i === 0 ? " main" : ""}">${ROLE_FR[r]}</span>`).join(" ") || `<span class="role">Fusion / évolution</span>`}</div>
+          <div class="forms" role="group" aria-label="Formes">${u.forms.map((x, i) => `<button type="button" data-form="${i}" aria-pressed="${i === idx}">${RAR(x.rarity)} ${esc(x.name)}</button>`).join("")}</div>
+        </div>
+      </section>
+      ${briefHTML(u, f, roles, rec, g)}
+      <div class="cols">
+        <section class="panel box">
+          <h3>Type conseillé : ${TYPE_FR[rec.type]}</h3>
+          <p class="advice">${esc(rec.why)}</p>
+          <div class="tablewrap" style="margin-top:10px"><table>
+            <thead><tr><th>Type au niv. ${f.maxLevel}</th><th class="n">PV</th><th class="n">ATQ</th><th class="n">DÉF</th><th class="n">REC</th></tr></thead>
+            <tbody>${types.map(({ t, s }) => `<tr class="${t === rec.type ? "best" : ""}"><td>${TYPE_FR[t]}${t === rec.type ? " ★" : ""}</td>
+              ${["hp", "atk", "def", "rec"].map((k) => `<td class="n">${fmt(s[k])}${t === "lord" ? "" : diff(s[k], lord[k])}</td>`).join("")}</tr>`).join("")}</tbody>
+          </table></div>
+          <p class="note">Gains moyens par niveau, sans imps ni sphères. Le type se change avec une Type Frog, sauf vers Rex.</p>
+        </section>
+        <section class="panel box">
+          <h3>Statistiques</h3>
+          <div class="tablewrap"><table>
+            <thead><tr><th></th><th class="n">PV</th><th class="n">ATQ</th><th class="n">DÉF</th><th class="n">REC</th></tr></thead>
+            <tbody>
+              <tr><td>Niv. 1</td>${["hp", "atk", "def", "rec"].map((k) => `<td class="n">${fmt(f.stats.base[k])}</td>`).join("")}</tr>
+              <tr><td>Niv. ${f.maxLevel}</td>${["hp", "atk", "def", "rec"].map((k) => `<td class="n">${fmt(f.stats.max[k])}</td>`).join("")}</tr>
+              ${f.impCaps ? `<tr><td>Imps max</td>${["hp", "atk", "def", "rec"].map((k) => `<td class="n">+${fmt(f.impCaps[k])}</td>`).join("")}</tr>` : ""}
+            </tbody></table></div>
+          <div class="stats" style="margin-top:10px">${statBars(f)}</div>
+          <dl class="kv" style="margin-top:10px">
+            <dt>Revente</dt><dd>${fmt(f.sellZel || 0)} Zel</dd>
+            ${f.fusionExp ? `<dt>XP de fusion</dt><dd>${fmt(f.fusionExp)}</dd>` : ""}
+            ${f.gender ? `<dt>Genre</dt><dd>${{ male: "Masculin", female: "Féminin", genderless: "Aucun" }[f.gender] || f.gender}</dd>` : ""}
+          </dl>
+        </section>
+      </div>
+      <section class="panel box">
+        <h3>Compétences</h3>
+        ${skills.length ? skills.map(([tag, lab, name, desc, effects]) => `<div class="skill"><abbr class="tag" title="${esc(SKILL_HELP[tag] || "")}">${esc(lab)}</abbr><span class="sname">${esc(name)}</span>
+          ${desc ? `<div class="desc">${esc(desc)}</div>` : ""}${effectList(effects)}</div>`).join("") : `<p class="muted">Aucune compétence.</p>`}
+      </section>
+      <div class="cols">
+        <section class="panel box">
+          <h3>Sphères conseillées</h3>
+          ${sphereAdvice(u, f, roles).map(({ s, why }, k) => `<div class="sph"><div><span class="role${k < 2 ? " main" : ""}">${k < 2 ? `Duo · sphère ${k + 1}` : "Alternative"}</span> <strong>${esc(s.name)}</strong> <span class="muted small">${s.rarity ? s.rarity + "★" : ""}${s.type ? " · " + esc(s.type) : ""}</span></div>
+            <div class="why">${esc(why)}</div>${effectList(s.effects)}</div>`).join("")}
+          <p class="note">2 emplacements : le premier est ouvert, le second se débloque sur chaque unité. Le jeu refuse deux sphères Status Boost (dont les sphères « toutes stats ») sur la même unité ; le duo conseillé respecte cette règle.</p>
+        </section>
+        <section class="panel box">
+          <h3>Éléments</h3>
+          <p>Fait <strong class="up">×1,5</strong> de dégâts contre : ${dangerFor(u.element).map((e) => `<span class="chip el-${e}" style="cursor:default"><span class="dot"></span>${EL_FR[e]}</span>`).join(" ")}</p>
+          <p>Reçoit <strong class="down">×1,5</strong> de dégâts de : ${counterOf(u.element).map((e) => `<span class="chip el-${e}" style="cursor:default"><span class="dot"></span>${EL_FR[e]}</span>`).join(" ")}</p>
+          <p class="note">Règle du jeu : ×1,5 sur l'élément dominé, ×0,5 dans l'autre sens. La Lumière et les Ténèbres se dominent mutuellement.</p>
+        </section>
+      </div>
+      <div class="cols">
+        <section class="panel box"><h3>Évolution</h3>${evoHTML}</section>
+        <section class="panel box"><h3>Où l'obtenir</h3>
+          ${g && g.sources.length ? `<ul class="fx">${g.sources.map((s) => `<li>${esc(sourceText(s))}</li>`).join("")}</ul>` : `<p class="muted">Aucune source connue dans les données du jeu.</p>`}
+        </section>
+      </div>
+      ${quotes.length ? `<section class="panel box"><h3>Répliques</h3>${quotes.map((q) => `<p class="quote">« ${esc(q)} »</p>`).join("")}</section>` : ""}
+    </div>`;
+  main.querySelectorAll("[data-form]").forEach((bt) => bt.addEventListener("click", () => { state.form[id] = Number(bt.dataset.form); renderUnit(id); }));
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Types ---------- */
+function renderTypes() {
+  const r = (a) => a[0] === a[1] ? (a[0] === 0 ? "—" : `${a[0] > 0 ? "+" : ""}${a[0]}`) : `${a[0] > 0 ? "+" : ""}${a[0]} à ${a[1] > 0 ? "+" : ""}${a[1]}`;
+  const heroes = D.units.filter((u) => u.hero);
+  const counts = {}; heroes.forEach((u) => { counts[u.rec.type] = (counts[u.rec.type] || 0) + 1; });
+  main.innerHTML = `
+    <h2 class="section-title">Types d'unité</h2>
+    <p class="lede">Chaque unité a un type. À chaque niveau, il ajoute ou retire des points de statistiques. Au niveau 150, un Breaker peut donc avoir jusqu'à environ +450 ATQ et −450 DÉF par rapport à un Lord.</p>
+    <div class="types">${TYPES.map((t) => `<section class="panel type-card">
+      <h3>${TYPE_FR[t]}</h3>
+      <p class="small">${esc(TYPE_TEXT[t])}</p>
+      <div class="gain">${["hp", "atk", "def", "rec"].map((k) => `<div>${STAT_FR[k]} par niveau : <strong>${r(TYPE_GAINS[t][k])}</strong></div>`).join("")}</div>
+      ${counts[t] ? `<p class="note">Conseillé pour ${counts[t]} unité${counts[t] > 1 ? "s" : ""} du wiki.</p>` : ""}
+    </section>`).join("")}</div>
+    <section class="panel box" style="margin-top:14px">
+      <h3>Comment le wiki choisit le type</h3>
+      <ul class="fx">
+        <li>Une unité qui convertit la DÉF en ATQ prend <strong>Guardian</strong>, les PV en ATQ <strong>Anima</strong>, la REC en ATQ <strong>Oracle</strong>.</li>
+        <li>Un soigneur prend <strong>Oracle</strong> : ses soins augmentent avec la REC.</li>
+        <li>Un défenseur, un soutien BB ou un anti-statut prend <strong>Anima</strong> : il doit survivre pour faire son travail.</li>
+        <li>Un attaquant ou un boosteur d'ATQ prend <strong>Breaker</strong>.</li>
+        <li><strong>Rex</strong> est toujours le meilleur s'il tombe, mais il ne peut pas être choisi avec une Type Frog.</li>
+      </ul>
+      <p class="note">Ces règles viennent de l'analyse des compétences de chaque unité. Ce sont des conseils, pas une règle du jeu.</p>
+    </section>`;
+}
+
+/* ---------- Team builder ---------- */
+const SLOTS = ["Leader", "Membre 2", "Membre 3", "Membre 4", "Membre 5", "Ami"];
+// null = aucune équipe enregistrée : on montre alors un exemple.
+let team = store.get("codex-team", null);
+if (!Array.isArray(team) || team.length !== 6) team = null;
+let isExample = false;
+const saveTeam = () => { isExample = false; store.set("codex-team", team); };
+// Bonus en % de chaque membre : compétences de leader (leader et ami) et sphères équipées.
+function teamMods(members, els) {
+  const mods = members.map(() => ({ hp: 0, atk: 0, def: 0, rec: 0 }));
+  const toParty = (e, only) => members.forEach((m, k) => {
+    if (!m || (only !== undefined && only !== k)) return;
+    if (e.element && e.element !== m.u.element) return;
+    if (mods[k][e.stat] !== undefined) mods[k][e.stat] += e.value || 0;
+  });
+  const apply = (effects, owner) => {
+    for (const e of effects || []) {
+      if (e.id === "cond.unique_elements") { if (els.size >= e.value) apply(e.effects, owner); continue; }
+      if (e.id !== "passive.stat_pct") continue;
+      if (e.target === "party") toParty(e); else if (e.target === "self" && owner !== undefined) toParty(e, owner);
+    }
+  };
+  for (const i of [0, 5]) { const x = members[i]; if (x && x.f.leaderSkill) apply(x.f.leaderSkill.effects); }
+  members.forEach((x, k) => {
+    if (!x) return;
+    if (x.f.extraSkill) apply(x.f.extraSkill.effects, k);
+    let boost = false;
+    for (const id of (x.m.spheres || []).slice(0, SPHERE_SLOTS)) {
+      const s = D.sphereById.get(id); if (!s) continue;
+      if (isStatusBoost(s)) { if (boost) continue; boost = true; } // le jeu refuse la seconde
+      apply(s.effects, k);
+    }
+  });
+  return mods;
+}
+function memberForm(m) { const u = m && D.byId.get(m.unit); if (!u) return null; return u.forms[m.form ?? u.forms.length - 1] || u.best; }
+function renderTeam() {
+  // Exemple de départ quand rien n'est enregistré.
+  if (team === null) {
+    const pick = (name) => { const u = D.units.find((x) => x.hero && x.best.name.toLowerCase().includes(name)); return u ? { unit: u.id, form: u.forms.length - 1, type: null } : null; };
+    team = [pick("mifune"), pick("vargas"), pick("selena"), pick("lance"), pick("atro"), pick("magress")];
+    isExample = true;
+  }
+  const members = team.map((m) => m && D.byId.get(m.unit) ? { m, u: D.byId.get(m.unit), f: memberForm(m) } : null);
+  const filled = members.filter(Boolean);
+  const els = new Set(filled.map((x) => x.u.element));
+  const mods = teamMods(members, els);
+  const cover = {};
+  filled.forEach((x) => rolesOf(x.f).list.forEach((r) => { cover[r] = (cover[r] || []).concat(x.f.name); }));
+  const lsOf = (x) => x && x.f.leaderSkill;
+  const need = [];
+  const leaderLS = [lsOf(members[0]), lsOf(members[5])].filter(Boolean);
+  leaderLS.forEach((ls) => walk(ls.effects, (e) => { if (e.id === "cond.unique_elements" && els.size < e.value) need.push(`La compétence de leader « ${ls.name} » demande ${e.value} éléments différents : l'équipe n'en a que ${els.size}.`); }));
+  if (!cover.heal) need.push("Personne ne soigne : ajoute un soigneur, ou compte sur les HC et les objets.");
+  if (!cover.mitig) need.push("Aucune réduction de dégâts : un défenseur évite les morts sur les gros coups des boss.");
+  if (!cover.bc) need.push("Aucun soutien BB : les BB tourneront moins souvent.");
+  if (!cover.buff) need.push("Aucun boost d'ATQ ou d'étincelle pour l'équipe : les dégâts seront plus faibles.");
+  const nullSphere = filled.some((x) => (x.m.spheres || []).some((id) => (D.sphereById.get(id)?.effects || []).some((e) => e.id === "ailment.null")));
+  if (!cover.status && !nullSphere) {
+    const best = D.spheres.filter((s) => (s.effects || []).some((e) => e.id === "ailment.null")).sort((a, b) => (b.rarity || 0) - (a.rarity || 0))[0];
+    need.push(`Aucune protection contre les altérations : ajoute une unité anti-statut${best ? `, ou équipe une sphère comme ${best.name}` : ""}.`);
+  }
+  const cost = members.slice(0, 5).filter(Boolean).reduce((a, x) => a + (x.f.cost || 0), 0);
+  const roleKeys = ["dmg", "buff", "heal", "mitig", "bc", "status", "inflict"];
+  main.innerHTML = `
+    <h2 class="section-title">Team builder</h2>
+    <p class="lede">Compose une équipe de cinq unités et un ami. Le wiki conseille un type pour chacune selon son rôle, vérifie les rôles couverts et lit les compétences de leader.${isExample ?" <strong>Exemple de départ :</strong> remplace les unités par les tiennes." : ""}</p>
+    <div class="team">${members.map((x, i) => slotHTML(x, i, mods[i])).join("")}</div>
+    <div class="cols" style="margin-top:14px">
+      <section class="panel box">
+        <h3>Rôles couverts</h3>
+        <div class="status">${roleKeys.map((r) => `<div class="pill ${cover[r] ? "ok" : "miss"}" title="${esc((cover[r] || []).join(", "))}"><span class="mark">${cover[r] ? "✓" : "✗"}</span>${ROLE_FR[r]}${cover[r] ? ` <span class="muted small">(${cover[r].length})</span>` : ""}</div>`).join("")}</div>
+        <p class="note" style="margin-top:8px">Éléments : ${[...els].map((e) => `<span class="chip el-${e}" style="cursor:default"><span class="dot"></span>${EL_FR[e]}</span>`).join(" ") || "aucun"} · Coût des cinq membres : <span class="num">${cost}</span></p>
+      </section>
+      <section class="panel box">
+        <h3>Conseils</h3>
+        ${need.length ? `<ul class="fx">${need.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : `<p>L'équipe couvre tous les rôles essentiels.</p>`}
+      </section>
+    </div>
+    <section class="panel box" style="margin-top:14px">
+      <h3>Compétences de leader actives</h3>
+      ${[[0, "Leader"], [5, "Ami"]].map(([i, lab]) => { const x = members[i]; const ls = lsOf(x);
+        return `<div class="skill"><span class="tag">${lab}</span>${x ? `<span class="sname">${esc(ls ? ls.name : "Pas de compétence de leader")}</span> <span class="muted small">(${esc(x.f.name)})</span>${ls ? effectList(ls.effects) : ""}` : `<span class="muted">Aucune unité</span>`}</div>`; }).join("")}
+    </section>
+    <div class="row" style="margin-top:12px;display:flex;gap:8px"><button type="button" class="btn" id="clear">Vider l'équipe</button></div>
+    <div id="pickerRoot"></div>`;
+  main.querySelectorAll("[data-slot-pick]").forEach((b) => b.addEventListener("click", () => openPicker(Number(b.dataset.slotPick))));
+  main.querySelectorAll("[data-slot-remove]").forEach((b) => b.addEventListener("click", () => { team[Number(b.dataset.slotRemove)] = null; saveTeam(); renderTeam(); }));
+  main.querySelectorAll("[data-slot-form]").forEach((s) => s.addEventListener("change", () => { team[Number(s.dataset.slotForm)].form = Number(s.value); saveTeam(); renderTeam(); }));
+  main.querySelectorAll("[data-slot-type]").forEach((s) => s.addEventListener("change", () => { team[Number(s.dataset.slotType)].type = s.value || null; saveTeam(); renderTeam(); }));
+  main.querySelectorAll("[data-slot-sphere]").forEach((s) => s.addEventListener("change", () => {
+    const [i, k] = s.dataset.slotSphere.split(":").map(Number);
+    const m = team[i]; m.spheres = (m.spheres || []).slice(); m.spheres[k] = s.value || null;
+    saveTeam(); renderTeam();
+  }));
+  document.getElementById("clear").addEventListener("click", () => { team = Array(6).fill(null); saveTeam(); renderTeam(); });
+}
+let SPHERE_OPTIONS = null;
+function sphereSelect(x, i, k, roles) {
+  if (!SPHERE_OPTIONS) SPHERE_OPTIONS = D.spheres.slice().sort((a, b) => a.name.localeCompare(b.name)).map((s) => `<option value="${esc(s.id)}">${esc(s.name)}${s.rarity ? ` (${s.rarity}★)` : ""}</option>`).join("");
+  const cur = (x.m.spheres || [])[k] || "";
+  const adv = sphereAdvice(x.u, x.f, roles, 5);
+  const curSphere = cur && D.sphereById.get(cur);
+  return `<label class="small muted" for="s${i}-${k}">Sphère ${k + 1}${k === 1 ? " (emplacement à débloquer)" : ""}</label>
+    <select class="field" id="s${i}-${k}" data-slot-sphere="${i}:${k}">
+      <option value="">Aucune</option>
+      ${curSphere ? `<option value="${esc(cur)}" selected>${esc(curSphere.name)} (équipée)</option>` : ""}
+      <optgroup label="Conseillées">${adv.map(({ s }) => `<option value="${esc(s.id)}">${esc(s.name)}${s.rarity ? ` (${s.rarity}★)` : ""}</option>`).join("")}</optgroup>
+      <optgroup label="Toutes les sphères">${SPHERE_OPTIONS}</optgroup>
+    </select>`;
+}
+function slotHTML(x, i, mod) {
+  if (!x) return `<section class="panel slot"><div class="label">${SLOTS[i]}</div><button type="button" class="pick" data-slot-pick="${i}">+ Choisir une unité</button></section>`;
+  const roles = rolesOf(x.f), rec = recommendType(x.f, roles);
+  const cur = x.m.type || null;
+  const s = statsAt(x.f, cur || rec.type);
+  const fin = {}; for (const k of ["hp", "atk", "def", "rec"]) fin[k] = Math.round(s[k] * (1 + ((mod && mod[k]) || 0)));
+  const bonus = (k) => (mod && mod[k] ? ` <span class="up">+${Math.round(mod[k] * 100)}%</span>` : "");
+  const equipped = (x.m.spheres || []).slice(0, SPHERE_SLOTS).map((id) => D.sphereById.get(id)).filter(Boolean);
+  const twoBoosts = equipped.filter(isStatusBoost).length > 1;
+  const spheresHTML = Array.from({ length: SPHERE_SLOTS }, (_, k) => sphereSelect(x, i, k, roles)).join("")
+    + (twoBoosts ? `<div class="small down">Le jeu refuse deux sphères Status Boost sur la même unité : seule la première compte dans les stats.</div>` : "");
+  return `<section class="panel slot">
+    <div class="label">${SLOTS[i]}</div>
+    <div class="who">${sigil(x.f.name, x.u.element, false, x.f.id)}<div style="min-width:0"><a class="name" href="#u-${esc(x.u.id)}">${esc(x.f.name)}</a><div class="small muted">${RAR(x.f.rarity)} · ${roles.list.slice(0, 2).map((r) => ROLE_FR[r]).join(", ") || "—"}</div></div></div>
+    <label class="small muted" for="f${i}">Forme</label>
+    <select class="field" id="f${i}" data-slot-form="${i}">${x.u.forms.map((f, k) => `<option value="${k}" ${f === x.f ? "selected" : ""}>${RAR(f.rarity)} ${esc(f.name)}</option>`).join("")}</select>
+    <div class="advice small"><strong>Conseil : ${TYPE_FR[rec.type]}</strong>. ${esc(rec.why)}</div>
+    <label class="small muted" for="t${i}">Type de ton unité</label>
+    <select class="field" id="t${i}" data-slot-type="${i}"><option value="">Comme conseillé (${TYPE_FR[rec.type]})</option>${TYPES.map((t) => `<option value="${t}" ${cur === t ? "selected" : ""}>${TYPE_FR[t]}</option>`).join("")}</select>
+    ${cur && cur !== rec.type ? `<div class="small down">Une Type Frog vers ${TYPE_FR[rec.type]} conviendrait mieux${rec.type === "rex" ? "" : ""}.</div>` : ""}
+    ${spheresHTML}
+    <div class="small num muted">Niv. ${x.f.maxLevel}, type seul : PV ${fmt(s.hp)} · ATQ ${fmt(s.atk)} · DÉF ${fmt(s.def)} · REC ${fmt(s.rec)}</div>
+    <div class="small num"><strong>En combat</strong> (leaders, sphères, compétence extra) :<br>PV ${fmt(fin.hp)}${bonus("hp")} · ATQ ${fmt(fin.atk)}${bonus("atk")}<br>DÉF ${fmt(fin.def)}${bonus("def")} · REC ${fmt(fin.rec)}${bonus("rec")}</div>
+    <div class="row"><button type="button" class="btn" data-slot-pick="${i}">Changer</button><button type="button" class="btn" data-slot-remove="${i}">Retirer</button></div>
+  </section>`;
+}
+function openPicker(slot) {
+  const root = document.getElementById("pickerRoot");
+  const pickEl = [];
+  let q = "";
+  root.innerHTML = `<div class="overlay" id="ov"><div class="frame picker" role="dialog" aria-modal="true" aria-label="Choisir une unité pour ${SLOTS[slot]}">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3 class="section-title" style="font-size:18px">${SLOTS[slot]} : choisir une unité</h3><button type="button" class="btn" id="close">Fermer</button></div>
+    <div class="toolbar" style="margin:0"><input type="search" id="pq" placeholder="Rechercher" aria-label="Rechercher une unité">${elChips(pickEl, "pick")}
+      ${COLL ? `<label class="check"><input type="checkbox" id="pmine" checked> Seulement mes unités</label>` : ""}</div>
+    <div class="list" id="plist"></div></div></div>`;
+  const draw = () => {
+    const ql = q.trim().toLowerCase();
+    const mineOnly = !!(document.getElementById("pmine") && document.getElementById("pmine").checked);
+    const list = D.units.filter((u) => u.hero && (!mineOnly || ownedCount(u.id) > 0) && (!pickEl.length || pickEl.includes(u.element)) && (!ql || u.forms.some((f) => f.name.toLowerCase().includes(ql))))
+      .sort((a, b) => maxRarityNum(b) - maxRarityNum(a) || a.name.localeCompare(b.name));
+    document.getElementById("plist").innerHTML = list.map((u) => cardHTML(u, "button")).join("") || `<div class="empty">Aucune unité.</div>`;
+    document.querySelectorAll("#plist [data-pick]").forEach((b) => b.addEventListener("click", () => {
+      const u = D.byId.get(b.dataset.pick);
+      // Avec une collection importée, on prend ta meilleure forme et ton vrai type.
+      const mine = COLL ? bestOwned(u.id) : null;
+      team[slot] = { unit: u.id, form: mine ? mine.form : u.forms.length - 1, type: mine && mine.type ? mine.type : null };
+      saveTeam(); root.innerHTML = ""; renderTeam();
+    }));
+  };
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("close").addEventListener("click", close);
+  document.getElementById("ov").addEventListener("click", (e) => { if (e.target.id === "ov") close(); });
+  document.addEventListener("keydown", function esc_(e) { if (e.key === "Escape") { close(); document.removeEventListener("keydown", esc_); } });
+  document.getElementById("pq").addEventListener("input", (e) => { q = e.target.value; draw(); });
+  if (document.getElementById("pmine")) document.getElementById("pmine").addEventListener("change", draw);
+  bindChips("pick", pickEl, draw);
+  draw();
+  document.getElementById("pq").focus();
+}
+
+/* ---------- Modes de jeu et défis ---------- */
+const MODES = [
+  { id: "histoire", name: "Histoire", test: (c) => c.areaType === "story",
+    rules: "Les huit terres de Grand Gaia, de Mistral à Cordelica. Coûte de l'énergie, les continues sont permis.",
+    tips: ["Aligne des unités qui dominent l'élément des boss de la zone : ×1,5 de dégâts pour toi, ×0,5 pour eux.",
+      "Monte une équipe équilibrée : deux attaquants, un soigneur, un défenseur et un soutien BB.",
+      "Capture les unités de chaque zone : elles servent souvent de matériaux d'évolution."] },
+  { id: "farm", name: "Donjons de farm", test: (c) => [100000, 100001, 100310, 100600].includes(c.areaId),
+    rules: "Rassemblement des âmes, Renforcement, Ruines et Jardin de la parade. Certaines parades sont limitées à 5 tours par jour.",
+    tips: ["Toujours le niveau 3 : c'est le plus rentable en Zel comme en Karma.",
+      "Contre les métaux et les joyaux, très résistants, privilégie les unités qui ignorent la DÉF et frappent souvent.",
+      "Revends les unités Jewel capturées : jusqu'à 300 000 Zel le Golden God."] },
+  { id: "elements", name: "Vortex élémentaires", test: (c) => c.areaId >= 101500 && c.areaId <= 102000,
+    rules: "Six donjons, un par élément : Flammes, Zéro absolu, Voix de Gaia, Tonnerre, Ciel et Lune.",
+    tips: ["Chaque donjon a un élément : amène l'élément qui le domine, et laisse au banc celui qu'il domine.",
+      "Une mitigation élémentaire du bon élément réduit encore les dégâts reçus."] },
+  { id: "chroniques", name: "Grand Gaia Chronicles", test: (c) => c.areaId === 150000,
+    rules: "Combats contre les boss marquants de l'histoire, plus durs que la version d'origine.",
+    tips: ["Les boss se soignent ou changent de phase : garde tes BB et UBB pour les finir d'un coup.",
+      "Prévois une immunité aux altérations : plusieurs boss en infligent beaucoup."] },
+  { id: "tour", name: "Unholy Tower", test: (c) => c.areaId === 800011 || c.areaId === 800012 || c.areaId === 800013,
+    rules: "Tour en dix paliers, plus sa face sombre. Les derniers paliers et le Prologue XE interdisent les continues et limitent les objets à 2.",
+    tips: ["Sans continue, une seule erreur coûte la course : mitigation, soins et Ange gardien sont obligatoires.",
+      "Avec 2 objets seulement, choisis des soins de groupe et un remède aux altérations.",
+      "Une unité Anima ou Guardian en défenseur évite les morts sur les gros coups."] },
+  { id: "epreuves", name: "Épreuves", test: (c) => c.areaId === 800051 || c.areaId === 2000000 || c.areaId === 800020,
+    rules: "Épreuve des dieux, Épreuves de test et La tromperie de Leon : peu de combats, des boss très résistants.",
+    tips: ["Peu de vagues mais beaucoup de PV : les dégâts d'étincelle et les UBB font la différence.",
+      "Regarde les altérations du boss avant de partir et équipe une sphère d'immunité si personne ne la donne."] },
+  { id: "chasseur", name: "Frontier Hunter", test: (c) => c.areaId === 1000010,
+    rules: "Saison 6 de l'Uncharted Frontier : quatre étapes, sans continue.",
+    tips: ["Toutes les altérations sont présentes : l'immunité est indispensable.",
+      "Les boss volent les jauges de BB et retirent les buffs : garde des soutiens BB et relance tes buffs."] },
+];
+const modeOf = (c) => MODES.find((m) => m.test(c));
+const MECH_FR = {
+  bbDrain: "Vide vos jauges de BB : garde des soutiens BB et des sphères de remplissage.",
+  buffRemoval: "Retire vos buffs : relance mitigation et boosts juste après.",
+  hpPercent: "Attaques en pourcentage de PV : la DÉF ne protège pas, prévois des soins et un Ange gardien.",
+  selfHeal: "Le boss se soigne : garde tes BB et UBB pour finir une phase d'un coup.",
+  nuke: "Attaques très puissantes : garde une réduction de dégâts active au bon tour.",
+  statDown: "Baisse vos statistiques : une immunité aux baisses de stats aide.",
+};
+const hasPartyEffect = (u, re) => {
+  let ok = false; const f = u.best;
+  for (const w of ["bb", "sbb", "ubb"]) if (f.bursts && f.bursts[w]) walk(f.bursts[w].effects, (e) => { if (re.test(e.id) && e.target === "party") ok = true; });
+  if (f.leaderSkill) walk(f.leaderSkill.effects, (e) => { if (re.test(e.id)) ok = true; });
+  return ok;
+};
+function suggestFor(c) {
+  const mainEl = (c.bosses[0] && c.bosses[0].element) || c.elements[0];
+  const counters = mainEl ? counterOf(mainEl) : [];
+  const avoid = new Set(ELEMENTS.filter((e) => c.bosses.some((b) => (STRONG[b.element] || []).includes(e))));
+  const heroes = D.units.filter((u) => u.hero);
+  const byAtk = (a, b) => b.best.stats.max.atk - a.best.stats.max.atk;
+  const byHp = (a, b) => b.best.stats.max.hp - a.best.stats.max.hp;
+  const attackers = heroes.filter((u) => counters.includes(u.element) && ["dmg", "buff", "inflict"].includes(u.roles.main)).sort(byAtk).slice(0, 4);
+  const nullers = c.ailments.length ? heroes.filter((u) => !avoid.has(u.element) && hasPartyEffect(u, /^ailment\.null$/)).sort(byHp).slice(0, 3) : [];
+  const mitig = heroes.filter((u) => !avoid.has(u.element) && hasPartyEffect(u, /^mitigation$/)).sort(byHp).slice(0, 3);
+  const healers = heroes.filter((u) => !avoid.has(u.element) && u.roles.main === "heal").sort((a, b) => b.best.stats.max.rec - a.best.stats.max.rec).slice(0, 3);
+  return { mainEl, counters, avoid: [...avoid], attackers, nullers, mitig, healers };
+}
+const miniList = (list) => list.length ? `<div class="mini">${list.map((u) => `<a href="#u-${esc(u.id)}">${sigil(u.best.name, u.element, false, u.best.id)}${esc(u.best.name)}</a>`).join("")}</div>` : `<span class="muted small">Aucune unité trouvée.</span>`;
+function challengeHTML(c) {
+  const sg = suggestFor(c), mode = modeOf(c);
+  const flags = [];
+  if (c.continues === false) flags.push(`<span class="flag">Pas de continue</span>`);
+  if (c.itemSlots) flags.push(`<span class="flag">${c.itemSlots} objets max</span>`);
+  if (mode) flags.push(`<span class="flag info">${esc(mode.name)}</span>`);
+  flags.push(`<span class="flag info">${c.battles} combats · ${c.energy} énergie</span>`);
+  const advice = [];
+  if (sg.counters.length) advice.push(`Le boss principal est ${EL_FR[sg.mainEl]} : amène des unités ${sg.counters.map((e) => EL_FR[e]).join(" ou ")}, qui lui font ×1,5 de dégâts.`);
+  const mutual = sg.counters.filter((e) => sg.avoid.includes(e));
+  const avoidOnly = sg.avoid.filter((e) => !sg.counters.includes(e));
+  if (mutual.length) advice.push(`Lumière et Ténèbres se font ×1,5 mutuellement : tes unités ${mutual.map((e) => EL_FR[e]).join(" et ")} frapperont fort mais prendront aussi plus cher, garde un défenseur.`);
+  if (avoidOnly.length) advice.push(`Évite les unités ${avoidOnly.map((e) => EL_FR[e]).join(" et ")} : elles prennent ×1,5 de dégâts de la part des boss.`);
+  if (c.ailments.length) advice.push(`Altérations infligées : ${c.ailments.map((a) => AIL_FR[a] || a).join(", ")}. Prends une immunité aux altérations.`);
+  for (const m of c.mechanics) if (MECH_FR[m]) advice.push(MECH_FR[m]);
+  if (c.immune.length) advice.push(`Les ennemis résistent à : ${c.immune.map((a) => AIL_FR[a] || a).join(", ")}. Inutile de miser sur ces altérations.`);
+  return `<section class="panel challenge">
+    <div class="head"><div style="min-width:0"><h3>${esc(c.name)}</h3><div class="small muted">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div></div><span class="diff">Difficulté ${Math.round(c.score)}</span></div>
+    <div class="mini">${flags.join("")}</div>
+    ${c.bosses.length ? `<div class="tablewrap"><table><thead><tr><th>Boss</th><th>Élément</th><th class="n">PV</th><th class="n">ATQ</th><th class="n">DÉF</th></tr></thead><tbody>
+      ${c.bosses.map((b) => `<tr><td>${esc(b.name)}</td><td><span class="dot el-${esc(b.element)}"></span> ${EL_FR[b.element] || "—"}</td><td class="n">${fmt(b.hp)}</td><td class="n">${fmt(b.atk)}</td><td class="n">${fmt(b.def)}</td></tr>`).join("")}
+    </tbody></table></div>` : ""}
+    <ul class="fx">${advice.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>
+    <div class="cols" style="gap:10px">
+      <div><div class="small muted">Attaquants qui dominent le boss</div>${miniList(sg.attackers)}</div>
+      ${sg.nullers.length || c.ailments.length ? `<div><div class="small muted">Immunité aux altérations</div>${miniList(sg.nullers)}</div>` : ""}
+      <div><div class="small muted">Réduction des dégâts</div>${miniList(sg.mitig)}</div>
+      <div><div class="small muted">Soigneurs</div>${miniList(sg.healers)}</div>
+    </div>
+    <div><button type="button" class="btn primary" data-build="${c.id}">Préparer cette équipe dans le team builder</button></div>
+  </section>`;
+}
+function buildTeamFor(c) {
+  const sg = suggestFor(c), used = new Set(), out = [];
+  const take = (list) => { const u = list.find((x) => !used.has(x.id)); if (u) { used.add(u.id); return { unit: u.id, form: u.forms.length - 1, type: null }; } return null; };
+  out[0] = take(sg.attackers); out[1] = take(sg.mitig); out[2] = take(sg.nullers.length ? sg.nullers : sg.healers);
+  out[3] = take(sg.healers); out[4] = take(sg.attackers); out[5] = take(sg.attackers);
+  team = out.map((x) => x || null); saveTeam(); location.hash = "#equipe";
+}
+state.defisMode = "";
+function renderDefis() {
+  let q = "", limit = 20;
+  main.innerHTML = `
+    <h2 class="section-title">Défis</h2>
+    <p class="lede">Les quêtes les plus dures du jeu, classées d'après leurs boss : PV, attaque, altérations et mécaniques dangereuses. Pour chacune, le wiki propose les éléments à amener et des unités adaptées.</p>
+    <div class="toolbar"><input type="search" id="dq" placeholder="Rechercher une quête ou un boss" aria-label="Rechercher une quête">
+      <select id="dm" aria-label="Mode de jeu"><option value="">Tous les modes</option>${MODES.map((m) => `<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select></div>
+    <div class="count" id="dc"></div>
+    <div class="detail" id="dl"></div>
+    <div style="margin-top:12px"><button type="button" class="btn" id="more">Afficher plus de quêtes</button></div>
+    <p class="note">La note de difficulté combine les PV totaux, l'attaque maximale des ennemis, leurs altérations, leurs mécaniques et l'absence de continue. Elle sert à comparer les quêtes entre elles.</p>`;
+  document.getElementById("dm").value = state.defisMode;
+  const draw = () => {
+    const ql = q.trim().toLowerCase();
+    const list = D.challenges.filter((c) => (!state.defisMode || (modeOf(c) || {}).id === state.defisMode) &&
+      (!ql || c.name.toLowerCase().includes(ql) || c.dungeon.toLowerCase().includes(ql) || c.bosses.some((b) => b.name.toLowerCase().includes(ql))))
+      .sort((a, b) => b.score - a.score);
+    document.getElementById("dc").textContent = `${list.length} quête${list.length > 1 ? "s" : ""}, de la plus dure à la plus facile`;
+    document.getElementById("dl").innerHTML = list.slice(0, limit).map(challengeHTML).join("") || `<div class="empty">Aucune quête ne correspond.</div>`;
+    document.getElementById("more").hidden = list.length <= limit;
+    document.querySelectorAll("[data-build]").forEach((b) => b.addEventListener("click", () => buildTeamFor(D.challenges.find((c) => String(c.id) === b.dataset.build))));
+  };
+  document.getElementById("dq").addEventListener("input", (e) => { q = e.target.value; limit = 20; draw(); });
+  document.getElementById("dm").addEventListener("change", (e) => { state.defisMode = e.target.value; limit = 20; draw(); });
+  document.getElementById("more").addEventListener("click", () => { limit += 20; draw(); });
+  draw();
+}
+function renderModes() {
+  main.innerHTML = `
+    <h2 class="section-title">Modes de jeu</h2>
+    <p class="lede">Les règles de chaque mode, tirées des données du jeu, et les conseils pour s'y préparer. Chaque carte montre les trois quêtes les plus dures du mode.</p>
+    <div class="detail">${MODES.map((m) => {
+      const list = D.challenges.filter((c) => m.test(c)).sort((a, b) => b.score - a.score);
+      const noCont = list.filter((c) => c.continues === false).length;
+      return `<section class="panel mode">
+        <h3>${esc(m.name)}</h3>
+        <p>${esc(m.rules)}</p>
+        <p class="small muted">${list.length} quête${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} sans continue` : ""}</p>
+        <ul class="fx">${m.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
+        ${list.length ? `<p class="small" style="margin-top:8px">Les plus dures : ${list.slice(0, 3).map((c) => `<strong>${esc(c.name)}</strong> (${Math.round(c.score)})`).join(", ")}</p>` : ""}
+        <button type="button" class="btn" data-mode="${m.id}">Voir les défis de ce mode</button>
+      </section>`; }).join("")}
+      <section class="panel mode">
+        <h3>Arène</h3>
+        <p>Les combats d'arène sont joués par l'IA : chaque unité a son propre comportement d'arène dans les données du jeu.</p>
+        <ul class="fx">
+          <li>Privilégie les attaques de zone et les unités qui remplissent vite les jauges de BB : l'IA lance les BB dès qu'ils sont prêts.</li>
+          <li>Une compétence de leader qui monte les PV et l'ATQ de toute l'équipe aide plus qu'un effet sous condition.</li>
+        </ul>
+        <p class="note">Les règles détaillées de l'arène ne sont pas dans les fichiers lus : ces conseils restent généraux.</p>
+      </section>
+    </div>`;
+  main.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => { state.defisMode = b.dataset.mode; location.hash = "#defis"; }));
+}
+
+/* ---------- Ma collection ---------- */
+// Le script d'export copie les libellés de la liste d'unités du jeu, préfixés par BFRCODEX1:.
+// Exemple de libellé : « Witch Liza, 1★, Lord, Lv.1, 2 exemplaires ».
+let COLL = store.get("codex-collection", null);
+function parseCollection(text) {
+  const raw = String(text || "").trim();
+  const i = raw.indexOf("BFRCODEX1:");
+  if (i < 0) throw new Error("Ce texte ne vient pas du script d'export : il doit commencer par BFRCODEX1.");
+  const data = JSON.parse(raw.slice(i + 10));
+  const byName = new Map();
+  for (const u of D.units) { byName.set(u.name.toLowerCase(), u); for (const f of u.forms) if (!byName.has(f.name.toLowerCase())) byName.set(f.name.toLowerCase(), u); }
+  const entries = [], unknown = [];
+  for (const label of data.labels || []) {
+    const parts = label.split(",").map((s) => s.trim());
+    const u = byName.get((parts[0] || "").toLowerCase());
+    if (!u) { unknown.push(parts[0]); continue; }
+    let rar = null, type = null, count = 1, level = null;
+    for (const p of parts.slice(1)) {
+      const r = p.match(/^(\d+)\s*★$/); if (r) rar = r[1];
+      if (/^omni$/i.test(p) || /^OE$/.test(p)) rar = "omni";
+      const t = TYPES.find((x) => x === p.toLowerCase()); if (t) type = t;
+      const l = p.match(/^Lv\.?\s*(\d+|MAX)$/i); if (l) level = l[1];
+      const c = p.match(/^(\d+)\s+\D+$/); if (c) count = Number(c[1]);
+    }
+    const fi = u.forms.findIndex((f) => String(f.rarity) === String(rar));
+    const form = fi >= 0 ? fi : u.forms.findIndex((f) => f.name.toLowerCase() === (parts[0] || "").toLowerCase());
+    entries.push({ unit: u.id, form: form >= 0 ? form : 0, count, type, level });
+  }
+  return { date: data.date || new Date().toISOString(), entries, unknown: [...new Set(unknown)] };
+}
+const ownedEntries = (id) => (COLL ? COLL.entries.filter((e) => e.unit === id) : []);
+const ownedCount = (id) => ownedEntries(id).reduce((a, e) => a + e.count, 0);
+function bestOwned(id) {
+  const es = ownedEntries(id);
+  return es.length ? es.reduce((a, b) => (b.form > a.form ? b : a)) : null;
+}
+function renderCollection() {
+  const importBox = `
+    <section class="panel box">
+      <h3>${COLL ? "Mettre à jour ma collection" : "Importer ma collection"}</h3>
+      <ol class="steps">
+        <li>Installe le script <strong>bfr-collection.user.js</strong> dans Tampermonkey, comme la macro.</li>
+        <li>Dans le jeu, ouvre <strong>Unité › Voir les unités</strong>, puis clique sur <strong>Copier ma collection pour le wiki</strong> en bas à droite.</li>
+        <li>Colle le texte ici, puis clique sur Importer.</li>
+      </ol>
+      <label class="small muted" for="collText" style="display:block;margin-top:10px">Texte copié depuis le jeu</label>
+      <textarea class="field" id="collText" placeholder="BFRCODEX1:{…}"></textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn primary" id="collImport">Importer</button>${COLL ? `<button type="button" class="btn" id="collClear">Effacer ma collection</button>` : ""}</div>
+      <p class="small" id="collMsg" role="status"></p>
+      <p class="note">La collection reste dans ton navigateur : elle n'est envoyée nulle part.</p>
+    </section>`;
+  if (!COLL) {
+    main.innerHTML = `<h2 class="section-title">Ma collection</h2>
+      <p class="lede">Importe ta liste d'unités pour voir ton taux de collection, les unités qui te manquent, celles prêtes à évoluer, et filtrer le team builder sur tes unités.</p>${importBox}`;
+  } else {
+    const heroes = D.units.filter((u) => u.hero);
+    const ownedHeroes = heroes.filter((u) => ownedCount(u.id) > 0);
+    const omni = ownedHeroes.filter((u) => { const b = bestOwned(u.id); return u.forms[b.form] && u.forms[b.form].rarity === "omni"; });
+    const formsOwned = new Set(COLL.entries.map((e) => e.unit + ":" + e.form)).size;
+    const pctOf = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+    const byEl = ELEMENTS.map((e) => { const all = heroes.filter((u) => u.element === e); const own = all.filter((u) => ownedCount(u.id) > 0); return { e, all: all.length, own: own.length }; });
+    // Prêtes à évoluer : forme possédée qui a une évolution, et tous les matériaux possédés.
+    const ready = [], almost = [];
+    for (const u of ownedHeroes) {
+      const b = bestOwned(u.id), f = u.forms[b.form];
+      if (!f || !f.evolution || !u.forms[b.form + 1]) continue;
+      const mats = (f.evolution.units || []).map((m) => ({ ...m, have: ownedCount(m.unit), mu: D.byId.get(m.unit) }));
+      const missing = mats.filter((m) => m.have < m.count);
+      (missing.length ? almost : ready).push({ u, f, next: u.forms[b.form + 1], mats, zel: f.evolution.zel || 0, missing: missing.length });
+    }
+    almost.sort((a, b) => a.missing - b.missing);
+    const evoRow = (x) => `<div class="sph"><div>${sigil(x.f.name, x.u.element, false, x.f.id)} <a href="#u-${esc(x.u.id)}"><strong>${esc(x.f.name)}</strong></a> → <strong>${esc(x.next.name)}</strong> <span class="muted small">${fmt(x.zel)} Zel</span></div>
+      <div class="small">${x.mats.map((m) => `<span class="${m.have >= m.count ? "have" : "lack"}">${m.have}/${m.count}</span> ${esc(m.mu ? m.mu.best.name : m.unit)}`).join(" · ")}</div></div>`;
+    const missingHeroes = heroes.filter((u) => ownedCount(u.id) === 0).sort((a, b) => maxRarityNum(b) - maxRarityNum(a));
+    main.innerHTML = `<h2 class="section-title">Ma collection</h2>
+      <p class="lede">Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}. ${COLL.unknown && COLL.unknown.length ? `${COLL.unknown.length} nom${COLL.unknown.length > 1 ? "s" : ""} non reconnu${COLL.unknown.length > 1 ? "s" : ""} : ${esc(COLL.unknown.slice(0, 6).join(", "))}.` : ""}</p>
+      <div class="bigstat">
+        <div><b>${ownedHeroes.length}/${heroes.length}</b><span>unités jouables possédées (${pctOf(ownedHeroes.length, heroes.length)} %)</span><div class="bar"><i style="width:${pctOf(ownedHeroes.length, heroes.length)}%"></i></div></div>
+        <div><b>${omni.length}</b><span>unités en forme Omni</span></div>
+        <div><b>${formsOwned}</b><span>formes différentes possédées</span></div>
+        <div><b>${ready.length}</b><span>évolutions prêtes</span></div>
+      </div>
+      <section class="panel box" style="margin-top:14px"><h3>Par élément</h3><div class="stats">
+        ${byEl.map((x) => `<div class="row"><span class="dot el-${x.e}"></span><div><div class="small">${EL_FR[x.e]}</div><div class="bar"><i style="width:${pctOf(x.own, x.all)}%"></i></div></div><span class="num small">${x.own}/${x.all}</span></div>`).join("")}
+      </div></section>
+      <div class="cols" style="margin-top:14px">
+        <section class="panel box"><h3>Prêtes à évoluer</h3>${ready.length ? ready.map(evoRow).join("") : `<p class="muted">Aucune évolution n'a tous ses matériaux pour l'instant.</p>`}</section>
+        <section class="panel box"><h3>Presque prêtes</h3>${almost.slice(0, 8).map(evoRow).join("") || `<p class="muted">Rien à signaler.</p>`}</section>
+      </div>
+      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Mes unités (${ownedHeroes.length})</h3>
+      <div class="grid">${ownedHeroes.sort((a, b) => maxRarityNum(b) - maxRarityNum(a)).map((u) => cardHTML(u)).join("")}</div>
+      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Il te manque (${missingHeroes.length})</h3>
+      <div class="grid">${missingHeroes.map((u) => cardHTML(u)).join("")}</div>
+      <div style="margin-top:16px">${importBox}</div>`;
+  }
+  document.getElementById("collImport").addEventListener("click", () => {
+    const msg = document.getElementById("collMsg");
+    try {
+      const c = parseCollection(document.getElementById("collText").value);
+      if (!c.entries.length) throw new Error("Aucune unité reconnue dans ce texte.");
+      COLL = c; store.set("codex-collection", c); renderCollection();
+    } catch (e) { msg.textContent = e.message || "Import impossible."; msg.className = "small down"; }
+  });
+  const clr = document.getElementById("collClear");
+  if (clr) clr.addEventListener("click", () => { COLL = null; store.set("codex-collection", null); renderCollection(); });
+}
+
+/* ---------- Tier list ---------- */
+// Note calculée : statistiques au niveau max, utilité (soins, défense, BB, statuts, boosts),
+// compétence de leader et puissance des BB. Ce n'est pas un vote de joueurs.
+let TIERS = null;
+function computeTiers() {
+  if (TIERS) return TIERS;
+  const heroes = D.units.filter((u) => u.hero);
+  const max = (k) => Math.max(...heroes.map((u) => u.best.stats.max[k]));
+  const M = { hp: max("hp"), atk: max("atk"), def: max("def"), rec: max("rec") };
+  const maxDmg = Math.max(...heroes.map((u) => u.roles.scores.dmg)) || 1;
+  const lsPower = (f) => { let p = 0; if (f.leaderSkill) walk(f.leaderSkill.effects, (e) => { if (e.id === "passive.stat_pct" && e.value > 0) p += e.value; if (/spark_dmg|crit_dmg|elem_weak_dmg|bb_atk/.test(e.id)) p += (e.value || 0) * 0.5; if (/drop\.bc|bc_per_turn|hc\.efficacy|mitigation/.test(e.id)) p += 0.2; }); return Math.min(1, p / 2.5); };
+  const rows = heroes.map((u) => {
+    const s = u.best.stats.max, r = u.roles.scores;
+    const stat = (s.atk / M.atk) * 0.4 + (s.hp / M.hp) * 0.25 + (s.def / M.def) * 0.15 + (s.rec / M.rec) * 0.2;
+    const util = Math.min(1, (r.heal + r.mitig + r.bc + r.buff + r.status) / 8);
+    const ls = lsPower(u.best);
+    const dmg = r.dmg / maxDmg;
+    const bonus = u.best.rarity === "omni" ? 0.08 : Number(u.best.rarity) >= 7 ? 0.04 : 0;
+    const score = 0.35 * stat + 0.25 * util + 0.2 * ls + 0.2 * dmg + bonus;
+    return { u, score, parts: { stat, util, ls, dmg } };
+  }).sort((a, b) => b.score - a.score);
+  const n = rows.length;
+  rows.forEach((x, i) => { const p = i / n; x.tier = p < 0.1 ? "S" : p < 0.35 ? "A" : p < 0.7 ? "B" : "C"; });
+  TIERS = { rows, byId: new Map(rows.map((x) => [x.u.id, x])) };
+  return TIERS;
+}
+const tierOf = (id) => { const t = computeTiers().byId.get(id); return t ? t.tier : null; };
+state.tierRole = ""; state.tierEl = [];
+function renderTierlist() {
+  const T = computeTiers();
+  main.innerHTML = `<h2 class="section-title">Tier list</h2>
+    <p class="lede">Classement calculé par le wiki pour les ${T.rows.length} unités jouables, à leur meilleure forme. La tier list votée par les joueurs existe sur le site du jeu, mais aucune unité n'y a encore les 15 votes nécessaires : <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">voir la tier list de la communauté</a>.</p>
+    <div class="toolbar"><select id="tr" aria-label="Rôle"><option value="">Tous les rôles</option>${Object.entries(ROLE_FR).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>${elChips(state.tierEl, "tier")}</div>
+    <div id="tl"></div>
+    <section class="panel box" style="margin-top:14px"><h3>Comment la note est calculée</h3>
+      <ul class="fx"><li>35 % statistiques au niveau max (ATQ, PV, REC, DÉF).</li><li>25 % utilité : soins, réduction des dégâts, remplissage des BB, immunités et boosts d'équipe.</li><li>20 % compétence de leader.</li><li>20 % puissance des SBB et UBB.</li><li>Petit bonus pour les formes Omni et 7★.</li></ul>
+      <p class="note">S = 10 % les mieux notées, A = 25 % suivantes, B = 35 %, C = le reste. Survole une unité pour voir sa note. Une ✓ verte signale une unité de ta collection.</p></section>`;
+  document.getElementById("tr").value = state.tierRole;
+  const draw = () => {
+    const rows = T.rows.filter((x) => (!state.tierRole || x.u.roles.list.includes(state.tierRole)) && (!state.tierEl.length || state.tierEl.includes(x.u.element)));
+    document.getElementById("tl").innerHTML = ["S", "A", "B", "C"].map((t) => {
+      const list = rows.filter((x) => x.tier === t);
+      return `<div class="tier"><div class="t t-${t}">${t}</div><div class="units">${list.map((x) => `<a href="#u-${esc(x.u.id)}" class="${ownedCount(x.u.id) ? "owned" : ""}" title="Note ${Math.round(x.score * 100)} · stats ${Math.round(x.parts.stat * 100)} · utilité ${Math.round(x.parts.util * 100)} · leader ${Math.round(x.parts.ls * 100)} · BB ${Math.round(x.parts.dmg * 100)}">${sigil(x.u.best.name, x.u.element, false, x.u.best.id)}<span>${esc(x.u.best.name)}</span></a>`).join("") || `<span class="muted small" style="padding:14px">Aucune unité.</span>`}</div></div>`;
+    }).join("");
+  };
+  document.getElementById("tr").addEventListener("change", (e) => { state.tierRole = e.target.value; draw(); });
+  bindChips("tier", state.tierEl, draw);
+  draw();
+}
+
+/* ---------- Accueil ---------- */
+const GLOSSARY = [
+  ["BB, SBB, UBB", "Brave Burst : l'attaque spéciale d'une unité. SBB est sa version améliorée, UBB l'ultime."],
+  ["BC", "Brave Crystals, les cristaux bleus qui remplissent la jauge de BB."],
+  ["HC", "Heart Crystals, les cristaux roses qui soignent."],
+  ["LS", "Compétence de leader : s'applique à toute l'équipe quand l'unité est leader ou ami."],
+  ["ES", "Compétence extra : un bonus passif propre à l'unité."],
+  ["Étincelle", "Deux coups qui touchent au même moment : ils font plus de dégâts et donnent plus de cristaux."],
+  ["Omni", "La forme ultime d'une unité, au-dessus du 7★."],
+  ["Type", "Lord, Anima, Breaker, Guardian, Oracle ou Rex : change les stats gagnées à chaque niveau."],
+  ["Type Frog", "Objet qui change le type d'une unité (sauf vers Rex)."],
+  ["Imps", "Bonus de stats permanents donnés en fusionnant des unités spéciales."],
+  ["Mitigation", "Réduction des dégâts reçus par l'équipe."],
+];
+function renderAccueil() {
+  const heroes = D.units.filter((u) => u.hero);
+  const owned = COLL ? heroes.filter((u) => ownedCount(u.id) > 0).length : 0;
+  const top = computeTiers().rows.slice(0, 6);
+  main.innerHTML = `
+    <section class="welcome">
+      <h2>Bienvenue sur Reborn Wiki</h2>
+      <p>Le wiki de Brave Frontier: Reborn : ${heroes.length} unités jouables, leurs compétences, le meilleur type et les meilleures sphères pour chacune, et des conseils pour les quêtes les plus dures.</p>
+    </section>
+    <div class="tiles">
+      <a class="tile" href="#unites"><strong>Unités</strong><span>Fiches complètes, de la première forme à l'Omni.</span></a>
+      <a class="tile" href="#collection"><strong>Ma collection</strong><span>${COLL ? `${owned}/${heroes.length} unités possédées.` : "Importe ton compte pour voir ce qui te manque."}</span></a>
+      <a class="tile" href="#equipe"><strong>Team builder</strong><span>Compose une équipe, choisis types et sphères, vois les stats en combat.</span></a>
+      <a class="tile" href="#tierlist"><strong>Tier list</strong><span>Les unités classées de S à C.</span></a>
+      <a class="tile" href="#defis"><strong>Défis</strong><span>Les quêtes les plus dures et comment les préparer.</span></a>
+      <a class="tile" href="#farm"><strong>Farm</strong><span>Où gagner Zel, Karma et XP le plus vite.</span></a>
+    </div>
+    <section class="panel box" style="margin-top:14px"><h3>Les mieux classées</h3>
+      <div class="mini">${top.map((x) => `<a href="#u-${esc(x.u.id)}">${sigil(x.u.best.name, x.u.element, false, x.u.best.id)}${esc(x.u.best.name)} <span class="tierbadge t-${x.tier}">${x.tier}</span></a>`).join("")}</div></section>
+    <section class="panel box" style="margin-top:14px"><h3>Pour bien démarrer</h3>
+      <ol class="steps">
+        <li>Importe ta collection pour savoir ce que tu as et ce qu'il te manque.</li>
+        <li>Ouvre la fiche de tes meilleures unités : type conseillé, duo de sphères et éléments.</li>
+        <li>Compose ton équipe dans le team builder et vérifie les rôles couverts.</li>
+        <li>Avant une quête difficile, regarde sa fiche dans Défis : éléments à amener et altérations à prévoir.</li>
+      </ol></section>
+    <section class="panel box" style="margin-top:14px"><h3>Lexique</h3>
+      <dl class="gloss">${GLOSSARY.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></section>`;
+}
+
+/* ---------- Sphères ---------- */
+function renderSpheres() {
+  const KIND = { "all-stat": "Toutes stats", typed: "Spécialisée", signature: "Signature" };
+  let kind = "", q = "";
+  main.innerHTML = `
+    <h2 class="section-title">Sphères</h2>
+    <p class="lede">${D.spheres.length} sphères. Les sphères signature ne s'activent qu'avec l'unité prévue.</p>
+    <div class="toolbar"><input type="search" id="sq" placeholder="Rechercher une sphère ou un effet" aria-label="Rechercher une sphère">
+      <select id="sk" aria-label="Catégorie"><option value="">Toutes les catégories</option>${Object.entries(KIND).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select></div>
+    <div class="count" id="sc"></div>
+    <div class="tablewrap panel"><table><thead><tr><th>Sphère</th><th>Catégorie</th><th>Effets</th></tr></thead><tbody id="sb"></tbody></table></div>`;
+  const draw = () => {
+    const ql = q.trim().toLowerCase();
+    const list = D.spheres.filter((s) => (!kind || s.kind === kind) && (!ql || s.name.toLowerCase().includes(ql) || (s.effects || []).some((e) => effectText(e).toLowerCase().includes(ql))));
+    document.getElementById("sc").textContent = `${list.length} sphère${list.length > 1 ? "s" : ""}`;
+    document.getElementById("sb").innerHTML = list.map((s) => `<tr><td><strong>${esc(s.name)}</strong></td><td class="muted">${KIND[s.kind] || esc(s.kind)}</td><td>${effectList(s.effects)}</td></tr>`).join("");
+  };
+  document.getElementById("sq").addEventListener("input", (e) => { q = e.target.value; draw(); });
+  document.getElementById("sk").addEventListener("change", (e) => { kind = e.target.value; draw(); });
+  draw();
+}
+
+/* ---------- Objets ---------- */
+function itemEffect(e) {
+  switch (e.kind) {
+    case "heal": return `Soigne ${fmt(e.amount)} PV`;
+    case "cure": return `Soigne ${(e.ailments || []).map((a) => AIL_FR[a] || a).join(", ")}`;
+    default: return Object.entries(e).map(([k, v]) => `${k} ${typeof v === "object" ? JSON.stringify(v) : v}`).join(" · ");
+  }
+}
+function renderItems() {
+  let q = "";
+  main.innerHTML = `
+    <h2 class="section-title">Objets</h2>
+    <p class="lede">${D.items.length} objets du jeu, avec leur description d'origine.</p>
+    <div class="toolbar"><input type="search" id="iq" placeholder="Rechercher un objet" aria-label="Rechercher un objet"></div>
+    <div class="count" id="ic"></div>
+    <div class="tablewrap panel"><table><thead><tr><th>Objet</th><th>Description</th><th>Effet</th></tr></thead><tbody id="ib"></tbody></table></div>`;
+  const draw = () => {
+    const ql = q.trim().toLowerCase();
+    const list = D.items.filter((i) => !ql || i.name.toLowerCase().includes(ql) || (i.description || "").toLowerCase().includes(ql));
+    document.getElementById("ic").textContent = `${list.length} objet${list.length > 1 ? "s" : ""}`;
+    document.getElementById("ib").innerHTML = list.map((i) => `<tr><td><strong>${esc(i.name)}</strong></td><td class="muted">${esc(i.description || "")}</td><td>${esc((i.effects || []).map(itemEffect).join(" · ")) || "—"}</td></tr>`).join("");
+  };
+  document.getElementById("iq").addEventListener("input", (e) => { q = e.target.value; draw(); });
+  draw();
+}
+
+/* ---------- Mérite ---------- */
+function renderMerit() {
+  const rows = [];
+  for (const g of D.guide.values()) for (const s of g.sources || []) if (s.kind === "merit-exchange") {
+    const fi = D.formIndex.get(g.form);
+    rows.push({ g, s, u: fi && fi.unit });
+  }
+  rows.sort((a, b) => a.s.cost - b.s.cost);
+  main.innerHTML = `
+    <h2 class="section-title">Boutique de mérite</h2>
+    <p class="lede">Les unités échangeables contre des points de mérite. Pour rappel : 1 point = 5 000 Zel ou 2 500 Karma.</p>
+    <div class="tablewrap panel"><table>
+      <thead><tr><th>Unité</th><th>Rareté</th><th>Élément</th><th class="n">Points</th><th class="n">En Zel</th><th class="n">En Karma</th></tr></thead>
+      <tbody>${rows.map(({ g, s, u }) => `<tr><td>${u ? `<a href="#u-${esc(u.id)}">${esc(g.name)}</a>` : esc(g.name)}</td><td>${RAR(g.rarity)}</td><td><span class="dot el-${esc(g.element)}"></span> ${EL_FR[g.element] || ""}</td>
+        <td class="n">${fmt(s.cost)}</td><td class="n">${fmt(s.cost * 5000)}</td><td class="n">${fmt(s.cost * 2500)}</td></tr>`).join("")}</tbody>
+    </table></div>`;
+}
+
+/* ---------- Farm ---------- */
+function renderFarm() {
+  main.innerHTML = `
+    <h2 class="section-title">Où farmer</h2>
+    <p class="lede">Les meilleures quêtes repérées dans les données du jeu et lors de tests réels. Les gains marqués « estimé » viennent du fichier du jeu, pas d'une mesure.</p>
+    <div class="tablewrap panel"><table>
+      <thead><tr><th>Quête</th><th>Pour</th><th>Gains par tour</th><th>Limite</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Méga parade de joyaux</strong> (100652)</td><td>Zel</td><td>Environ 670 000 Zel en revendant les Golden God et Jewel God (estimé)</td><td>5 par jour, 0 énergie</td></tr>
+        <tr><td><strong>Vallée dorée Lv. 3</strong> (100502)</td><td>Zel</td><td>33 000 Zel mesurés, environ 90 000 avec la revente des Jewel (estimé)</td><td>Aucune</td></tr>
+        <tr><td><strong>Terre sacrée des âmes Lv. 3</strong> (100002)</td><td>Karma</td><td>25 524 Karma mesurés</td><td>Aucune</td></tr>
+        <tr><td><strong>Méga parade de métal</strong> (100614)</td><td>XP de fusion</td><td>Environ 3 God et 2 Crystal capturés (estimé)</td><td>Aucune, 0 énergie</td></tr>
+        <tr><td><strong>Le démon qui appelle la mort</strong> (354)</td><td>Mifune</td><td>Environ 10 % de chance de capturer Mifune (estimé)</td><td>Aucune</td></tr>
+      </tbody>
+    </table></div>
+    <section class="panel box" style="margin-top:14px">
+      <h3>Revente des unités Jewel</h3>
+      <div class="tablewrap"><table><thead><tr><th>Unité</th><th class="n">Revente</th></tr></thead><tbody>
+        ${["jewel-ghost", "jewel-king", "jewel-god", "golden-god"].map((id) => { const u = D.byId.get(id); return u ? `<tr><td><a href="#u-${id}">${esc(u.best.name)}</a></td><td class="n">${fmt(u.best.sellZel)} Zel</td></tr>` : ""; }).join("")}
+      </tbody></table></div>
+    </section>`;
+}
+
+/* ---------- Démarrage ---------- */
+load().then(() => {
+  window.addEventListener("hashchange", route);
+  route();
+  // Les vignettes arrivent après le reste ; elles s'ajoutent aussi aux écrans ouverts plus tard.
+  new MutationObserver(() => paintImages(document)).observe(document.body, { childList: true, subtree: true });
+  fetch("data/images.json").then((r) => (r.ok ? r.json() : {})).then((imgs) => {
+    for (const [k, v] of Object.entries(imgs)) IMG.set(k, v);
+    paintImages(document);
+  }).catch(() => {});
+}).catch((e) => { main.innerHTML = `<div class="empty">Les données du jeu n'ont pas pu être chargées (${esc(e.message)}). Recharge la page.</div>`; });
+</script>
+
+</body>
+</html>
