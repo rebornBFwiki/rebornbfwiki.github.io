@@ -294,11 +294,24 @@ footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line);
 
 /* ===== Design 2 : plus simple, plus lisible, les illustrations d'abord ===== */
 :root {
-  --bg: #0d1220; --panel: #151c2d; --panel-2: #1c2539; --line: #263049;
-  --gold: #e0b450; --gold-hi: #f5d684; --fg: #eef1f8; --mute: #97a2bc;
+  --bg: #0c111d; --panel: #151c2dd6; --panel-2: #1f2840e0; --line: #2a3450;
+  --gold: #e0b450; --gold-hi: #f5d684; --fg: #eef1f8; --mute: #a3adc6;
   --radius: 14px; --shadow: 0 8px 24px #0006;
 }
-body { background: radial-gradient(1200px 500px at 50% -120px, #1e2a4a 0%, var(--bg) 60%) fixed, var(--bg); font-size: 15.5px; }
+/* Fond : la carte de Mistral, floutée sous un voile sombre, avec trois touches de couleur chaude. */
+html { background: var(--bg); }
+body { background: transparent; font-size: 15.5px; }
+body::after {
+  content: ""; position: fixed; inset: -24px; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 12% 0%, #e0b45038 0%, transparent 62%),
+    radial-gradient(780px 620px at 100% 35%, #b44fd636 0%, transparent 62%),
+    radial-gradient(900px 600px at 25% 100%, #2fb3a02e 0%, transparent 62%),
+    linear-gradient(180deg, #0c111db8 0%, #0c111dd9 55%, #0c111de6 100%),
+    url("assets/bg/grand-gaia.jpg") center 30% / cover no-repeat;
+  filter: blur(4px) saturate(1.2);
+}
+.panel, .frame, .showcase { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 header.top { background: #0d1220e6; backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .brand h1 { font-size: 26px; background: linear-gradient(180deg, #fff3c4, var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; }
 nav.tabs a { font-weight: 600; color: var(--mute); }
@@ -347,7 +360,7 @@ td { border-bottom-color: #ffffff0a; }
 
 /* Accueil */
 .showcase { position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 10px; align-items: center; padding: 26px; border-radius: 20px; overflow: hidden; border: 1px solid #ffffff12;
-  background: radial-gradient(800px 300px at 80% 50%, #3a2c6a88 0%, transparent 70%), linear-gradient(135deg, #18213a 0%, #101626 100%); box-shadow: var(--shadow); }
+  background: radial-gradient(800px 300px at 80% 50%, #3a2c6a88 0%, transparent 70%), linear-gradient(135deg, #18213ac7 0%, #101626c7 100%); box-shadow: var(--shadow); }
 .showcase h2 { font-size: clamp(32px, 5.5vw, 52px); line-height: 1; background: linear-gradient(180deg, #fff6d6, var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .showcase p { color: var(--fg); max-width: 46ch; margin: 12px 0 18px; font-size: 16px; }
 .showcase .cta { display: flex; gap: 8px; flex-wrap: wrap; }
