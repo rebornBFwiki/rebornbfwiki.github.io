@@ -94,6 +94,12 @@ nav.tabs a { white-space: nowrap; }
 .scard .meta { font-size: 12px; color: var(--mute); }
 .scard .fx { font-size: 13px; }
 .box[id] { scroll-margin-top: 130px; }
+.dbadge { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; border: 1px solid; vertical-align: middle; }
+.d-easy { color: #7fe0a4; border-color: #2f6b47; background: #12301f; }
+.d-mid { color: #f5cf7a; border-color: #7a6431; background: #2e2611; }
+.d-hard { color: #f0a596; border-color: #7a3a31; background: #2a1512; }
+.duo-title { font-family: var(--display); font-size: 16px; color: var(--gold-hi); margin: 10px 0 2px; }
+.duo-title:first-of-type { margin-top: 0; }
 .drops td img { width: 72px; height: 40px; object-fit: cover; border-radius: 6px; display: block; }
 .brand h1 { font-size: 24px; color: var(--gold-hi); text-shadow: 0 2px 0 #00000080; }
 .brand span { color: var(--mute); font-size: 13px; }
@@ -739,12 +745,52 @@ const SPHERE_WHY = {
 // Règle du jeu : deux emplacements au plus (le 2e se débloque), et jamais deux sphères Status Boost.
 const SPHERE_SLOTS = 2;
 const isStatusBoost = (s) => !!s && (s.kind === "all-stat" || s.typeId === 1);
-function sphereAdvice(u, f, roles, n = 3) {
+/* Difficulté d'obtention d'une sphère : 0 = facile, 1 = très difficile.
+   On retient le moyen le plus simple parmi ses sources. L'achat est un peu pénalisé par rapport à la Forge. */
+const DIFF = new Map();
+function forgeDifficulty(id, depth) {
+  const r = FORGE[id]; if (!r || !forgeAvailable(id)) return 1;
+  let d = Math.min(0.5, (r.karma || 0) / 400000) + (r.level ? Math.min(0.2, Math.max(0, r.level - 20) / 100) : 0);
+  for (const m of arr(r.mats)) {
+    if (m.k === "sphere") { d += depth < 4 ? 0.55 * sphereDifficulty(D.sphereById.get(m.id), depth + 1).d : 0.4; }
+    else if (m.k === "item") {
+      const best = arr(SRC.items[m.id])[0];
+      const shop = (EXCH && EXCH.items && EXCH.items[m.id]) || GUILD().items[m.id];
+      // Nombre de tours de farm pour réunir la quantité demandée.
+      const runs = best && best.e > 0 ? m.n / best.e : shop ? 15 : 60;
+      d += Math.min(0.2, runs / 300);
+    }
+  }
+  return Math.min(1, d);
+}
+function sphereDifficulty(s, depth = 0) {
+  if (!s) return { d: 1, how: "" };
+  if (depth === 0 && DIFF.has(s.id)) return DIFF.get(s.id);
+  const opts = [];
+  for (const x of arr(SRC.spheres[s.id])) {
+    if (x.k === "first-clear") { const c = D.challengeById.get(String(x.m)); opts.push({ d: c ? Math.min(1, Math.max(0.1, (c.score - 55) / 60)) : 0.5, how: "victoire" }); }
+    else if (x.k === "hunter-rank") opts.push({ d: Math.min(1, 0.25 + x.rank / 35), how: "frontier" });
+    else opts.push({ d: 0.85, how: "frontier" });
+  }
+  if (EXCH && EXCH.spheres && EXCH.spheres[s.id]) opts.push({ d: 0.3 + Math.min(0.6, EXCH.spheres[s.id].pts / 40000), how: "achat" });
+  if (GUILD().spheres[s.id]) opts.push({ d: 0.35 + Math.min(0.55, GUILD().spheres[s.id].pts / 20000), how: "achat" });
+  if (FORGE[s.id] && forgeAvailable(s.id)) opts.push({ d: forgeDifficulty(s.id, depth), how: "forge" });
+  const best = opts.sort((a, b) => a.d - b.d)[0] || { d: 1, how: "" };
+  if (depth === 0) DIFF.set(s.id, best);
+  return best;
+}
+const diffLabel = (d) => (d < 0.35 ? ["Facile", "d-easy"] : d < 0.65 ? ["Moyen", "d-mid"] : ["Difficile", "d-hard"]);
+const diffBadge = (s) => { const [l, c] = diffLabel(sphereDifficulty(s).d); return `<span class="dbadge ${c}" title="Difficulté d'obtention">${l}</span>`; };
+const EASY_MAX = 0.35; // même seuil que le badge « Facile »
+function sphereAdvice(u, f, roles, n = 3, mode = "best") {
   const role = roles.main || "dmg";
-  const sig = D.spheres.filter((s) => s.signatureUnit === u.id && sphereObtainable(s));
-  const ranked = D.spheres.filter((s) => s.kind !== "signature" && sphereObtainable(s) && !(s.effects || []).some((e) => /^drop\.(zel|karma|item)$/.test(e.id)))
-    // Une sphère qu'on ne peut pas encore obtenir passe derrière celles qu'on peut obtenir.
-    .map((s) => ({ s, p: sphereScore(s, role), ok: sphereObtainable(s) ? 1 : 0 })).filter((x) => x.p > 0).sort((a, b) => b.ok - a.ok || b.p - a.p || (b.s.rarity || 0) - (a.s.rarity || 0));
+  const easy = mode === "easy";
+  const okDiff = (s) => !easy || sphereDifficulty(s).d <= EASY_MAX;
+  const sig = D.spheres.filter((s) => s.signatureUnit === u.id && sphereObtainable(s) && okDiff(s));
+  const ranked = D.spheres.filter((s) => s.kind !== "signature" && sphereObtainable(s) && okDiff(s) && !(s.effects || []).some((e) => /^drop\.(zel|karma|item)$/.test(e.id)))
+    // En mode « facile », une sphère plus simple à obtenir gagne un peu de terrain, et la Forge passe avant l'achat.
+    .map((s) => { const df = sphereDifficulty(s); return { s, p: sphereScore(s, role) * (easy ? (1 - 0.5 * df.d) * (df.how === "forge" ? 1.1 : 1) : 1) }; })
+    .filter((x) => x.p > 0).sort((a, b) => b.p - a.p || (b.s.rarity || 0) - (a.s.rarity || 0));
   // Une signature peut exister sous deux noms avec les mêmes effets : on n'en garde qu'une.
   // Toutes les signatures d'une unité sont regroupées ; on met en avant la vraie sphère du jeu
   // (numéro officiel, icône ou source connue) plutôt qu'un doublon interne.
@@ -900,7 +946,8 @@ function statBars(f) {
     + `<p class="note">Barres : niveau max, comparé à la meilleure unité jouable du jeu.</p>`;
 }
 function briefHTML(u, f, roles, rec, g) {
-  const duo = sphereAdvice(u, f, roles).slice(0, 2).map((x) => sName(x.s));
+  const duo = sphereAdvice(u, f, roles, 2, "best").map((x) => sName(x.s));
+  const duoEasy = sphereAdvice(u, f, roles, 2, "easy").map((x) => sName(x.s));
   const t = u.hero ? tierOf(u.id) : null;
   const mine = COLL ? bestOwned(u.id) : null;
   const firstSource = g && g.sources && g.sources[0] ? sourceText(g.sources[0]) : "Source inconnue";
@@ -909,10 +956,24 @@ function briefHTML(u, f, roles, rec, g) {
     <div><div class="k">Rôle</div><div class="v">${roles.list.length ? roles.list.slice(0, 2).map((r) => ROLE_FR[r]).join(" et ") : "Matériau de fusion ou d'évolution"}</div></div>
     ${t ? `<div><div class="k">Tier</div><div class="v"><span class="tierbadge t-${t}">${t}</span> <a href="#tierlist" class="small">voir la tier list</a></div></div>` : ""}
     <div><div class="k">Type conseillé</div><div class="v">${TYPE_FR[rec.type]}</div></div>
-    <div><div class="k">Duo de sphères</div><div class="v">${esc(duo.join(" + ")) || "—"}</div></div>
+    <div><div class="k">Duo de sphères idéal</div><div class="v">${esc(duo.join(" + ")) || "—"}</div></div>
+    <div><div class="k">Duo facile en attendant</div><div class="v">${esc(duoEasy.join(" + ")) || "—"}</div></div>
     <div><div class="k">Fort contre</div><div class="v">${dangerFor(u.element).map((e) => EL_FR[e]).join(", ")}</div></div>
     <div><div class="k">Dans ma collection</div><div class="v">${own}</div></div>
   </section>`;
+}
+// Deux duos : l'idéal (même difficile à obtenir) et un plus simple pour patienter.
+function sphereDuoHTML(u, f, roles) {
+  const row = ({ s, why }) => `<div class="sph row-ico">${s.icon ? iconImg(s.icon, "icon", "") : ""}<div style="min-width:0">
+      <div><a href="#s-${esc(s.id)}"><strong>${esc(sName(s))}</strong></a> ${diffBadge(s)} <span class="muted small">${s.rarity ? s.rarity + "★" : ""}${s.type ? " · " + esc(s.type) : ""}</span></div>
+      <div class="why">${esc(why)}</div>${sphereSourceHTML(s)}
+      <details><summary class="small muted">Effets</summary>${effectList(s.effects)}</details></div></div>`;
+  const best = sphereAdvice(u, f, roles, 2, "best");
+  const easy = sphereAdvice(u, f, roles, 2, "easy");
+  const same = easy.length && easy.every((x) => best.some((y) => y.s.name === x.s.name));
+  return `<div class="duo-title">Le duo idéal</div>${best.map(row).join("") || `<p class="muted">Aucune sphère obtenable ne convient.</p>`}
+    <div class="duo-title">En attendant : plus simple à obtenir</div>
+    ${same ? `<p class="muted small">Le duo idéal est déjà facile à obtenir.</p>` : easy.map(row).join("") || `<p class="muted small">Aucune sphère facile à obtenir ne convient à ce rôle pour l'instant.</p>`}`;
 }
 function renderUnit(id) {
   const u = D.byId.get(id);
@@ -985,8 +1046,7 @@ function renderUnit(id) {
       <div class="cols">
         <section class="panel box" id="sec-spheres">
           <h3>Sphères conseillées</h3>
-          ${sphereAdvice(u, f, roles).map(({ s, why }, k) => `<div class="sph row-ico">${s.icon ? iconImg(s.icon, "icon", "") : ""}<div><div><span class="role${k < 2 ? " main" : ""}">${k < 2 ? `Duo · sphère ${k + 1}` : "Alternative"}</span> <a href="#s-${esc(s.id)}"><strong>${esc(sName(s))}</strong></a> <span class="muted small">${s.rarity ? s.rarity + "★" : ""}${s.type ? " · " + esc(s.type) : ""}</span></div>
-            <div class="why">${esc(why)}</div>${sphereSourceHTML(s)}${effectList(s.effects)}</div></div>`).join("")}
+          ${sphereDuoHTML(u, f, roles)}
           <p class="note">2 emplacements : le premier est ouvert, le second se débloque sur chaque unité. Le jeu refuse deux sphères Status Boost (dont les sphères « toutes stats ») sur la même unité ; le duo conseillé respecte cette règle.</p>
         </section>
         <section class="panel box">
@@ -1139,13 +1199,15 @@ let SPHERE_OPTIONS = null;
 function sphereSelect(x, i, k, roles) {
   if (!SPHERE_OPTIONS) SPHERE_OPTIONS = uniqueSpheres().sort((a, b) => sName(a).localeCompare(sName(b))).map((s) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""}</option>`).join("");
   const cur = (x.m.spheres || [])[k] || "";
-  const adv = sphereAdvice(x.u, x.f, roles, 5);
+  const adv = sphereAdvice(x.u, x.f, roles, 4, "best");
+  const advEasy = sphereAdvice(x.u, x.f, roles, 4, "easy");
   const curSphere = cur && D.sphereById.get(cur);
   return `<label class="small muted" for="s${i}-${k}">Sphère ${k + 1}${k === 1 ? " (emplacement à débloquer)" : ""}</label>
     <select class="field" id="s${i}-${k}" data-slot-sphere="${i}:${k}">
       <option value="">Aucune</option>
       ${curSphere ? `<option value="${esc(cur)}" selected>${esc(sName(curSphere))} (équipée)</option>` : ""}
-      <optgroup label="Conseillées">${adv.map(({ s }) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""}</option>`).join("")}</optgroup>
+      <optgroup label="Conseillées">${adv.map(({ s }) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""} · ${diffLabel(sphereDifficulty(s).d)[0]}</option>`).join("")}</optgroup>
+      <optgroup label="Faciles à obtenir">${advEasy.map(({ s }) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""} · ${diffLabel(sphereDifficulty(s).d)[0]}</option>`).join("")}</optgroup>
       <optgroup label="Toutes les sphères">${SPHERE_OPTIONS}</optgroup>
     </select>`;
 }
@@ -1159,7 +1221,7 @@ function slotHTML(x, i, mod) {
   const equipped = (x.m.spheres || []).slice(0, SPHERE_SLOTS).map((id) => D.sphereById.get(id)).filter(Boolean);
   const twoBoosts = equipped.filter(isStatusBoost).length > 1;
   const spheresHTML = Array.from({ length: SPHERE_SLOTS }, (_, k) => sphereSelect(x, i, k, roles)).join("")
-    + equipped.map((s) => `<div class="row-ico small">${iconImg(s.icon, "icon", "")}<div><a href="#s-${esc(s.id)}">${esc(sName(s))}</a>${sphereSourceHTML(s, true)}</div></div>`).join("")
+    + equipped.map((s) => `<div class="row-ico small">${iconImg(s.icon, "icon", "")}<div><a href="#s-${esc(s.id)}">${esc(sName(s))}</a> ${diffBadge(s)}${sphereSourceHTML(s, true)}</div></div>`).join("")
     + (twoBoosts ? `<div class="small down">Le jeu refuse deux sphères Status Boost sur la même unité : seule la première compte dans les stats.</div>` : "");
   return `<section class="panel slot">
     <div class="label">${SLOTS[i]}</div>
@@ -1583,7 +1645,7 @@ function uniqueSpheres() {
 }
 function sphereCard(s) {
   return `<a class="scard" href="#s-${esc(s.id)}">${s.icon ? iconImg(s.icon, "icon lg", "") : `<span class="sigil" aria-hidden="true">◆</span>`}
-    <div style="min-width:0"><div class="name">${esc(sName(s))}</div>
+    <div style="min-width:0"><div class="name">${esc(sName(s))} ${diffBadge(s)}</div>
       <div class="meta">${s.rarity ? s.rarity + "★ · " : ""}${esc(s.type || SPHERE_KIND[s.kind] || "")}${sName(s) !== s.name ? ` · ${esc(s.name)}` : ""}</div>
       ${sphereSourceHTML(s, true)}</div></a>`;
 }
@@ -1596,13 +1658,16 @@ function renderSpheres() {
     <h2 class="section-title">Sphères</h2>
     <p class="lede">${list0.length} sphères. Ouvre une sphère pour voir ses effets, où l'obtenir et les unités à qui elle convient. Les sphères signature ne s'activent qu'avec l'unité prévue.</p>
     <div class="toolbar"><input type="search" id="sq" placeholder="Rechercher une sphère ou un effet" aria-label="Rechercher une sphère">
-      <select id="sk" aria-label="Catégorie"><option value="">Toutes les catégories</option>${types.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("")}<option value="signature">Signature</option></select></div>
+      <select id="sk" aria-label="Catégorie"><option value="">Toutes les catégories</option>${types.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("")}<option value="signature">Signature</option></select>
+      <select id="sd" aria-label="Difficulté d'obtention"><option value="">Toutes les difficultés</option><option value="d-easy">Faciles à obtenir</option><option value="d-mid">Moyennes</option><option value="d-hard">Difficiles</option></select></div>
     <div class="count" id="sc"></div>
     <div class="sgrid" id="sb"></div>`;
   document.getElementById("sk").value = state.sphereKind;
+  document.getElementById("sd").value = state.sphereDiff || "";
+  document.getElementById("sd").addEventListener("change", (e) => { state.sphereDiff = e.target.value; draw(); });
   const draw = () => {
     const ql = q.trim().toLowerCase();
-    const list = list0.filter((s) => (!state.sphereKind || s.type === state.sphereKind || s.kind === state.sphereKind) && (!state.sphereSrc || arr(SRC.spheres[s.id]).length || FORGE[s.id])
+    const list = list0.filter((s) => (!state.sphereKind || s.type === state.sphereKind || s.kind === state.sphereKind) && (!state.sphereDiff || diffLabel(sphereDifficulty(s).d)[1] === state.sphereDiff)
       && (!ql || sName(s).toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql) || (s.effects || []).some((e) => effectText(e).toLowerCase().includes(ql))))
       .sort((a, b) => (b.rarity || 0) - (a.rarity || 0) || sName(a).localeCompare(sName(b)));
     document.getElementById("sc").textContent = `${list.length} sphère${list.length > 1 ? "s" : ""}`;
@@ -1639,7 +1704,7 @@ function renderSphere(id) {
       <section class="frame hero">
         ${s.icon ? iconImg(s.icon, "icon lg", sName(s)) : `<span class="sigil big" aria-hidden="true">◆</span>`}
         <div style="min-width:0"><h2>${esc(sName(s))}</h2>
-          <div class="meta muted">${s.rarity ? `<span class="rar">${s.rarity}★</span> · ` : ""}${esc(s.type || SPHERE_KIND[s.kind] || "")}${sName(s) !== s.name ? ` · nom anglais : ${esc(s.name)}` : ""}</div>
+          <div class="meta muted">${s.rarity ? `<span class="rar">${s.rarity}★</span> · ` : ""}${esc(s.type || SPHERE_KIND[s.kind] || "")}${sName(s) !== s.name ? ` · nom anglais : ${esc(s.name)}` : ""} · ${diffBadge(s)}</div>
           ${sDesc(s) ? `<p style="margin:8px 0 0">${esc(sDesc(s))}</p>` : ""}</div>
       </section>
       <div class="cols">

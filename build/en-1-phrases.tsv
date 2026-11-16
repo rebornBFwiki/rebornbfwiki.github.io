@@ -488,3 +488,15 @@ const cur = guild ? "jetons de guilde" : "points de mérite";§§const cur = gui
 <a href="#merite">Boutiques</a>§§<a href="#merite">Shops</a>
 >Voir les unités</a><a href="#equipe">Composer une équipe</a>§§>Browse units</a><a href="#equipe">Build a party</a>
 >Les mieux classées</h3>§§>Top ranked</h3>
+const diffLabel = (d) => (d < 0.35 ? ["Facile", "d-easy"] : d < 0.65 ? ["Moyen", "d-mid"] : ["Difficile", "d-hard"]);§§const diffLabel = (d) => (d < 0.35 ? ["Easy", "d-easy"] : d < 0.65 ? ["Medium", "d-mid"] : ["Hard", "d-hard"]);
+title="Difficulté d'obtention"§§title="How hard it is to get"
+>Effets</summary>§§>Effects</summary>
+Aucune sphère obtenable ne convient.§§No obtainable sphere fits.
+<div class="duo-title">Le duo idéal</div>§§<div class="duo-title">Best pair</div>
+<div class="duo-title">En attendant : plus simple à obtenir</div>§§<div class="duo-title">Meanwhile: easier to get</div>
+Le duo idéal est déjà facile à obtenir.§§The best pair is already easy to get.
+Aucune sphère facile à obtenir ne convient à ce rôle pour l'instant.§§No easy-to-get sphere fits this role for now.
+<div class="k">Duo de sphères idéal</div>§§<div class="k">Best sphere pair</div>
+<div class="k">Duo facile en attendant</div>§§<div class="k">Easy pair meanwhile</div>
+<optgroup label="Faciles à obtenir">§§<optgroup label="Easy to get">
+aria-label="Difficulté d'obtention"><option value="">Toutes les difficultés</option><option value="d-easy">Faciles à obtenir</option><option value="d-mid">Moyennes</option><option value="d-hard">Difficiles</option>§§aria-label="How hard to get"><option value="">Any difficulty</option><option value="d-easy">Easy to get</option><option value="d-mid">Medium</option><option value="d-hard">Hard</option>
