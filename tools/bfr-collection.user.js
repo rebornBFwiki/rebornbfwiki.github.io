@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reborn Wiki - account export
 // @namespace    reborn-wiki
-// @version      2.0
+// @version      2.1
 // @description  Copies your Brave Frontier: Reborn units, spheres and items (read-only) to paste into Reborn Wiki. / Copie tes unités, sphères et objets (lecture seule) pour Reborn Wiki.
 // @match        https://rebornbf.com/*
 // @grant        none
@@ -17,11 +17,11 @@
   // - unités : la copie que le jeu garde dans ton navigateur (IndexedDB « bfr-player ») ;
   // - sphères et objets : les mêmes lectures que les pages Objets du jeu, avec ta propre session.
   const SUPABASE = 'https://vdvgusidfpcnywclwrkh.supabase.co';
-  const KEY = 'sb_publishable_SelxJqdvtb2vuRUVCz8OEA_3j';
+  const KEY = 'sb_publishable_SelxJqdvtb2vuRUVCz8OEA_3jMEv7rC';
   const fr = (navigator.language || '').toLowerCase().startsWith('fr');
   const T = fr
-    ? { idle: 'Copier mon compte pour Reborn Wiki', reading: 'Lecture du compte…', none: 'Aucune unité trouvée : ouvre « Unité › Voir les unités » puis réessaie', done: (u, s, i) => `Copié : ${u} unités, ${s} sphères, ${i} objets. Colle-le dans le wiki`, fail: 'Copie impossible : réessaie' }
-    : { idle: 'Copy my account for Reborn Wiki', reading: 'Reading your account…', none: 'No unit found: open Unit › View Units and try again', done: (u, s, i) => `Copied: ${u} units, ${s} spheres, ${i} items. Paste it into the wiki`, fail: 'Copy failed: try again' };
+    ? { idle: 'Copier mon compte pour Reborn Wiki', reading: 'Lecture du compte…', none: 'Aucune unité trouvée : ouvre « Unité › Voir les unités » puis réessaie', done: (u, s, i) => `Copié : ${u} unités, ${s} sphères, ${i} objets. Colle-le dans le wiki`, fail: 'Copie impossible : réessaie', partial: 'sphères/objets non lus : ' }
+    : { idle: 'Copy my account for Reborn Wiki', reading: 'Reading your account…', none: 'No unit found: open Unit › View Units and try again', done: (u, s, i) => `Copied: ${u} units, ${s} spheres, ${i} items. Paste it into the wiki`, fail: 'Copy failed: try again', partial: 'spheres/items not read: ' };
   const LABEL = T.idle;
 
   function readRoster() {
@@ -44,7 +44,10 @@
     const jar = {};
     for (const part of document.cookie.split('; ')) {
       const i = part.indexOf('=');
-      if (i > 0) jar[part.slice(0, i)] = decodeURIComponent(part.slice(i + 1));
+      if (i <= 0) continue;
+      let v = part.slice(i + 1);
+      try { v = decodeURIComponent(v); } catch (e) { /* valeur laissée telle quelle */ }
+      jar[part.slice(0, i)] = v;
     }
     const name = Object.keys(jar).map((k) => k.replace(/\.\d+$/, '')).find((k) => /^sb-.*-auth-token$/.test(k));
     let raw = name ? jar[name] : null;
@@ -59,7 +62,8 @@
     if (!raw) return null;
     try {
       if (raw.startsWith('base64-')) {
-        const b = raw.slice(7).replace(/-/g, '+').replace(/_/g, '/');
+        let b = raw.slice(7).replace(/-/g, '+').replace(/_/g, '/');
+        while (b.length % 4) b += '=';
         raw = new TextDecoder().decode(Uint8Array.from(atob(b), (c) => c.charCodeAt(0)));
       }
       const s = JSON.parse(raw);
@@ -67,18 +71,21 @@
     } catch (e) { return null; }
   }
 
+  const errors = [];
   async function readTable(table, cols) {
     const token = accessToken();
-    if (!token) return null;
+    if (!token) { errors.push('session'); return null; }
     try {
       const r = await fetch(`${SUPABASE}/rest/v1/${table}?select=${encodeURIComponent(cols)}`, {
         headers: { apikey: KEY, Authorization: 'Bearer ' + token },
       });
-      return r.ok ? await r.json() : null;
-    } catch (e) { return null; }
+      if (!r.ok) { errors.push(table + ' ' + r.status); return null; }
+      return await r.json();
+    } catch (e) { errors.push(table + ' réseau'); return null; }
   }
 
   async function buildExport() {
+    errors.length = 0;
     const roster = await readRoster();
     const [ownedSpheres, ownedItems] = await Promise.all([
       readTable('owned_spheres', 'id, sphere_id'),
@@ -158,7 +165,7 @@
         const nS = Object.values(data.spheres).reduce((a, s) => a + s.count, 0);
         const nI = Object.keys(data.items).length;
         btn.textContent = ok
-          ? T.done(data.units.length, nS, nI)
+          ? T.done(data.units.length, nS, nI) + (errors.length ? ' (' + T.partial + errors.join(', ') + ')' : '')
           : T.fail;
       }
       setTimeout(() => {
@@ -166,7 +173,7 @@
           btn.disabled = false;
           btn.textContent = LABEL;
         }
-      }, 7000);
+      }, errors.length ? 15000 : 7000);
     };
     document.body.appendChild(btn);
   }
