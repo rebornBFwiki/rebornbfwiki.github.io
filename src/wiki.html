@@ -621,9 +621,11 @@ function sphereAdvice(u, f, roles, n = 3) {
   const ranked = D.spheres.filter((s) => s.kind !== "signature" && !(s.effects || []).some((e) => /^drop\.(zel|karma|item)$/.test(e.id)))
     .map((s) => ({ s, p: sphereScore(s, role) })).filter((x) => x.p > 0).sort((a, b) => b.p - a.p || (b.s.rarity || 0) - (a.s.rarity || 0));
   // Une signature peut exister sous deux noms avec les mêmes effets : on n'en garde qu'une.
-  const sigKey = (s) => JSON.stringify((s.effects || []).map((e) => [e.id, e.stat, e.value]).sort());
+  // Toutes les signatures d'une unité sont regroupées ; on met en avant la vraie sphère du jeu
+  // (numéro officiel, icône ou source connue) plutôt qu'un doublon interne.
+  const real = (s) => (s.archiveId ? 2 : 0) + (s.icon ? 1 : 0) + (arr(SRC.spheres[s.id]).length ? 2 : 0);
   const sigGroups = new Map();
-  for (const s of sig) { const k = sigKey(s); if (!sigGroups.has(k)) sigGroups.set(k, []); sigGroups.get(k).push(s); }
+  if (sig.length) sigGroups.set(u.id, sig.slice().sort((a, b) => real(b) - real(a)));
   const out = [...sigGroups.values()].map((g) => ({ s: g[0], why: `Sa sphère signature${g.length > 1 ? ` (aussi appelée ${g.slice(1).map((x) => x.name).join(", ")})` : ""} : ses bonus et sa compétence extra s'activent avec elle.` }));
   const seen = new Set(sig.map((s) => s.name));
   for (const x of ranked) {
