@@ -308,16 +308,16 @@ Les combats d'arène sont joués par l'IA : chaque unité a son propre comportem
 Privilégie les attaques de zone et les unités qui remplissent vite les jauges de BB : l'IA lance les BB dès qu'ils sont prêts.§§Favour AoE attacks and units that fill BB gauges quickly: the AI casts BBs as soon as they are ready.
 Une compétence de leader qui monte les PV et l'ATQ de toute l'équipe aide plus qu'un effet sous condition.§§A Leader Skill that boosts the whole party's HP and ATK helps more than a conditional effect.
 Les règles détaillées de l'arène ne sont pas dans les fichiers lus : ces conseils restent généraux.§§The detailed arena rules are not in the files we read: this advice stays general.
-"Ce texte ne vient pas du script d'export : il doit commencer par BFRCODEX1."§§"This text does not come from the export script: it must start with BFRCODEX1."
+"Ce texte ne vient pas du script d'export : il doit commencer par BFRCODEX2."§§"This text does not come from the export script: it must start with BFRCODEX2."
 "Mettre à jour ma collection" : "Importer ma collection"§§"Update my collection" : "Import my collection"
-<li>Installe le script <strong>bfr-collection.user.js</strong> dans Tampermonkey, comme la macro.</li>§§<li>Install the <strong>bfr-collection.user.js</strong> script in Tampermonkey (<a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io/tree/main/tools">download it here</a>).</li>
-<li>Dans le jeu, ouvre <strong>Unité › Voir les unités</strong>, puis clique sur <strong>Copier ma collection pour le wiki</strong> en bas à droite.</li>§§<li>In the game, open <strong>Unit › View Units</strong>, then click <strong>Copy my collection for the wiki</strong> at the bottom right.</li>
+<li>Installe le script <strong>bfr-collection.user.js</strong> (version 2) dans Tampermonkey, comme la macro.</li>§§<li>Install the <strong>bfr-collection.user.js</strong> script (version 2) in Tampermonkey (<a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io/tree/main/tools">download it here</a>).</li>
+<li>Dans le jeu, ouvre <strong>Unité › Voir les unités</strong>, puis clique sur <strong>Copier mon compte pour Reborn Wiki</strong> en bas à droite. Le script lit tes unités, tes sphères et tes objets, sans rien modifier.</li>§§<li>In the game, open <strong>Unit › View Units</strong>, then click <strong>Copy my account for Reborn Wiki</strong> at the bottom right. The script reads your units, spheres and items without changing anything.</li>
 <li>Colle le texte ici, puis clique sur Importer.</li>§§<li>Paste the text here, then click Import.</li>
 Texte copié depuis le jeu§§Text copied from the game
 >Importer</button>§§>Import</button>
 Effacer ma collection§§Clear my collection
 La collection reste dans ton navigateur : elle n'est envoyée nulle part.§§Your collection stays in your browser: it is not sent anywhere.
-Importe ta liste d'unités pour voir ton taux de collection, les unités qui te manquent, celles prêtes à évoluer, et filtrer le team builder sur tes unités.§§Import your unit list to see your collection rate, the units you are missing, those ready to evolve, and to filter the team builder on your units.
+Importe ton compte pour voir ton taux de collection, les unités qui te manquent et celles prêtes à évoluer, tes sphères et tes objets, les sphères que tu peux forger, et des équipes proposées avec tes unités.§§Import your account to see your collection rate, the units you are missing and those ready to evolve, your spheres and items, the spheres you can forge, and teams suggested from your units.
 `Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}.§§`Imported on ${new Date(COLL.date).toLocaleString("en-US")}.
 `${COLL.unknown.length} nom${COLL.unknown.length > 1 ? "s" : ""} non reconnu${COLL.unknown.length > 1 ? "s" : ""} :§§`${COLL.unknown.length} unrecognised name${COLL.unknown.length > 1 ? "s" : ""}:
 unités jouables possédées (${pctOf(ownedHeroes.length, heroes.length)} %)§§playable units owned (${pctOf(ownedHeroes.length, heroes.length)}%)
@@ -500,3 +500,39 @@ Aucune sphère facile à obtenir ne convient à ce rôle pour l'instant.§§No e
 <div class="k">Duo facile en attendant</div>§§<div class="k">Easy pair meanwhile</div>
 <optgroup label="Faciles à obtenir">§§<optgroup label="Easy to get">
 aria-label="Difficulté d'obtention"><option value="">Toutes les difficultés</option><option value="d-easy">Faciles à obtenir</option><option value="d-mid">Moyennes</option><option value="d-hard">Difficiles</option>§§aria-label="How hard to get"><option value="">Any difficulty</option><option value="d-easy">Easy to get</option><option value="d-mid">Medium</option><option value="d-hard">Hard</option>
+# Inventaire importé, Forge avec ton inventaire et équipes proposées (script v2)
+`Contre un boss ${EL_FR[e]}`§§`Against a ${EL_FR[e]} boss`
+"Équipe équilibrée"§§"Balanced team"
+· <span class="down">type conseillé : ${§§· <span class="down">recommended type: ${
+`<span class="muted">Aucune de tes sphères ne lui convient.</span>`§§`<span class="muted">None of your spheres suits it.</span>`
+` <span class="muted">(1 emplacement)</span>`§§` <span class="muted">(1 slot)</span>`
+<div class="small muted">À viser : ${§§<div class="small muted">Aim for: ${
+`<p class="small muted">Élément fort : ${§§`<p class="small muted">Strong element: ${
+} · à éviter : ${§§} · avoid: ${
+" (Lumière et Ténèbres se blessent mutuellement)"§§" (Light and Dark hurt each other)"
+`Membre ${i + 1}`§§`Member ${i + 1}`
+"Ami") + `<p class="small muted" style="margin:2px 0 0">L'ami est à chercher dans ta liste d'amis : c'est la meilleure compétence de leader pour ce combat.</p>`§§"Friend") + `<p class="small muted" style="margin:2px 0 0">Look for this friend in your friend list: it has the best Leader Skill for this battle.</p>`
+`<p class="small down">Tu n'as pas encore d'unité ${miss.map((r) => ROLE_FR[r].toLowerCase()).join(", ")} assez forte : regarde la tier list pour en viser une.</p>`§§`<p class="small down">You do not have a strong enough ${miss.map((r) => ROLE_FR[r].toLowerCase()).join(", ")} unit yet: check the tier list to find one.</p>`
+`<p class="small down">La compétence de leader demande ${p.need} éléments différents : l'équipe n'en a que ${p.els.size}.</p>`§§`<p class="small down">The Leader Skill needs ${p.need} different elements: the team only has ${p.els.size}.</p>`
+>Ouvrir dans le team builder</button>§§>Open in the team builder</button>
+<h3>Sphères et objets</h3><p>Ta collection vient de l'ancien script, qui ne lisait que les unités. Installe la version 2 et réimporte pour voir tes sphères, tes objets, la Forge et des équipes avec tes sphères.</p>§§<h3>Spheres and items</h3><p>Your collection comes from the old script, which only read units. Install version 2 and import again to see your spheres, items, the Forge and teams with your spheres.</p>
+>Forge à sphères avec ton inventaire</h3>§§>Sphere Forge with your inventory</h3>
+Calculé avec tes objets et tes sphères. Le Karma et le niveau de ta Forge ne sont pas lus : vérifie-les en jeu. Une sphère équipée doit être retirée avant de servir de matériau.§§Calculated from your items and spheres. Your Karma and Forge level are not read: check them in the game. An equipped sphere must be removed before it can be used as a material.
+<h3>Forgeables maintenant (${§§<h3>Forgeable now (${
+`<p class="muted">Aucune recette n'a tous ses matériaux.</p>`§§`<p class="muted">No recipe has all its materials.</p>`
+<h3>Il manque un seul matériau (${§§<h3>One material missing (${
+>Mes sphères (${§§>My spheres (${
+` équipée${x.on > 1 ? "s" : ""}§§` equipped
+`<p class="muted">Aucune sphère.</p>`§§`<p class="muted">No spheres.</p>`
+>Objets de combat (${§§>Battle items (${
+`<p class="muted">Aucun objet de combat.</p>`§§`<p class="muted">No battle items.</p>`
+<strong>Matériaux (${§§<strong>Materials (${
+<span>sphères, dont ${fg.now.length} à forger maintenant</span>§§<span>spheres, ${fg.now.length} forgeable now</span>
+<h3>Équipes proposées avec tes unités</h3>§§<h3>Teams suggested from your units</h3>
+Le wiki choisit un leader parmi tes unités, complète avec les plus fortes en couvrant soins, défense, BB, boosts et altérations${inv ? ", puis répartit tes sphères" : ""}. Ta meilleure forme et ton vrai type sont pris en compte.§§The wiki picks a leader among your units, fills the team with the strongest ones while covering healing, defence, BB, buffs and status ailments${inv ? ", then shares out your spheres" : ""}. Your best form and real type are taken into account.
+>Pour quel combat ?</label>§§>For which battle?</label>
+<strong>Avec mes unités :</strong>§§<strong>With my units:</strong>
+aria-label="Pour quel combat ?"§§aria-label="For which battle?"
+>Proposer une équipe</button>§§>Suggest a team</button>
+>Importe ton compte</a> pour que le wiki te propose une équipe avec tes unités et tes sphères.</p>§§>Import your account</a> so the wiki can suggest a team from your units and spheres.</p>
+<optgroup label="Mes sphères">§§<optgroup label="My spheres">

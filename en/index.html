@@ -238,6 +238,22 @@ tr.best td { background: #2b2412; }
 .mini .sigil { width: 26px; height: 26px; font-size: 12px; border-radius: 50%; box-shadow: none; }
 .sph { display: grid; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .sph:last-child { border-bottom: 0; }
+/* Inventaire importé et équipes proposées */
+.icon.sm { width: 22px; height: 22px; vertical-align: middle; }
+.invgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.inv { display: flex; align-items: center; gap: 8px; padding: 6px 10px; text-decoration: none; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.inv:hover { border-color: var(--gold); }
+.inv .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inv .num { color: var(--gold-hi); font-weight: 700; }
+.inv .small { flex-basis: 100%; margin-left: 44px; margin-top: -4px; }
+.inv { flex-wrap: wrap; }
+.proposal { display: grid; gap: 4px; }
+.proposal h3 { color: var(--gold-hi); }
+.pmem { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+.pmem .tag { font-family: var(--display); color: var(--gold); font-size: 13px; }
+.proposal .btn { justify-self: start; margin-top: 8px; }
+.propbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; padding: 10px 14px; }
+.propbar .field { width: auto; max-width: 260px; margin: 0; }
 .sph .why { font-size: 13px; color: var(--mute); }
 .mode { padding: 14px 16px; }
 .mode h3 { font-size: 20px; color: var(--gold-hi); margin-bottom: 6px; }
@@ -1165,6 +1181,10 @@ function renderTeam() {
   main.innerHTML = `
     <h2 class="section-title">Team builder</h2>
     <p class="lede">Build a party of five units and a friend. The wiki recommends a type for each one based on its role, checks which roles are covered and reads the Leader Skills.${isExample ?" <strong>Starter example:</strong> replace the units with your own." : ""}</p>
+    ${COLL ? `<div class="panel box propbar"><strong>With my units:</strong>
+      <select class="field" id="tgoal" aria-label="For which battle?">${GOALS.map((g) => `<option value="${g.id}" ${g.id === (state.goal || "") ? "selected" : ""}>${esc(g.label)}</option>`).join("")}</select>
+      <button type="button" class="btn primary" id="tpropose">Suggest a team</button></div>`
+      : `<p class="small muted"><a href="#collection">Import your account</a> so the wiki can suggest a team from your units and spheres.</p>`}
     <div class="team">${members.map((x, i) => slotHTML(x, i, mods[i])).join("")}</div>
     <div class="cols" style="margin-top:14px">
       <section class="panel box">
@@ -1194,6 +1214,12 @@ function renderTeam() {
     saveTeam(); renderTeam();
   }));
   document.getElementById("clear").addEventListener("click", () => { team = Array(6).fill(null); saveTeam(); renderTeam(); });
+  const tp = document.getElementById("tpropose");
+  if (tp) tp.addEventListener("click", () => {
+    state.goal = document.getElementById("tgoal").value;
+    const p = proposeTeam(state.goal);
+    if (p) { loadProposal(p); renderTeam(); }
+  });
 }
 let SPHERE_OPTIONS = null;
 function sphereSelect(x, i, k, roles) {
@@ -1206,6 +1232,9 @@ function sphereSelect(x, i, k, roles) {
     <select class="field" id="s${i}-${k}" data-slot-sphere="${i}:${k}">
       <option value="">None</option>
       ${curSphere ? `<option value="${esc(cur)}" selected>${esc(sName(curSphere))} (equipped)</option>` : ""}
+      ${hasInventory() ? `<optgroup label="My spheres">${Object.entries(COLL.spheres).filter(([id, o]) => o.count > 0 && D.sphereById.has(id) && !isFarmSphere(D.sphereById.get(id)))
+        .map(([id, o]) => ({ s: D.sphereById.get(id), n: o.count })).sort((a, b) => sphereScore(b.s, roles.main || "dmg") - sphereScore(a.s, roles.main || "dmg"))
+        .map(({ s, n }) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""} ×${n}</option>`).join("")}</optgroup>` : ""}
       <optgroup label="Recommended">${adv.map(({ s }) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""} · ${diffLabel(sphereDifficulty(s).d)[0]}</option>`).join("")}</optgroup>
       <optgroup label="Easy to get">${advEasy.map(({ s }) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""} · ${diffLabel(sphereDifficulty(s).d)[0]}</option>`).join("")}</optgroup>
       <optgroup label="All spheres">${SPHERE_OPTIONS}</optgroup>
@@ -1435,10 +1464,27 @@ function renderModes() {
 // Le script d'export copie les libellés de la liste d'unités du jeu, préfixés par BFRCODEX1:.
 // Exemple de libellé : « Witch Liza, 1★, Lord, Lv.1, 2 exemplaires ».
 let COLL = store.get("codex-collection", null);
+// Format 2 (script v2) : unités, sphères et objets du compte, lus directement dans les données du jeu.
+function parseCollection2(data) {
+  const entries = [], unknown = [];
+  for (const x of data.units || []) {
+    const fi = D.formIndex.get(x.form);
+    const u = fi ? fi.unit : D.byId.get(x.unit);
+    if (!u) { unknown.push(x.form || x.unit); continue; }
+    const type = TYPES.includes(x.type) ? x.type : null;
+    entries.push({ unit: u.id, form: fi ? fi.index : 0, count: Number(x.count) || 1, type, level: x.level ?? null, slot2: !!x.slot2 });
+  }
+  const spheres = {}, items = {};
+  for (const [id, o] of Object.entries(data.spheres || {})) { if (D.sphereById.has(id)) spheres[id] = { count: Number(o.count) || 0, on: (o.on || []).length }; else unknown.push(id); }
+  for (const [id, n] of Object.entries(data.items || {})) { if (D.itemById.has(id)) items[id] = Number(n) || 0; else unknown.push(id); }
+  return { v: 2, date: data.date || new Date().toISOString(), entries, spheres, items, missing: data.missing || [], unknown: [...new Set(unknown)] };
+}
 function parseCollection(text) {
   const raw = String(text || "").trim();
+  const j = raw.indexOf("BFRCODEX2:");
+  if (j >= 0) return parseCollection2(JSON.parse(raw.slice(j + 10)));
   const i = raw.indexOf("BFRCODEX1:");
-  if (i < 0) throw new Error("This text does not come from the export script: it must start with BFRCODEX1.");
+  if (i < 0) throw new Error("This text does not come from the export script: it must start with BFRCODEX2.");
   const data = JSON.parse(raw.slice(i + 10));
   const byName = new Map();
   for (const u of D.units) { byName.set(u.name.toLowerCase(), u); for (const f of u.forms) if (!byName.has(f.name.toLowerCase())) byName.set(f.name.toLowerCase(), u); }
@@ -1463,28 +1509,153 @@ function parseCollection(text) {
 }
 const ownedEntries = (id) => (COLL ? COLL.entries.filter((e) => e.unit === id) : []);
 const ownedCount = (id) => ownedEntries(id).reduce((a, e) => a + e.count, 0);
+const lvlNum = (l) => (l == null ? 0 : /max/i.test(String(l)) ? 999 : Number(l) || 0);
 function bestOwned(id) {
   const es = ownedEntries(id);
-  return es.length ? es.reduce((a, b) => (b.form > a.form ? b : a)) : null;
+  return es.length ? es.reduce((a, b) => (b.form > a.form || (b.form === a.form && (lvlNum(b.level) > lvlNum(a.level) || (b.slot2 && !a.slot2))) ? b : a)) : null;
+}
+const hasInventory = () => !!(COLL && COLL.v === 2);
+const ownedSphere = (id) => (hasInventory() && COLL.spheres[id] ? COLL.spheres[id].count : 0);
+const ownedItem = (id) => (hasInventory() ? COLL.items[id] || 0 : 0);
+// Sphère utile pour l'or ou le karma, pas pour le combat.
+const isFarmSphere = (s) => (s.effects || []).some((e) => /^drop\.(zel|karma|item)$/.test(e.id));
+
+/* ---------- Forge avec ton inventaire ---------- */
+function forgeCheck(id) {
+  const r = FORGE[id];
+  const mats = arr(r.mats).map((m) => {
+    const have = m.k === "sphere" ? ownedSphere(m.id) : ownedItem(m.id);
+    const name = m.k === "sphere" ? sName(D.sphereById.get(m.id)) || m.id : iName(D.itemById.get(m.id)) || m.id;
+    return { ...m, have, name, ok: have >= (m.n || 1) };
+  });
+  return { r, mats, missing: mats.filter((m) => !m.ok).length };
+}
+function forgeable() {
+  if (!hasInventory()) return { now: [], almost: [] };
+  const now = [], almost = [];
+  for (const id of Object.keys(FORGE)) {
+    const s = D.sphereById.get(id);
+    if (!s || !forgeAvailable(id) || isFarmSphere(s)) continue;
+    const c = forgeCheck(id);
+    if (!c.mats.length) continue;
+    (c.missing === 0 ? now : c.missing === 1 ? almost : []).push({ s, ...c });
+  }
+  const val = (x) => (x.s.rarity || 0) * 10 - sphereDifficulty(x.s).d;
+  now.sort((a, b) => val(b) - val(a)); almost.sort((a, b) => val(b) - val(a));
+  return { now, almost };
+}
+const forgeRow = (x) => `<div class="sph"><div>${iconImg(x.s.icon, "icon", "")} <a href="#s-${esc(x.s.id)}"><strong>${esc(sName(x.s))}</strong></a>${x.s.rarity ? ` <span class="muted small">${x.s.rarity}★</span>` : ""} ${diffBadge(x.s)}${x.r.karma ? ` <span class="muted small">${fmt(x.r.karma)} Karma</span>` : ""}</div>
+  <div class="small">${x.mats.map((m) => `<span class="${m.ok ? "have" : "lack"}">${m.have}/${m.n || 1}</span> ${esc(m.name)}`).join(" · ")}</div></div>`;
+
+/* ---------- Équipes proposées avec tes unités ---------- */
+// Pour chaque unité possédée : ta meilleure forme, ton vrai type, et ta note (même calcul que la tier list).
+function ownedRoster() {
+  const T = computeTiers();
+  return D.units.filter((u) => u.hero && ownedCount(u.id) > 0).map((u) => {
+    const b = bestOwned(u.id), f = u.forms[b.form] || u.best;
+    return { u, f, type: b.type, level: b.level, slot2: !!b.slot2, roles: rolesOf(f), power: T.score(u, f), ls: T.lsPower(f) };
+  });
+}
+const elemFactor = (u, enemy) => (!enemy ? 1 : counterOf(enemy).includes(u.element) ? 1.45 : dangerFor(enemy).includes(u.element) ? 0.6 : 1);
+const ROLE_NEED = { heal: 0.35, mitig: 0.3, bc: 0.2, buff: 0.2, status: 0.2 };
+const GOALS = [{ id: "", label: "Balanced team" }, ...ELEMENTS.map((e) => ({ id: e, label: `Against a ${EL_FR[e]} boss` }))];
+function needsElements(f) { let n = 0; if (f && f.leaderSkill) walk(f.leaderSkill.effects, (e) => { if (e.id === "cond.unique_elements") n = Math.max(n, e.value); }); return n; }
+function proposeTeam(enemy) {
+  const pool = ownedRoster();
+  if (!pool.length) return null;
+  const leaderVal = (x) => (x.ls * 1.2 + x.power * 0.5) * elemFactor(x.u, enemy);
+  const leader = pool.slice().sort((a, b) => leaderVal(b) - leaderVal(a))[0];
+  const team = [leader];
+  const need = needsElements(leader.f);
+  while (team.length < 5) {
+    const covered = new Set(team.flatMap((x) => x.roles.list));
+    const els = new Set(team.map((x) => x.u.element));
+    const gain = (c) => c.power * elemFactor(c.u, enemy)
+      + Object.entries(ROLE_NEED).reduce((a, [r, w]) => a + (!covered.has(r) && c.roles.list.includes(r) ? w : 0), 0)
+      + (need && els.size < need && !els.has(c.u.element) ? 0.25 : 0);
+    const next = pool.filter((c) => !team.some((t) => t.u.id === c.u.id)).sort((a, b) => gain(b) - gain(a))[0];
+    if (!next) break;
+    team.push(next);
+  }
+  // L'ami : la meilleure compétence de leader du jeu pour ce combat, à chercher dans ta liste d'amis.
+  const T = computeTiers();
+  const friendPool = D.units.filter((u) => u.hero && !team.some((t) => t.u.id === u.id)).map((u) => ({ u, f: u.best, ls: T.lsPower(u.best), power: T.score(u, u.best) }));
+  const friend = friendPool.sort((a, b) => leaderVal(b) - leaderVal(a))[0] || null;
+  // Sphères : on répartit celles que tu possèdes, aux unités les plus fortes d'abord.
+  const stock = new Map(Object.entries(hasInventory() ? COLL.spheres : {}).map(([id, o]) => [id, o.count]));
+  const order = team.slice().sort((a, b) => b.power - a.power);
+  for (const m of order) {
+    m.spheres = [];
+    const slots = m.slot2 ? 2 : 1;
+    const role = m.roles.main || "dmg";
+    const cands = [...stock.entries()].filter(([, n]) => n > 0).map(([id]) => D.sphereById.get(id))
+      .filter((s) => s && !isFarmSphere(s) && (s.kind !== "signature" || s.signatureUnit === m.u.id))
+      .map((s) => ({ s, p: s.signatureUnit === m.u.id ? 1000 : sphereScore(s, role) })).filter((x) => x.p > 0).sort((a, b) => b.p - a.p);
+    for (const c of cands) {
+      if (m.spheres.length >= slots) break;
+      if (isStatusBoost(c.s) && m.spheres.some((id) => isStatusBoost(D.sphereById.get(id)))) continue;
+      if (m.spheres.some((id) => D.sphereById.get(id).name === c.s.name)) continue;
+      m.spheres.push(c.s.id); stock.set(c.s.id, stock.get(c.s.id) - 1);
+    }
+    // Ce qu'il faudrait viser : le duo facile conseillé, s'il ne l'a pas.
+    m.target = sphereAdvice(m.u, m.f, m.roles, 2, "easy").map((x) => x.s).filter((s) => !ownedSphere(s.id));
+  }
+  const covered = new Set(team.flatMap((x) => x.roles.list));
+  return { enemy, team, friend, covered, need, els: new Set(team.map((x) => x.u.element)) };
+}
+function proposalHTML(p, idx) {
+  const memberRow = (m, lab) => `<div class="pmem">${sigil(m.f.name, m.u.element, false, m.f.id)}<div style="min-width:0">
+      <div><span class="tag">${lab}</span> <a href="#u-${esc(m.u.id)}"><strong>${esc(m.f.name)}</strong></a> <span class="muted small">${RAR(m.f.rarity)}${m.type ? ` · ${TYPE_FR[m.type]}` : ""}</span></div>
+      <div class="small muted">${m.roles.list.slice(0, 2).map((r) => ROLE_FR[r]).join(", ") || ROLE_FR.dmg}${m.type && m.type !== recommendType(m.f, m.roles).type ? ` · <span class="down">recommended type: ${TYPE_FR[recommendType(m.f, m.roles).type]}</span>` : ""}</div>
+      ${m.spheres ? `<div class="small">${m.spheres.length ? m.spheres.map((id) => { const s = D.sphereById.get(id); return `${iconImg(s.icon, "icon sm", "")} <a href="#s-${esc(id)}">${esc(sName(s))}</a>`; }).join(" + ") : hasInventory() ? `<span class="muted">None of your spheres suits it.</span>` : ""}${!m.slot2 && hasInventory() ? ` <span class="muted">(1 slot)</span>` : ""}</div>` : ""}
+      ${m.target && m.target.length ? `<div class="small muted">Aim for: ${m.target.map((s) => `<a href="#s-${esc(s.id)}">${esc(sName(s))}</a>`).join(", ")}</div>` : ""}
+    </div></div>`;
+  const miss = Object.keys(ROLE_NEED).filter((r) => !p.covered.has(r));
+  return `<section class="panel box proposal">
+    <h3>${esc(GOALS.find((g) => g.id === (p.enemy || "")).label)}</h3>
+    ${p.enemy ? `<p class="small muted">Strong element: ${counterOf(p.enemy).map((e) => EL_FR[e]).join(", ")} · avoid: ${dangerFor(p.enemy).map((e) => EL_FR[e]).join(", ")}${p.enemy === "light" || p.enemy === "dark" ? " (Light and Dark hurt each other)" : ""}.</p>` : ""}
+    ${p.team.map((m, i) => memberRow(m, i === 0 ? "Leader" : `Member ${i + 1}`)).join("")}
+    ${p.friend ? memberRow({ ...p.friend, roles: rolesOf(p.friend.f) }, "Friend") + `<p class="small muted" style="margin:2px 0 0">Look for this friend in your friend list: it has the best Leader Skill for this battle.</p>` : ""}
+    <div class="status" style="margin-top:8px">${Object.keys(ROLE_NEED).map((r) => `<div class="pill ${p.covered.has(r) ? "ok" : "miss"}"><span class="mark">${p.covered.has(r) ? "✓" : "✗"}</span>${ROLE_FR[r]}</div>`).join("")}</div>
+    ${miss.length ? `<p class="small down">You do not have a strong enough ${miss.map((r) => ROLE_FR[r].toLowerCase()).join(", ")} unit yet: check the tier list to find one.</p>` : ""}
+    ${p.need && p.els.size < p.need ? `<p class="small down">The Leader Skill needs ${p.need} different elements: the team only has ${p.els.size}.</p>` : ""}
+    <button type="button" class="btn primary" data-load-prop="${idx}">Open in the team builder</button>
+  </section>`;
+}
+let PROPS = [];
+function proposalsHTML(goal) {
+  const goals = goal === undefined ? ["", ...ELEMENTS] : [goal];
+  PROPS = goals.map(proposeTeam).filter(Boolean);
+  return PROPS.map(proposalHTML).join("");
+}
+function loadProposal(p) {
+  team = p.team.map((m) => ({ unit: m.u.id, form: m.u.forms.indexOf(m.f), type: m.type || null, spheres: m.spheres || [] }));
+  team.push(p.friend ? { unit: p.friend.u.id, form: p.friend.u.forms.length - 1, type: null, spheres: [] } : null);
+  while (team.length < 6) team.splice(team.length - 1, 0, null);
+  saveTeam();
+  location.hash = "#equipe";
+}
+function bindProposals(root) {
+  root.querySelectorAll("[data-load-prop]").forEach((b) => b.addEventListener("click", () => loadProposal(PROPS[Number(b.dataset.loadProp)])));
 }
 function renderCollection() {
   const importBox = `
     <section class="panel box">
       <h3>${COLL ? "Update my collection" : "Import my collection"}</h3>
       <ol class="steps">
-        <li>Install the <strong>bfr-collection.user.js</strong> script in Tampermonkey (<a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io/tree/main/tools">download it here</a>).</li>
-        <li>In the game, open <strong>Unit › View Units</strong>, then click <strong>Copy my collection for the wiki</strong> at the bottom right.</li>
+        <li>Install the <strong>bfr-collection.user.js</strong> script (version 2) in Tampermonkey (<a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io/tree/main/tools">download it here</a>).</li>
+        <li>In the game, open <strong>Unit › View Units</strong>, then click <strong>Copy my account for Reborn Wiki</strong> at the bottom right. The script reads your units, spheres and items without changing anything.</li>
         <li>Paste the text here, then click Import.</li>
       </ol>
       <label class="small muted" for="collText" style="display:block;margin-top:10px">Text copied from the game</label>
-      <textarea class="field" id="collText" placeholder="BFRCODEX1:{…}"></textarea>
+      <textarea class="field" id="collText" placeholder="BFRCODEX2:{…}"></textarea>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn primary" id="collImport">Import</button>${COLL ? `<button type="button" class="btn" id="collClear">Clear my collection</button>` : ""}</div>
       <p class="small" id="collMsg" role="status"></p>
       <p class="note">Your collection stays in your browser: it is not sent anywhere.</p>
     </section>`;
   if (!COLL) {
     main.innerHTML = `<h2 class="section-title">My collection</h2>
-      <p class="lede">Import your unit list to see your collection rate, the units you are missing, those ready to evolve, and to filter the team builder on your units.</p>${importBox}`;
+      <p class="lede">Import your account to see your collection rate, the units you are missing and those ready to evolve, your spheres and items, the spheres you can forge, and teams suggested from your units.</p>${importBox}`;
   } else {
     const heroes = D.units.filter((u) => u.hero);
     const ownedHeroes = heroes.filter((u) => ownedCount(u.id) > 0);
@@ -1505,6 +1676,27 @@ function renderCollection() {
     const evoRow = (x) => `<div class="sph"><div>${sigil(x.f.name, x.u.element, false, x.f.id)} <a href="#u-${esc(x.u.id)}"><strong>${esc(x.f.name)}</strong></a> → <strong>${esc(x.next.name)}</strong> <span class="muted small">${fmt(x.zel)} Zel</span></div>
       <div class="small">${x.mats.map((m) => `<span class="${m.have >= m.count ? "have" : "lack"}">${m.have}/${m.count}</span> ${esc(m.mu ? m.mu.best.name : m.unit)}`).join(" · ")}</div></div>`;
     const missingHeroes = heroes.filter((u) => ownedCount(u.id) === 0).sort((a, b) => maxRarityNum(b) - maxRarityNum(a));
+    const inv = hasInventory();
+    const mySpheres = inv ? Object.entries(COLL.spheres).map(([id, o]) => ({ s: D.sphereById.get(id), ...o })).filter((x) => x.s && x.count > 0)
+      .sort((a, b) => (b.s.rarity || 0) - (a.s.rarity || 0) || sName(a.s).localeCompare(sName(b.s))) : [];
+    const myItems = inv ? Object.entries(COLL.items).map(([id, n]) => ({ i: D.itemById.get(id), n })).filter((x) => x.i && x.n > 0)
+      .sort((a, b) => iName(a.i).localeCompare(iName(b.i))) : [];
+    const battleItems = myItems.filter((x) => x.i.kind !== "material"), mats = myItems.filter((x) => x.i.kind === "material");
+    const fg = forgeable();
+    const invRow = (icon, href, name, n, extra) => `<a class="inv" href="${href}">${icon || `<span class="sigil" aria-hidden="true">◆</span>`}<span class="nm">${esc(name)}</span><span class="num">×${fmt(n)}</span>${extra || ""}</a>`;
+    const invHTML = !inv ? `<section class="panel box" style="margin-top:14px"><h3>Spheres and items</h3><p>Your collection comes from the old script, which only read units. Install version 2 and import again to see your spheres, items, the Forge and teams with your spheres.</p></section>` : `
+      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Sphere Forge with your inventory</h3>
+      <p class="small muted" style="margin:0 0 8px">Calculated from your items and spheres. Your Karma and Forge level are not read: check them in the game. An equipped sphere must be removed before it can be used as a material.</p>
+      <div class="cols">
+        <section class="panel box"><h3>Forgeable now (${fg.now.length})</h3>${fg.now.slice(0, 12).map(forgeRow).join("") || `<p class="muted">No recipe has all its materials.</p>`}</section>
+        <section class="panel box"><h3>One material missing (${fg.almost.length})</h3>${fg.almost.slice(0, 12).map(forgeRow).join("") || `<p class="muted">Nothing to report.</p>`}</section>
+      </div>
+      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">My spheres (${mySpheres.reduce((a, x) => a + x.count, 0)})</h3>
+      <div class="invgrid">${mySpheres.map((x) => invRow(iconImg(x.s.icon, "icon", ""), `#s-${esc(x.s.id)}`, sName(x.s), x.count, x.on ? `<span class="small muted">${x.on} équipée${x.on > 1 ? "s" : ""}</span>` : "")).join("") || `<p class="muted">No spheres.</p>`}</div>
+      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Battle items (${battleItems.length})</h3>
+      <div class="invgrid">${battleItems.map((x) => invRow(iconImg(x.i.icon, "icon", ""), `#i-${esc(x.i.id)}`, iName(x.i), x.n)).join("") || `<p class="muted">No battle items.</p>`}</div>
+      <details style="margin-top:12px"><summary><strong>Materials (${mats.length})</strong></summary>
+        <div class="invgrid" style="margin-top:8px">${mats.map((x) => invRow(iconImg(x.i.icon, "icon", ""), `#i-${esc(x.i.id)}`, iName(x.i), x.n)).join("")}</div></details>`;
     main.innerHTML = `<h2 class="section-title">My collection</h2>
       <p class="lede">Imported on ${new Date(COLL.date).toLocaleString("en-US")}. ${COLL.unknown && COLL.unknown.length ? `${COLL.unknown.length} unrecognised name${COLL.unknown.length > 1 ? "s" : ""}: ${esc(COLL.unknown.slice(0, 6).join(", "))}.` : ""}</p>
       <div class="bigstat">
@@ -1512,7 +1704,15 @@ function renderCollection() {
         <div><b>${omni.length}</b><span>units in Omni form</span></div>
         <div><b>${formsOwned}</b><span>different forms owned</span></div>
         <div><b>${ready.length}</b><span>evolutions ready</span></div>
+        ${inv ? `<div><b>${mySpheres.reduce((a, x) => a + x.count, 0)}</b><span>spheres, ${fg.now.length} forgeable now</span></div>` : ""}
       </div>
+      <section class="panel box" style="margin-top:14px">
+        <h3>Teams suggested from your units</h3>
+        <p class="small muted">The wiki picks a leader among your units, fills the team with the strongest ones while covering healing, defence, BB, buffs and status ailments${inv ? ", then shares out your spheres" : ""}. Your best form and real type are taken into account.</p>
+        <label class="small muted" for="goal">For which battle?</label>
+        <select class="field" id="goal" style="max-width:320px">${GOALS.map((g) => `<option value="${g.id}" ${g.id === (state.goal || "") ? "selected" : ""}>${esc(g.label)}</option>`).join("")}</select>
+        <div id="props" style="margin-top:10px"></div>
+      </section>
       <section class="panel box" style="margin-top:14px"><h3>By element</h3><div class="stats">
         ${byEl.map((x) => `<div class="row"><span class="dot el-${x.e}"></span><div><div class="small">${EL_FR[x.e]}</div><div class="bar"><i style="width:${pctOf(x.own, x.all)}%"></i></div></div><span class="num small">${x.own}/${x.all}</span></div>`).join("")}
       </div></section>
@@ -1524,7 +1724,11 @@ function renderCollection() {
       <div class="grid">${ownedHeroes.sort((a, b) => maxRarityNum(b) - maxRarityNum(a)).map((u) => cardHTML(u)).join("")}</div>
       <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Missing (${missingHeroes.length})</h3>
       <div class="grid">${missingHeroes.map((u) => cardHTML(u)).join("")}</div>
+      ${invHTML}
       <div style="margin-top:16px">${importBox}</div>`;
+    const drawProps = () => { const box = document.getElementById("props"); box.innerHTML = proposalsHTML(state.goal || ""); bindProposals(box); };
+    document.getElementById("goal").addEventListener("change", (e) => { state.goal = e.target.value; drawProps(); });
+    drawProps();
   }
   document.getElementById("collImport").addEventListener("click", () => {
     const msg = document.getElementById("collMsg");
@@ -1549,19 +1753,20 @@ function computeTiers() {
   const M = { hp: max("hp"), atk: max("atk"), def: max("def"), rec: max("rec") };
   const maxDmg = Math.max(...heroes.map((u) => u.roles.scores.dmg)) || 1;
   const lsPower = (f) => { let p = 0; if (f.leaderSkill) walk(f.leaderSkill.effects, (e) => { if (e.id === "passive.stat_pct" && e.value > 0) p += e.value; if (/spark_dmg|crit_dmg|elem_weak_dmg|bb_atk/.test(e.id)) p += (e.value || 0) * 0.5; if (/drop\.bc|bc_per_turn|hc\.efficacy|mitigation/.test(e.id)) p += 0.2; }); return Math.min(1, p / 2.5); };
-  const rows = heroes.map((u) => {
-    const s = u.best.stats.max, r = u.roles.scores;
+  // Même note pour n'importe quelle forme : sert aussi aux équipes proposées avec tes unités.
+  const rate = (u, f) => {
+    const s = f.stats.max, r = f === u.best ? u.roles.scores : rolesOf(f).scores;
     const stat = (s.atk / M.atk) * 0.4 + (s.hp / M.hp) * 0.25 + (s.def / M.def) * 0.15 + (s.rec / M.rec) * 0.2;
     const util = Math.min(1, (r.heal + r.mitig + r.bc + r.buff + r.status) / 8);
-    const ls = lsPower(u.best);
-    const dmg = r.dmg / maxDmg;
-    const bonus = u.best.rarity === "omni" ? 0.08 : Number(u.best.rarity) >= 7 ? 0.04 : 0;
-    const score = 0.35 * stat + 0.25 * util + 0.2 * ls + 0.2 * dmg + bonus;
-    return { u, score, parts: { stat, util, ls, dmg } };
-  }).sort((a, b) => b.score - a.score);
+    const ls = lsPower(f);
+    const dmg = Math.min(1, r.dmg / maxDmg);
+    const bonus = f.rarity === "omni" ? 0.08 : Number(f.rarity) >= 7 ? 0.04 : 0;
+    return { score: 0.35 * stat + 0.25 * util + 0.2 * ls + 0.2 * dmg + bonus, parts: { stat, util, ls, dmg } };
+  };
+  const rows = heroes.map((u) => ({ u, ...rate(u, u.best) })).sort((a, b) => b.score - a.score);
   const n = rows.length;
   rows.forEach((x, i) => { const p = i / n; x.tier = p < 0.1 ? "S" : p < 0.35 ? "A" : p < 0.7 ? "B" : "C"; });
-  TIERS = { rows, byId: new Map(rows.map((x) => [x.u.id, x])) };
+  TIERS = { rows, byId: new Map(rows.map((x) => [x.u.id, x])), score: (u, f) => rate(u, f).score, lsPower };
   return TIERS;
 }
 const tierOf = (id) => { const t = computeTiers().byId.get(id); return t ? t.tier : null; };

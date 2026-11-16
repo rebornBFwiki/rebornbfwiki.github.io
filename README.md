@@ -6,7 +6,7 @@ Wiki de fan non officiel de **Brave Frontier: Reborn** : fiches des unités, typ
 
 ## Ma collection
 
-Le script [`tools/bfr-collection.user.js`](tools/bfr-collection.user.js) s'installe dans [Tampermonkey](https://www.tampermonkey.net/). Dans le jeu, il ajoute un bouton sur **Unité › Voir les unités** qui copie ta liste d'unités ; colle-la dans la page **Ma collection** du wiki. La collection reste dans ton navigateur.
+Le script [`tools/bfr-collection.user.js`](tools/bfr-collection.user.js) s'installe dans [Tampermonkey](https://www.tampermonkey.net/). Dans le jeu, il ajoute un bouton sur **Unité › Voir les unités** qui copie tes unités, tes sphères et tes objets (lecture seule, rien n'est modifié) ; colle le texte dans la page **Ma collection** du wiki. Tu y verras ce qui te manque, les sphères que tu peux forger et des équipes proposées avec tes unités. Tout reste dans ton navigateur.
 
 ## Mettre à jour le site
 
@@ -25,7 +25,7 @@ powershell -ExecutionPolicy Bypass -File build\build.ps1
 
 Unofficial fan wiki for **Brave Frontier: Reborn**: unit pages, recommended type and spheres, a team builder with in-battle stats, a computed tier list, challenges and game modes, the merit shop and farming tips. Available in French and English.
 
-To see your own collection, install [`tools/bfr-collection.user.js`](tools/bfr-collection.user.js) in Tampermonkey, open **Unit › View Units** in the game, click the new button and paste the result in **My collection**. Your collection stays in your browser.
+To see your own account, install [`tools/bfr-collection.user.js`](tools/bfr-collection.user.js) in Tampermonkey, open **Unit › View Units** in the game, click the new button (it reads your units, spheres and items without changing anything) and paste the result in **My collection**: you get what you are missing, the spheres you can forge and teams suggested from your units. Everything stays in your browser.
 
 ---
 
