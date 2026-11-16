@@ -477,3 +477,14 @@ Hall des échanges : ${fmt(EXCH.units[f.id].pts)} points de mérite${EXCH.units[
 <h2 class="section-title">Hall des échanges</h2>§§<h2 class="section-title">Exchange Hall</h2>
 Ce que l'on peut obtenir avec des points de mérite, relevé en jeu le ${esc(ex.seen || "?")}. Le stock se renouvelle à chaque rotation : vérifie en jeu avant de prévoir un achat. Pour rappel, 1 point = 5 000 Zel ou 2 500 Karma.§§What merit points can buy, read in the game on ${esc(ex.seen || "?")}. Stock refreshes with each rotation: check in the game before planning a purchase. Reminder: 1 point = 5,000 Zel or 2,500 Karma.
 Rien dans cette catégorie.§§Nothing in this category.
+Hall de guilde : ${fmt(GUILD().spheres[s.id].pts)} jetons de guilde§§Guild Hall: ${fmt(GUILD().spheres[s.id].pts)} guild tokens
+Hall de guilde : ${fmt(GUILD().units[f.id].pts)} jetons de guilde§§Guild Hall: ${fmt(GUILD().units[f.id].pts)} guild tokens
+Hall de guilde : ${fmt(GUILD().items[i.id].pts)} jetons de guilde§§Guild Hall: ${fmt(GUILD().items[i.id].pts)} guild tokens
+const cur = guild ? "jetons de guilde" : "points de mérite";§§const cur = guild ? "guild tokens" : "merit points";
+"Le Hall de guilde, payé en jetons de guilde." : "Le Hall des échanges, payé en points de mérite (1 point = 5 000 Zel ou 2 500 Karma)."§§"The Guild Hall, paid in guild tokens." : "The Exchange Hall, paid in merit points (1 point = 5,000 Zel or 2,500 Karma)."
+ Relevé en jeu le ${esc((EXCH && EXCH.seen) || "?")} : le stock se renouvelle à chaque rotation, vérifie en jeu avant de prévoir un achat.§§ Read in the game on ${esc((EXCH && EXCH.seen) || "?")}: stock refreshes with each rotation, check in the game before planning a purchase.
+[["merit", "Hall des échanges (mérite)"], ["guild", "Hall de guilde"]]§§[["merit", "Exchange Hall (merit)"], ["guild", "Guild Hall"]]
+<h2 class="section-title">Boutiques</h2>§§<h2 class="section-title">Shops</h2>
+<a href="#merite">Boutiques</a>§§<a href="#merite">Shops</a>
+>Voir les unités</a><a href="#equipe">Composer une équipe</a>§§>Browse units</a><a href="#equipe">Build a party</a>
+>Les mieux classées</h3>§§>Top ranked</h3>

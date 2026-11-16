@@ -13,16 +13,22 @@ $sph = @{}; foreach ($s in $spheres) { $k = Key $s['name']; if (-not $sph.Contai
 $itm = @{}; foreach ($i in $items) { $k = Key $i['name']; if (-not $itm.ContainsKey($k)) { $itm[$k] = $i['id'] } }
 $uni = @{}
 foreach ($u in $units) { $fs = @($u['forms']); for ($n = 0; $n -lt $fs.Count; $n++) { $k = Key $fs[$n]['name']; if (-not $uni.ContainsKey($k)) { $uni[$k] = @{ u = $u['id']; f = $n; fid = $fs[$n]['id'] } } }; $k = Key $u['name']; if (-not $uni.ContainsKey($k)) { $uni[$k] = @{ u = $u['id']; f = 0; fid = $fs[0]['id'] } } }
-$out = [ordered]@{ seen = $ex['seen']; spheres = @{}; items = @{}; units = @{}; other = @() }
 $miss = @()
-foreach ($e in $ex['spheres']) { $k = Key $e[0]; if ($sph.ContainsKey($k)) { $out.spheres[$sph[$k]] = @{ pts = $e[1]; stock = $e[2] } } else { $miss += "sphère $($e[0])" } }
-foreach ($e in $ex['units']) { $k = Key $e[0]; if ($uni.ContainsKey($k)) { $out.units[$uni[$k].fid] = @{ pts = $e[1]; stock = $e[2]; unit = $uni[$k].u; form = $uni[$k].f } } else { $miss += "unité $($e[0])" } }
-foreach ($e in $ex['other']) {
-  $k = Key $e[0]
-  if ($itm.ContainsKey($k)) { $out.items[$itm[$k]] = @{ pts = $e[1]; stock = $e[2] } }
-  elseif ($uni.ContainsKey($k)) { $out.units[$uni[$k].fid] = @{ pts = $e[1]; stock = $e[2]; unit = $uni[$k].u; form = $uni[$k].f } }
-  else { $out.other += ,@{ name = $e[0]; pts = $e[1]; stock = $e[2] } }
+function Build($src) {
+  $o = [ordered]@{ spheres = @{}; items = @{}; units = @{}; other = @() }
+  foreach ($e in $src['spheres']) { $k = Key $e[0]; if ($sph.ContainsKey($k)) { $o.spheres[$sph[$k]] = @{ pts = $e[1]; stock = $e[2] } } else { $script:miss += "sphère $($e[0])" } }
+  foreach ($e in $src['units']) { $k = Key $e[0]; if ($uni.ContainsKey($k)) { $o.units[$uni[$k].fid] = @{ pts = $e[1]; stock = $e[2]; unit = $uni[$k].u; form = $uni[$k].f } } else { $script:miss += "unité $($e[0])" } }
+  foreach ($e in $src['other']) {
+    $k = Key $e[0]
+    if ($itm.ContainsKey($k)) { $o.items[$itm[$k]] = @{ pts = $e[1]; stock = $e[2] } }
+    elseif ($uni.ContainsKey($k)) { $o.units[$uni[$k].fid] = @{ pts = $e[1]; stock = $e[2]; unit = $uni[$k].u; form = $uni[$k].f } }
+    else { $o.other += ,@{ name = $e[0]; pts = $e[1]; stock = $e[2] } }
+  }
+  return $o
 }
+$m = Build $ex
+$g = Build $ex['guild']
+$out = [ordered]@{ seen = $ex['seen']; spheres = $m.spheres; items = $m.items; units = $m.units; other = $m.other; guild = $g }
 [IO.File]::WriteAllText("$root\data\exchange.json", ($out | ConvertTo-Json -Depth 6 -Compress), $utf8)
-"sphères: " + $out.spheres.Count + " · objets: " + $out.items.Count + " · unités: " + $out.units.Count + " · autres: " + $out.other.Count
+"mérite: " + $m.spheres.Count + " sphères, " + $m.units.Count + " unités, " + $m.items.Count + " objets · guilde: " + $g.spheres.Count + " sphères, " + $g.units.Count + " unités, " + $g.items.Count + " objets, autres: " + $g.other.Count
 if ($miss.Count) { "introuvables: " + ($miss -join ', ') }

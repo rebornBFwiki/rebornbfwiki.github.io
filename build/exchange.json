@@ -12,6 +12,25 @@
     ["Legend Stone", 4000, 99], ["Honor Claw", 50, 99], ["Honor Fang", 50, 99], ["Honor Bone", 50, 99],
     ["Honor Pelt", 50, 99], ["Honor Drop", 50, 99], ["Type Frog", 4000, 5], ["Summon Points", 200, 0]
   ],
+  "guild": {
+    "note": "Hall des échanges de guilde (guild/exchange), lu en jeu sans rien échanger. Prix en jetons de guilde.",
+    "spheres": [
+      ["Jeu'vrr's Heart", 4000, 1], ["Jeu'vrr's Breath", 4000, 1], ["Nhe'hed's Blessing", 4000, 1], ["Pyre Orb", 8000, 1],
+      ["Tide Orb", 8000, 1], ["Forest Orb", 8000, 1], ["Storm Orb", 8000, 1], ["Solar Orb", 8000, 1], ["Lunar Orb", 8000, 1],
+      ["Guardian Cloak", 3000, 1], ["Aegis Cloak", 3000, 1], ["Providence Ring", 3000, 1], ["Sinister Orb", 3000, 1],
+      ["Ihsir's Guise", 3000, 1], ["Sacred Snowglobe", 3000, 1], ["Ritus Staff", 14000, 1], ["Nyami's Bells", 14000, 1]
+    ],
+    "units": [
+      ["Xenon", 4000, 1], ["Estia", 4000, 1], ["Sphere Frog", 1600, 2], ["Burst Emperor", 800, 6], ["Almighty Imp Arton", 800, 6],
+      ["Fire Mecha God", 400, 4], ["Water Mecha God", 400, 4], ["Earth Mecha God", 400, 4], ["Thunder Mecha God", 400, 4], ["Light Mecha God", 400, 4], ["Dark Mecha God", 400, 4],
+      ["Burst Queen", 5000, 1], ["Burst Frog", 200, 20], ["Miracle Totem", 400, 6],
+      ["Fire Totem", 200, 6], ["Water Totem", 200, 6], ["Earth Totem", 200, 6], ["Thunder Totem", 200, 6], ["Light Totem", 200, 6], ["Dark Totem", 200, 6],
+      ["Power Imp Pakpak", 100, 10], ["Vigor Imp Molin", 100, 10], ["Guard Imp Ganju", 100, 10], ["Healing Imp Fwahl", 100, 10],
+      ["Metal Mimic", 200, 6], ["Dragon Mimic", 120, 10],
+      ["Fire Bulb", 160, 6], ["Water Bulb", 160, 6], ["Earth Bulb", 160, 6], ["Thunder Bulb", 160, 6], ["Light Bulb", 160, 6], ["Dark Bulb", 160, 6]
+    ],
+    "other": [["Heinous Dust", 3000, 1], ["Legend Stone", 4000, 1]]
+  },
   "units": [
     ["Mimic", 50, 10], ["Bat Mimic", 100, 6], ["Metal Mimic", 500, 10], ["Dragon Mimic", 300, 6], ["Miracle Totem", 1000, 20],
     ["Burst Frog", 1000, 10], ["Burst Emperor", 4000, 6], ["Sphere Frog", 8000, 2], ["Burst Queen", 10000, 1],
