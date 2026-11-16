@@ -397,13 +397,14 @@ const iconImg = (path, cls = "icon", alt = "") => (path ? `<img class="${cls}" s
 const dungeonImg = (id) => `${ASSET}dungeon/${id}.jpg`;
 const missionName = (m) => { const n = SRC.missions[m]; return n ? (n[LANG] || n.en) : `#${m}`; };
 let FORGE = {}; // recettes lues dans la Forge à sphères du jeu
+let EXCH = null; // Hall des échanges (points de mérite), relevé en jeu
 // Une recette est faisable si tous ses matériaux existent dans la version actuelle du jeu.
 function forgeAvailable(id, seen = new Set()) {
   const r = FORGE[id]; if (!r) return false;
   if (seen.has(id)) return true; seen.add(id);
   return arr(r.mats).every((m) => m.k === "item" ? D.itemById.has(m.id) : m.k === "sphere" ? (arr(SRC.spheres[m.id]).length > 0 || forgeAvailable(m.id, seen)) : false);
 }
-const sphereObtainable = (s) => arr(SRC.spheres[s.id]).length > 0 || forgeAvailable(s.id);
+const sphereObtainable = (s) => arr(SRC.spheres[s.id]).length > 0 || !!(EXCH && EXCH.spheres && EXCH.spheres[s.id]) || forgeAvailable(s.id);
 function forgeText(id) {
   const r = FORGE[id]; if (!r) return "";
   return `Forge à sphères${r.level ? ` (Forge Nv ${r.level})` : ""}${forgeAvailable(id) ? "" : " : un matériau n'est pas encore disponible"}`;
@@ -418,7 +419,8 @@ function sphereSources(s) {
       case "frontier-ladder": return "Récompense du classement Frontier Hunter";
       default: return x.k;
     }
-  }).concat(FORGE[s.id] ? [forgeText(s.id)] : []);
+  }).concat(EXCH && EXCH.spheres && EXCH.spheres[s.id] ? [`Hall des échanges : ${fmt(EXCH.spheres[s.id].pts)} points de mérite`] : [])
+    .concat(FORGE[s.id] ? [forgeText(s.id)] : []);
 }
 function sphereSourceHTML(s, short) {
   const l = [...new Set(sphereSources(s))];
@@ -663,9 +665,10 @@ function sphereAdvice(u, f, roles, n = 3) {
 async function load() {
   const get = (n) => fetch(`data/${n}.json`).then((r) => { if (!r.ok) throw new Error(n); return r.json(); });
   const [units, guide, items, spheres, banners, challenges] = await Promise.all(["units", "guide", "items", "spheres", "banners", "challenges"].map(get));
-  const extra = await Promise.all([get("sources").catch(() => null), LANG === "fr" ? get("i18n-fr").catch(() => null) : null, get("forge").catch(() => null)]);
+  const extra = await Promise.all([get("sources").catch(() => null), LANG === "fr" ? get("i18n-fr").catch(() => null) : null, get("forge").catch(() => null), get("exchange").catch(() => null)]);
   if (extra[0]) SRC = extra[0];
   if (extra[2]) FORGE = extra[2];
+  if (extra[3]) EXCH = extra[3];
   if (extra[1]) I18N = { sphere: extra[1].sphere || {}, item: extra[1].item || {} };
   D.challenges = challenges;
   D.challengeById = new Map(challenges.map((c) => [String(c.id), c]));
@@ -890,6 +893,7 @@ function renderUnit(id) {
       <div class="cols">
         <section class="panel box" id="sec-evo"><h3>Évolution</h3>${evoHTML}</section>
         <section class="panel box" id="sec-src"><h3>Où l'obtenir</h3>
+          ${EXCH && EXCH.units && EXCH.units[f.id] ? `<p class="src">Hall des échanges : ${fmt(EXCH.units[f.id].pts)} points de mérite${EXCH.units[f.id].stock ? ` (${EXCH.units[f.id].stock} par rotation)` : ""}</p>` : ""}
           ${g && g.sources.length ? `<ul class="fx">${g.sources.map((s) => `<li>${esc(sourceText(s))}</li>`).join("")}</ul>` : `<p class="muted">Aucune source connue dans les données du jeu.</p>`}
         </section>
       </div>
@@ -1596,6 +1600,7 @@ function renderItem(id) {
         const seen = new Set(); const list = used.filter((x) => { if (seen.has(x.s.name)) return false; seen.add(x.s.name); return true; });
         return list.length ? `<section class="panel box"><h3>Utilisé à la Forge pour</h3><div class="mini">${list.map((x) => `<a href="#s-${esc(x.s.id)}">${x.s.icon ? iconImg(x.s.icon, "icon", "").replace('class="icon"', 'class="icon" style="width:26px;height:26px"') : ""}${esc(sName(x.s))} <span class="muted small">×${x.n}</span></a>`).join("")}</div></section>` : ""; })()}
       <section class="panel box"><h3>Où le trouver</h3>
+        ${EXCH && EXCH.items && EXCH.items[i.id] ? `<p class="src">Hall des échanges : ${fmt(EXCH.items[i.id].pts)} points de mérite${EXCH.items[i.id].stock ? ` (${EXCH.items[i.id].stock} par rotation)` : ""}</p>` : ""}
         ${where.length ? `<div class="tablewrap"><table class="drops"><thead><tr><th></th><th>Quête</th><th class="n">Par tour</th><th class="n">Énergie</th></tr></thead><tbody>
           ${where.map((w) => { const c = D.challengeById.get(String(w.m)); return `<tr><td>${c ? `<img src="${dungeonImg(c.dungeonId)}" alt="" loading="lazy">` : ""}</td><td><strong>${esc(missionName(w.m))}</strong>${c ? `<div class="small muted">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div>` : ""}</td><td class="n">${w.e >= 1 ? fmt(Math.round(w.e * 10) / 10) : "≈ " + Math.round(w.e * 100) + " %"}</td><td class="n">${w.en ?? "—"}</td></tr>`; }).join("")}
         </tbody></table></div><p class="note">Classées par exemplaires obtenus par point d'énergie. « Par tour » est une moyenne calculée d'après les taux du jeu.</p>`
@@ -1641,21 +1646,28 @@ function initSearch() {
 }
 
 /* ---------- Mérite ---------- */
+state.meritTab = "spheres";
 function renderMerit() {
-  const rows = [];
-  for (const g of D.guide.values()) for (const s of g.sources || []) if (s.kind === "merit-exchange") {
-    const fi = D.formIndex.get(g.form);
-    rows.push({ g, s, u: fi && fi.unit });
-  }
-  rows.sort((a, b) => a.s.cost - b.s.cost);
+  const ex = EXCH || { spheres: {}, items: {}, units: {}, other: [] };
+  const conv = (p) => `<div class="meta">≈ ${fmt(p * 5000)} Zel ou ${fmt(p * 2500)} Karma</div>`;
+  const stock = (n) => (n ? `<div class="meta">${n} par rotation</div>` : "");
+  const tabs = [["spheres", "Sphères"], ["units", "Unités"], ["items", "Objets"]];
+  const sphereRows = Object.entries(ex.spheres || {}).map(([id, v]) => ({ s: D.sphereById.get(id), v })).filter((x) => x.s).sort((a, b) => a.v.pts - b.v.pts);
+  const unitRows = Object.entries(ex.units || {}).map(([fid, v]) => ({ fi: D.formIndex.get(fid), v })).filter((x) => x.fi).sort((a, b) => a.v.pts - b.v.pts);
+  const itemRows = Object.entries(ex.items || {}).map(([id, v]) => ({ i: D.itemById.get(id), v })).filter((x) => x.i).sort((a, b) => a.v.pts - b.v.pts);
+  const card = (href, img, name, sub, v) => `<a class="scard" href="${href}">${img}<div style="min-width:0"><div class="name">${esc(name)}</div>${sub}<div class="src">${fmt(v.pts)} points de mérite</div>${stock(v.stock)}${conv(v.pts)}</div></a>`;
+  const body = {
+    spheres: sphereRows.map(({ s, v }) => card(`#s-${esc(s.id)}`, s.icon ? iconImg(s.icon, "icon lg", "") : `<span class="sigil" aria-hidden="true">◆</span>`, sName(s), `<div class="meta">${s.rarity ? s.rarity + "★ · " : ""}${esc(s.type || "")}</div>`, v)).join(""),
+    units: unitRows.map(({ fi, v }) => card(`#u-${esc(fi.unit.id)}`, sigil(fi.form.name, fi.unit.element, true, fi.form.id), fi.form.name, `<div class="meta">${RAR(fi.form.rarity)} · ${EL_FR[fi.unit.element] || ""}</div>`, v)).join(""),
+    items: itemRows.map(({ i, v }) => card(`#i-${esc(i.id)}`, iconImg(i.icon, "icon lg", ""), iName(i), `<div class="meta">${esc(ITEM_KIND[i.kind] || "")}</div>`, v)).join("")
+      + (ex.other || []).map((o) => `<div class="scard"><span class="sigil" aria-hidden="true">★</span><div><div class="name">${esc(o.name)}</div><div class="src">${fmt(o.pts)} points de mérite</div>${conv(o.pts)}</div></div>`).join(""),
+  };
   main.innerHTML = `
-    <h2 class="section-title">Boutique de mérite</h2>
-    <p class="lede">Les unités échangeables contre des points de mérite. Pour rappel : 1 point = 5 000 Zel ou 2 500 Karma.</p>
-    <div class="tablewrap panel"><table>
-      <thead><tr><th>Unité</th><th>Rareté</th><th>Élément</th><th class="n">Points</th><th class="n">En Zel</th><th class="n">En Karma</th></tr></thead>
-      <tbody>${rows.map(({ g, s, u }) => `<tr><td>${u ? `<a href="#u-${esc(u.id)}">${esc(g.name)}</a>` : esc(g.name)}</td><td>${RAR(g.rarity)}</td><td><span class="dot el-${esc(g.element)}"></span> ${EL_FR[g.element] || ""}</td>
-        <td class="n">${fmt(s.cost)}</td><td class="n">${fmt(s.cost * 5000)}</td><td class="n">${fmt(s.cost * 2500)}</td></tr>`).join("")}</tbody>
-    </table></div>`;
+    <h2 class="section-title">Hall des échanges</h2>
+    <p class="lede">Ce que l'on peut obtenir avec des points de mérite, relevé en jeu le ${esc(ex.seen || "?")}. Le stock se renouvelle à chaque rotation : vérifie en jeu avant de prévoir un achat. Pour rappel, 1 point = 5 000 Zel ou 2 500 Karma.</p>
+    <div class="jump" role="tablist" style="margin-bottom:12px">${tabs.map(([k, l]) => `<button type="button" role="tab" data-mtab="${k}" aria-selected="${state.meritTab === k}" style="${state.meritTab === k ? "border-color:var(--gold);color:var(--gold-hi)" : ""}">${l} (${k === "spheres" ? sphereRows.length : k === "units" ? unitRows.length : itemRows.length + (ex.other || []).length})</button>`).join("")}</div>
+    <div class="sgrid">${body[state.meritTab] || `<div class="empty">Rien dans cette catégorie.</div>`}</div>`;
+  main.querySelectorAll("[data-mtab]").forEach((b) => b.addEventListener("click", () => { state.meritTab = b.dataset.mtab; renderMerit(); }));
 }
 
 /* ---------- Farm ---------- */

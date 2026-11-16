@@ -466,3 +466,14 @@ Aucune source connue dans cette version du jeu.§§No known source in this versi
 <dt>Disponible</dt><dd>${ok ? `<span class="up">Oui</span>` : `<span class="down">Pas encore : un matériau manque dans cette version</span>`}§§<dt>Available</dt><dd>${ok ? `<span class="up">Yes</span>` : `<span class="down">Not yet: a material is missing in this version</span>`}
 Recette lue dans la Forge à sphères du jeu, en ville. Le niveau de Forge n'est indiqué que pour les recettes encore verrouillées sur le compte qui les a lues.§§Recipe read from the in-game Sphere Forge, in town. The Forge level is only shown for recipes that were still locked on the account that read them.
 <h3>Utilisé à la Forge pour</h3>§§<h3>Used at the Forge for</h3>
+`Hall des échanges : ${fmt(EXCH.spheres[s.id].pts)} points de mérite`§§`Exchange Hall: ${fmt(EXCH.spheres[s.id].pts)} merit points`
+Hall des échanges : ${fmt(EXCH.items[i.id].pts)} points de mérite${EXCH.items[i.id].stock ? ` (${EXCH.items[i.id].stock} par rotation)` : ""}§§Exchange Hall: ${fmt(EXCH.items[i.id].pts)} merit points${EXCH.items[i.id].stock ? ` (${EXCH.items[i.id].stock} per rotation)` : ""}
+Hall des échanges : ${fmt(EXCH.units[f.id].pts)} points de mérite${EXCH.units[f.id].stock ? ` (${EXCH.units[f.id].stock} par rotation)` : ""}§§Exchange Hall: ${fmt(EXCH.units[f.id].pts)} merit points${EXCH.units[f.id].stock ? ` (${EXCH.units[f.id].stock} per rotation)` : ""}
+`<div class="meta">≈ ${fmt(p * 5000)} Zel ou ${fmt(p * 2500)} Karma</div>`§§`<div class="meta">≈ ${fmt(p * 5000)} Zel or ${fmt(p * 2500)} Karma</div>`
+`<div class="meta">${n} par rotation</div>`§§`<div class="meta">${n} per rotation</div>`
+[["spheres", "Sphères"], ["units", "Unités"], ["items", "Objets"]]§§[["spheres", "Spheres"], ["units", "Units"], ["items", "Items"]]
+<div class="src">${fmt(v.pts)} points de mérite</div>§§<div class="src">${fmt(v.pts)} merit points</div>
+<div class="src">${fmt(o.pts)} points de mérite</div>§§<div class="src">${fmt(o.pts)} merit points</div>
+<h2 class="section-title">Hall des échanges</h2>§§<h2 class="section-title">Exchange Hall</h2>
+Ce que l'on peut obtenir avec des points de mérite, relevé en jeu le ${esc(ex.seen || "?")}. Le stock se renouvelle à chaque rotation : vérifie en jeu avant de prévoir un achat. Pour rappel, 1 point = 5 000 Zel ou 2 500 Karma.§§What merit points can buy, read in the game on ${esc(ex.seen || "?")}. Stock refreshes with each rotation: check in the game before planning a purchase. Reminder: 1 point = 5,000 Zel or 2,500 Karma.
+Rien dans cette catégorie.§§Nothing in this category.

@@ -1,0 +1,27 @@
+{
+  "seen": "2026-11-16",
+  "note": "Hall des échanges (missions/exchange), lu en jeu sans rien échanger. Prix en points de mérite, stock par rotation (« Restant : 6d »).",
+  "spheres": [
+    ["Alpha Shield", 5000, 1], ["Angel Sword", 5000, 1], ["Buffer Jewel", 20000, 1], ["Phoenix Wing", 5000, 1],
+    ["Sacred Treasure", 15000, 1], ["Sol Creator", 5000, 1], ["Mock Crystal", 5000, 1], ["Divine Spear", 5000, 1],
+    ["Supreme Robe", 15000, 1], ["Grudge Bow", 25000, 1], ["Prized Light", 25000, 1], ["Existence Jewel", 22000, 1],
+    ["Perserverance Jewel", 25000, 1], ["Prized Mercy", 20000, 1], ["Divine Jewel", 10000, 1], ["Demon Crown", 10000, 1],
+    ["Heavenly Bud", 10000, 1]
+  ],
+  "other": [
+    ["Legend Stone", 4000, 99], ["Honor Claw", 50, 99], ["Honor Fang", 50, 99], ["Honor Bone", 50, 99],
+    ["Honor Pelt", 50, 99], ["Honor Drop", 50, 99], ["Type Frog", 4000, 5], ["Summon Points", 200, 0]
+  ],
+  "units": [
+    ["Mimic", 50, 10], ["Bat Mimic", 100, 6], ["Metal Mimic", 500, 10], ["Dragon Mimic", 300, 6], ["Miracle Totem", 1000, 20],
+    ["Burst Frog", 1000, 10], ["Burst Emperor", 4000, 6], ["Sphere Frog", 8000, 2], ["Burst Queen", 10000, 1],
+    ["Fire Nymph", 50, 10], ["Fire Spirit", 50, 10], ["Fire Idol", 100, 6], ["Fire Totem", 500, 10], ["Fire Pot", 200, 6], ["Fire Bulb", 400, 10], ["Fire God", 200, 6], ["Fire Crystal", 500, 10],
+    ["Water Nymph", 50, 10], ["Water Spirit", 50, 10], ["Water Idol", 100, 6], ["Water Totem", 500, 10], ["Water Pot", 200, 6], ["Water Bulb", 400, 10], ["Water God", 200, 6], ["Water Crystal", 500, 10],
+    ["Earth Nymph", 50, 10], ["Earth Spirit", 50, 10], ["Earth Idol", 100, 6], ["Earth Totem", 500, 10], ["Earth Pot", 200, 6], ["Earth Bulb", 400, 10], ["Earth God", 200, 6], ["Earth Crystal", 500, 10],
+    ["Thunder Nymph", 50, 10], ["Thunder Spirit", 50, 10], ["Thunder Idol", 100, 6], ["Thunder Totem", 500, 10], ["Thunder Pot", 200, 6], ["Thunder Bulb", 400, 10], ["Thunder God", 200, 6], ["Thunder Crystal", 500, 10],
+    ["Light Nymph", 50, 10], ["Light Spirit", 50, 10], ["Light Idol", 100, 6], ["Light Totem", 500, 10], ["Light Pot", 200, 6], ["Light Bulb", 400, 10], ["Light God", 200, 6], ["Light Crystal", 500, 10],
+    ["Dark Nymph", 50, 10], ["Dark Spirit", 50, 10], ["Dark Idol", 100, 6], ["Dark Totem", 500, 10], ["Dark Pot", 200, 6], ["Dark Bulb", 400, 10], ["Metal God", 200, 6], ["Dark Crystal", 500, 3],
+    ["Miracle Bulb", 300, 10], ["Power Imp Pakpak", 500, 10], ["Guard Imp Ganju", 500, 10], ["Healing Imp Fwahl", 500, 10], ["Vigor Imp Molin", 500, 10], ["Almighty Imp Arton", 4000, 6],
+    ["Fire Mecha God", 1000, 6], ["Water Mecha God", 1000, 6], ["Earth Mecha God", 1000, 6], ["Thunder Mecha God", 1000, 6], ["Light Mecha God", 1000, 6], ["Dark Mecha God", 1000, 6]
+  ]
+}
