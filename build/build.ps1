@@ -20,11 +20,11 @@ function ApplyMap($text, $file) {
 }
 
 # Français
-$fr = $src.Replace('__DATA__', 'data/').Replace('__LANGLINK__', '<a class="lang" href="en/" hreflang="en">English</a>')
+$fr = $src.Replace('__DATA__', 'data/').Replace('__ASSETS__', 'assets/').Replace('__LANGLINK__', '<a class="lang" href="en/" hreflang="en">English</a>')
 [IO.File]::WriteAllText("$root\index.html", (Wrap $fr 'fr' 'Reborn Wiki' 'Wiki de fan non officiel de Brave Frontier: Reborn : unités, types, sphères, team builder, tier list et défis.'), $utf8)
 
 # Anglais : d'abord les phrases longues, puis les mots isolés.
-$en = $src.Replace('__DATA__', '../data/').Replace('__LANGLINK__', '<a class="lang" href="../" hreflang="fr">Français</a>')
+$en = $src.Replace('__DATA__', '../data/').Replace('__ASSETS__', '../assets/').Replace('__LANGLINK__', '<a class="lang" href="../" hreflang="fr">Français</a>')
 $en = ApplyMap $en "$PSScriptRoot\en-1-phrases.tsv"
 $en = ApplyMap $en "$PSScriptRoot\en-2-words.tsv"
 $en = $en.Replace('__REPO__', 'rebornBFwiki/rebornbfwiki.github.io').Replace('"banners", "challenges"]', '"banners", "challenges-en"]').Replace('"fr-FR"', '"en-US"')

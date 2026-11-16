@@ -1,402 +1,480 @@
-area.100	Mistral'
-area.100000	Rassemblement des âmes'
-area.100001	Renforcement'
-area.100310	Ruines de lumière et ténèbres'
-area.100600	Jardin de la parade'
-area.200	Morgan'
-area.20000	Cordelica'
-area.300	St. Lamia'
-area.400	Amdahl'
-area.500	Encervis'
-area.600	Palmyna'
-area.700	Lizeria'
-area.800011	Unholy Tower'
-area.800020	La tromperie de Leon'
-area.800051	Épreuve des dieux'
-area.800052	Cauchemar infernal'
-dungeon.1	Prairie du débutant'
-dungeon.100000	Rassemblement des âmes'
-dungeon.100100	Paradis des fées'
-dungeon.100300	Jardin divin'
-dungeon.100310	Ruines de lumière et ténèbres'
-dungeon.100500	Pays du sommeil doré'
-dungeon.100600	Parade de métal !'
-dungeon.100650	Parade de joyaux !'
-dungeon.102720	Jardin des diablotins'
-dungeon.20	Grotte des flammes'
-dungeon.200	Désert de Kagan'
-dungeon.20000	Grottes de Greskya'
-dungeon.20020	Forêt de Lomass'
-dungeon.20030	Forteresse de Valtan'
-dungeon.20040	Tour de lumière'
-dungeon.20050	Mine de Cordelica'
-dungeon.20060	Ruines du géant'
-dungeon.210	Plage de la brise'
-dungeon.220	Forêt nocturne'
-dungeon.240	Sanctuaire de Lystia'
-dungeon.250	Cathédrale détruite'
-dungeon.260	Tour de Morgan'
-dungeon.300	Volcan Eldent'
-dungeon.310	Mt sacré Craylia'
-dungeon.320	Forêt de sang'
-dungeon.330	Mt Wistorea'
-dungeon.340	Sanctuaire isolé'
-dungeon.350	Grotte de la malveillance'
-dungeon.360	Palais de St. Lamia'
-dungeon.40	Forêt des bêtes'
-dungeon.400	Village de Julep'
-dungeon.410	Vaisseau fantôme Legnia'
-dungeon.430	Mines de Saji'
-dungeon.440	Temple de Lamellia'
-dungeon.450	Ville fantôme Edila'
-dungeon.50	Marais de Magutagal'
-dungeon.510	Lac Aldela'
-dungeon.530	Ravin de Gadillian'
-dungeon.550	Terre des morts'
-dungeon.560	Fort céleste Solaris'
-dungeon.60	Vestiges de Mirza'
-dungeon.600	Ruines de Dejour'
-dungeon.630	Ruines de Grandelt'
-dungeon.650	Champ de bataille de Noera'
-dungeon.660	Monde spirituel Palmyna'
-dungeon.670	Nid de Valmodora'
-dungeon.70	Nid du monstre'
-dungeon.710	Monts Golzo'
-dungeon.720	Lac gelé de Lodan'
-dungeon.730	Marécages infranchissables'
-dungeon.740	Forêt foudroyante de Zaljiba'
-dungeon.750	Cité perdue de La Veda'
-dungeon.760	Le Pont noir'
-dungeon.770	Tour de la destruction'
-dungeon.780	Lac souterrain de Golzo'
-dungeon.80	Tour de Mistral'
-dungeon.800011	Unholy Tower'
-dungeon.800020	La tromperie de Leon'
-dungeon.800051	Épreuve des dieux'
-dungeon.800052	Cauchemar infernal'
-mission.1	Bases du combat'
-mission.100000	Terre sacrée des âmes Lv. 1'
-mission.100001	Terre sacrée des âmes Lv. 2'
-mission.100002	Terre sacrée des âmes Lv. 3'
-mission.100100	Jardin des nymphes'
-mission.100101	Jardin des esprits'
-mission.100102	Jardin des idoles'
-mission.100103	Jarres fantômes'
-mission.100200	La boîte des désirs Lv. 1'
-mission.100201	La boîte des désirs Lv. 2'
-mission.100202	La boîte des désirs Lv. 3'
-mission.100300	Ruines du feu Lv. 3'
-mission.100302	Ruines de la terre Lv. 3'
-mission.100303	Ruines du tonnerre Lv. 3'
-mission.100304	Ruines des miracles Lv. 4'
-mission.100305	Ruines de la lumière Lv. 3'
-mission.100306	Ruines des ténèbres Lv. 3'
-mission.100310	Ruines de lumière'
-mission.100311	Ruines des ténèbres'
-mission.100320	Sanctuaire du feu Lv. 6'
-mission.100322	Sanctuaire de la terre Lv. 6'
-mission.100323	Sanctuaire du tonnerre Lv. 6'
-mission.100324	Sanctuaire de la lumière Lv. 6'
-mission.100325	Sanctuaire des ténèbres Lv. 6'
-mission.100500	Vallée dorée Lv. 1'
-mission.100501	Vallée dorée Lv. 2'
-mission.100502	Vallée dorée Lv. 3'
-mission.100600	Parade de métal !'
-mission.100601	Super parade de métal !'
-mission.100602	Parade de métal du feu'
-mission.100604	Parade de métal de la terre'
-mission.100605	Parade de métal du tonnerre'
-mission.100606	Parade de métal de la lumière'
-mission.100607	Parade de métal des ténèbres'
-mission.100614	Méga parade de métal'
-mission.100650	Parade de joyaux !'
-mission.100651	Super parade de joyaux'
-mission.100652	Méga parade de joyaux'
-mission.102920	Jardin des diablotins'
-mission.11	Monstres de la prairie'
-mission.12	Gardiens de la prairie'
-mission.2	Élément et compétence'
-mission.20	Grotte des flammes dansantes'
-mission.200	Le désert brûlant'
-mission.2000000	Épreuve n° 001'
-mission.2000001	Épreuve n° 002'
-mission.2000002	Épreuve n° 003'
-mission.20001	Assassins des grottes'
-mission.20002	Le festin des bandits'
-mission.20003	Caresse du vent brûlant'
-mission.20004	Face à la princesse des flammes'
-mission.20011	Sous la cascade'
-mission.20013	Une présence invisible'
-mission.20020	Dans le feuillage'
-mission.20022	Le piège des bandits'
-mission.20023	Le guerrier rugissant'
-mission.20024	Maître de Lomass'
-mission.20030	La forteresse au clair de lune'
-mission.20032	Assaut aérien'
-mission.20033	Sentinelles sans cœur'
-mission.20034	Une cour paisible'
-mission.20040	La tour scintillante'
-mission.20041	Un rugissement des ténèbres'
-mission.20042	Mélodie mortelle'
-mission.20043	Le phénix et le monstre marin'
-mission.20044	Danse du chevalier'
-mission.20045	Hurlements et coups de feu'
-mission.20046	La voix de Dieu'
-mission.20050	Dans les ténèbres'
-mission.20051	Protecteur de la nature'
-mission.20052	Hurlements dans le vide'
-mission.20053	Là où frappe la foudre'
-mission.20054	Unificateur des démons'
-mission.20055	Chasseur de mort'
-mission.20056	Rondo des cauchemars'
-mission.20060	Errance dans les ruines'
-mission.20061	Dernière lueur des ruines'
-mission.20063	Une étoile guide'
-mission.20064	La fresque abîmée'
-mission.20065	Le sens des âmes furieuses'
-mission.20066	Déchaînement des géants'
-mission.201	Bandit du désert'
-mission.202	Le dompteur imprévisible'
-mission.203	Incarnation des flammes'
-mission.204	Le bretteur avide de pouvoir'
-mission.21	Porteur du feu'
-mission.210	Les rivages infinis'
-mission.211	Pirate des hauts-fonds'
-mission.212	Chevalier des ondes'
-mission.214	Princesse à la lame de glace'
-mission.22	La planque du voleur'
-mission.220	Forêts obscures'
-mission.221	Voleur de la forêt'
-mission.222	Le chasseur du temps'
-mission.223	Incarnation de la forêt'
-mission.224	La lance qui brise la terre'
-mission.23	La bête ardente'
-mission.230	La terre ravagée par la foudre'
-mission.231	Voleur venu du ciel'
-mission.232	La tacticienne envoûtante'
-mission.233	Incarnation du tonnerre'
-mission.234	Un éclair'
-mission.240	Terre de lumière'
-mission.241	Le magnifique pégase'
-mission.242	Guardian de la lumière'
-mission.243	Incarnation de la lumière'
-mission.250	La terre dévorée par les monstres'
-mission.251	Le serpent avide'
-mission.252	Visage de sainte'
-mission.253	Incarnation des ténèbres'
-mission.260	La tour sans fin'
-mission.261	Escalier vers les cieux'
-mission.262	Danse des flammes foudroyantes'
-mission.264	Créatures sans ombre'
-mission.30	Neiges au souffle glacé'
-mission.300	Sentiers brûlants'
-mission.301	Chien de garde infernal'
-mission.302	Ailes des cieux enflammés'
-mission.303	Le dragon de feu banni'
-mission.304	Phénix du volcan'
-mission.310	Tempête en montagne'
-mission.312	La source de pouvoir'
-mission.313	Souverain des eaux'
-mission.314	Le démon des montagnes'
-mission.32	Le pirate des glaces'
-mission.320	Vers les forêts pourpres'
-mission.321	Frêle esprit des forêts'
-mission.322	Discord de la terre'
-mission.323	Demoiselle des arbres'
-mission.33	Le chevalier de glace tueur de dragons'
-mission.330	Les cimes ternies'
-mission.331	Cyclope de foudre'
-mission.332	Voler comme un papillon'
-mission.334	La bête furieuse de destruction'
-mission.340	Terres sacrées interdites'
-mission.341	Le jardin florissant'
-mission.342	Chevalier de la lumière'
-mission.343	La déesse de la guerre'
-mission.344	Conquérant des cieux'
-mission.350	Un abîme putride'
-mission.352	Demeure des âmes'
-mission.354	Le démon qui appelle la mort'
-mission.360	Vers le château abominable'
-mission.362	Le faux paradis'
-mission.363	Sainte et démon'
-mission.364	Le quadruple pilier'
-mission.365	Créatrice du monde'
-mission.40	Forêts ténébreuses'
-mission.400	Les cicatrices de la guerre'
-mission.401	Ruines abandonnées'
-mission.402	Présence des flammes'
-mission.403	De tonnerre et de flammes'
-mission.41	Marionnettiste des arbres'
-mission.410	Fête à bord'
-mission.412	Rugissement du dragon'
-mission.413	Lames gelées'
-mission.42	Bandit de la forêt'
-mission.420	Prairie balayée par le vent'
-mission.421	La silhouette gracieuse'
-mission.424	Le vaillant dieu de la terre'
-mission.43	Chasseur de la forêt'
-mission.430	Le pont pourri'
-mission.432	Là où gronde le tonnerre'
-mission.433	Attaque éclair'
-mission.434	Un dieu du tonnerre frappe'
-mission.440	Sanctuaire de la forêt'
-mission.441	Force descendante'
-mission.442	Hélice radieuse'
-mission.450	Pluie sans fin'
-mission.451	Requiem de la nuit noire'
-mission.452	Soif de sang'
-mission.453	Barrière de magie pure'
-mission.454	Un dieu des ténèbres surgit'
-mission.460	La puissance du commandant'
-mission.461	Le talent du commandant'
-mission.462	Le bal de la princesse'
-mission.463	Déferlante ténébreuse'
-mission.464	Pulsation de lumière'
-mission.465	Cérémonie malveillante'
-mission.50	Marais foudroyés'
-mission.500	La colline couverte de cendres'
-mission.501	Les flammes souveraines'
-mission.502	Dîner pour chiens de garde'
-mission.503	Mort et renaissance'
-mission.504	Le guerrier à la flamme noire'
-mission.51	Commandant du tonnerre'
-mission.510	Silence brisé'
-mission.511	Le maître du lac'
-mission.513	Le guerrier de glace'
-mission.52	Pirate des marais'
-mission.521	Vents du château'
-mission.522	Royauté féérique'
-mission.524	Tromperie du monde spirituel'
-mission.53	Le stratège tonnant'
-mission.530	Malédiction du ravin'
-mission.531	Le vent divin souffle'
-mission.532	Le géant borgne'
-mission.533	Ennemis tonitruants'
-mission.534	Noble héros de guerre'
-mission.540	Malice et méchanceté'
-mission.541	Le sens de la sainteté'
-mission.542	Guerrier à la longue lame'
-mission.543	Lame du vainqueur'
-mission.544	Là où brille la lumière'
-mission.550	Mer de pensées impies'
-mission.551	Les rêves vils se réalisent'
-mission.552	La sorcière qui meurt sans fin'
-mission.553	Hostilité impie'
-mission.560	Fuir le fort céleste'
-mission.561	Échapper aux hordes'
-mission.562	Barrage sans fin'
-mission.563	Pas de retour'
-mission.564	Les bêtes du commandant'
-mission.565	Le dieu fou descend'
-mission.570	Les ruines du nid de la reine'
-mission.60	Ruines sacrées'
-mission.600	Le chemin calciné'
-mission.601	Vague de chaleur furieuse'
-mission.602	La grande muraille'
-mission.603	Le commandant des flammes'
-mission.604	Un échange brûlant'
-mission.61	Porteur de la lumière'
-mission.610	Le château couvert de glace'
-mission.611	Salles gelées'
-mission.612	Souffle glacial'
-mission.613	La voie à suivre'
-mission.614	La bête sur la muraille'
-mission.62	Le cheval blanc de lumière'
-mission.620	Sous le soleil'
-mission.622	Le sauveur de la forêt'
-mission.623	Forêt des nymphes'
-mission.624	Vivre avec force'
-mission.63	Combat au clair de lune'
-mission.630	La cité en ruine'
-mission.631	Course à travers la cité'
-mission.633	La terre tremblante'
-mission.634	Une attaque tonitruante'
-mission.640	Une réponse à la dévotion'
-mission.641	Là où tombe la lumière'
-mission.642	La déesse espiègle'
-mission.643	Invitation au paradis'
-mission.644	Terres solennelles'
-mission.645	Un adversaire familier'
-mission.650	Cicatrices de la Grande Guerre'
-mission.651	Restes de bataille'
-mission.652	Ceux qui convoitent la mort'
-mission.653	Le monde dans ses yeux'
-mission.654	La lutte sans fin'
-mission.655	Ballet frénétique'
-mission.660	Le monde spirituel descend'
-mission.661	Ambition vacillante'
-mission.662	Foi en ses camarades'
-mission.663	Le sceau se brise'
-mission.664	Lumière et ténèbres se croisent'
-mission.665	Une présence redoutable'
-mission.666	Le sceau ouvert'
-mission.70	La chambre odieuse'
-mission.700	Le chemin commence'
-mission.701	Là où les empires se rencontrent'
-mission.702	Le bosquet des soupçons'
-mission.703	Un festin pour humanoïdes'
-mission.704	Le Guardian de la jeune fille'
-mission.705	Le rêve du géant'
-mission.71	Manipulateur des ténèbres'
-mission.710	Le col couvert de cendres'
-mission.711	Souffle de feu, crocs de foudre'
-mission.712	Flammes dans la nuit'
-mission.713	Un brasier intemporel'
-mission.72	Le serpent maudit'
-mission.720	Sur la glace mince'
-mission.721	La balle dans la glace'
-mission.723	La surface gelée'
-mission.724	Le piège du lac gelé'
-mission.73	La lame tueuse de monstres'
-mission.730	Eaux boueuses bouillonnantes'
-mission.731	Sagesse et vitalité sans fin'
-mission.732	Créatures des broussailles'
-mission.733	Enraciné dans la terre'
-mission.734	Racines au Nirvana'
-mission.741	Salves de foudre'
-mission.743	Foudre transperçante'
-mission.744	Attaque surprise orageuse'
-mission.750	Lueur florissante'
-mission.752	Flammes vives, lumière éclatante'
-mission.753	Chevalier de la Cité sainte'
-mission.756	Entre mer et ciel'
-mission.760	Le pont vers la ruine'
-mission.761	Refus de la malédiction de la mort'
-mission.763	Défi des Enfers'
-mission.764	Brave face aux ténèbres'
-mission.766	Duel sur le pont'
-mission.770	Porte du rejet'
-mission.773	Couloir de la ruine'
-mission.774	Ère de la mortalité'
-mission.776	La machine à cadavres'
-mission.780	La présence sous la surface'
-mission.81	La tour céleste'
-mission.82	Monstres du couloir'
-mission.8301001	Unholy Tower, étage 1-10'
-mission.8302001	Unholy Tower, étage 11-20'
-mission.8303001	Unholy Tower, étage 21-30'
-mission.8304001	Unholy Tower, étage 31-40'
-mission.8305001	Unholy Tower, étage 41-50'
-mission.8306001	Unholy Tower, étage 51-60'
-mission.8307001	Unholy Tower, étage 61-70'
-mission.8308001	Unholy Tower, étage 71-80'
-mission.8309001	Unholy Tower, étage 81-90'
-mission.8310001	Unholy Tower, étage 91-100'
-mission.8311002	Bande de voleurs'
-mission.8312002	Soulèvement intrépide'
-mission.8313002	Le règne sur Agni'
-mission.8380000	Épreuve 01 - Désir ardent'
-mission.8380130	Le chemin peu fréquenté'
-mission.8381000	Épreuve 02 - Force destructrice'
-mission.8381130	Sentiers déments'
-mission.8382000	Épreuve 03 - Défense ultime'
-mission.8382130	Les terres hantées'
-mission.8383000	Épreuve 04 - Barrière ardente'
-mission.8383130	Revanche démoniaque'
-mission.8384000	Épreuve 05 - Rage divine'
-mission.8384130	Possession infernale'
-mission.8385000	Épreuve 06 - Vigueur alliée'
-mission.8385130	Une croisée inexplorée'
-mission.84	Les piliers de la force'
-mission.85	Le Gigantor forgé'
-mission.90	Endormi dans la glace'
+area.100	Mistral
+area.100000	Rassemblement des âmes
+area.100001	Renforcement
+area.100310	Ruines de lumière et ténèbres
+area.100600	Jardin de la parade
+area.200	Morgan
+area.20000	Cordelica
+area.2000000	Test d'Épreuve
+area.300	St. Lamia
+area.400	Amdahl
+area.500	Encervis
+area.600	Palmyna
+area.700	Lizeria
+area.800011	Unholy Tower
+area.800020	La tromperie de Leon
+area.800051	Épreuve des dieux
+area.800052	Cauchemar infernal
+dungeon.1	Prairie du débutant
+dungeon.10	Prairie de l'aventurier
+dungeon.100000	Rassemblement des âmes
+dungeon.100100	Paradis des fées
+dungeon.100200	Grotte de l'avidité
+dungeon.100300	Jardin divin
+dungeon.100310	Ruines de lumière et ténèbres
+dungeon.100320	L'éveil des dieux méca
+dungeon.100400	Vestiges de l'éternité
+dungeon.100500	Pays du sommeil doré
+dungeon.100600	Parade de métal !
+dungeon.100650	Parade de joyaux !
+dungeon.102720	Jardin des diablotins
+dungeon.20	Grotte des flammes
+dungeon.200	Désert de Kagan
+dungeon.20000	Grottes de Greskya
+dungeon.2000000	Test d'Épreuve
+dungeon.20010	Chutes d'Ignia
+dungeon.20020	Forêt de Lomass
+dungeon.20030	Forteresse de Valtan
+dungeon.20040	Tour de lumière
+dungeon.20050	Mine de Cordelica
+dungeon.20060	Ruines du géant
+dungeon.20070	Caverne d'Ignia
+dungeon.210	Plage de la brise
+dungeon.220	Forêt nocturne
+dungeon.230	Désolation d'Asekutt
+dungeon.240	Sanctuaire de Lystia
+dungeon.250	Cathédrale détruite
+dungeon.260	Tour de Morgan
+dungeon.30	Plaine enneigée d'Egor
+dungeon.300	Volcan Eldent
+dungeon.310	Mt sacré Craylia
+dungeon.320	Forêt de sang
+dungeon.330	Mt Wistorea
+dungeon.340	Sanctuaire isolé
+dungeon.350	Grotte de la malveillance
+dungeon.360	Palais de St. Lamia
+dungeon.370	Monts d'Egor
+dungeon.40	Forêt des bêtes
+dungeon.400	Village de Julep
+dungeon.410	Vaisseau fantôme Legnia
+dungeon.420	Plaines d'Elios
+dungeon.430	Mines de Saji
+dungeon.440	Temple de Lamellia
+dungeon.450	Ville fantôme Edila
+dungeon.460	Château d'Amdahl
+dungeon.50	Marais de Magutagal
+dungeon.500	Cratère d'Elsta
+dungeon.510	Lac Aldela
+dungeon.520	Château d'Avenia
+dungeon.530	Ravin de Gadillian
+dungeon.540	Mausolée d'Alman
+dungeon.550	Terre des morts
+dungeon.560	Fort céleste Solaris
+dungeon.60	Vestiges de Mirza
+dungeon.600	Ruines de Dejour
+dungeon.610	Château d'Obselion
+dungeon.620	Chemin d'émeraude
+dungeon.630	Ruines de Grandelt
+dungeon.640	Séminaire d'Arlind
+dungeon.650	Champ de bataille de Noera
+dungeon.660	Monde spirituel Palmyna
+dungeon.670	Nid de Valmodora
+dungeon.70	Nid du monstre
+dungeon.700	Plaines d'Erinecht
+dungeon.710	Monts Golzo
+dungeon.720	Lac gelé de Lodan
+dungeon.730	Marécages infranchissables
+dungeon.740	Forêt foudroyante de Zaljiba
+dungeon.750	Cité perdue de La Veda
+dungeon.760	Le Pont noir
+dungeon.770	Tour de la destruction
+dungeon.780	Lac souterrain de Golzo
+dungeon.80	Tour de Mistral
+dungeon.800011	Unholy Tower
+dungeon.800020	La tromperie de Leon
+dungeon.800051	Épreuve des dieux
+dungeon.800052	Cauchemar infernal
+mission.1	Bases du combat
+mission.10	Début de l'aventure
+mission.100000	Terre sacrée des âmes Lv. 1
+mission.100001	Terre sacrée des âmes Lv. 2
+mission.100002	Terre sacrée des âmes Lv. 3
+mission.100100	Jardin des nymphes
+mission.100101	Jardin des esprits
+mission.100102	Jardin des idoles
+mission.100103	Jarres fantômes
+mission.100200	La boîte des désirs Lv. 1
+mission.100201	La boîte des désirs Lv. 2
+mission.100202	La boîte des désirs Lv. 3
+mission.100300	Ruines du feu Lv. 3
+mission.100301	Ruines de l'eau Lv. 3
+mission.100302	Ruines de la terre Lv. 3
+mission.100303	Ruines du tonnerre Lv. 3
+mission.100304	Ruines des miracles Lv. 4
+mission.100305	Ruines de la lumière Lv. 3
+mission.100306	Ruines des ténèbres Lv. 3
+mission.100310	Ruines de lumière
+mission.100311	Ruines des ténèbres
+mission.100320	Sanctuaire du feu Lv. 6
+mission.100321	Sanctuaire de l'eau Lv. 6
+mission.100322	Sanctuaire de la terre Lv. 6
+mission.100323	Sanctuaire du tonnerre Lv. 6
+mission.100324	Sanctuaire de la lumière Lv. 6
+mission.100325	Sanctuaire des ténèbres Lv. 6
+mission.100400	L'esprit errant Lv. 1
+mission.100401	L'esprit errant Lv. 2
+mission.100402	L'esprit errant Lv. 3
+mission.100403	L'esprit errant Lv. 4
+mission.100404	L'esprit errant Lv. 5
+mission.100500	Vallée dorée Lv. 1
+mission.100501	Vallée dorée Lv. 2
+mission.100502	Vallée dorée Lv. 3
+mission.100600	Parade de métal !
+mission.100601	Super parade de métal !
+mission.100602	Parade de métal du feu
+mission.100603	Parade de métal de l'eau
+mission.100604	Parade de métal de la terre
+mission.100605	Parade de métal du tonnerre
+mission.100606	Parade de métal de la lumière
+mission.100607	Parade de métal des ténèbres
+mission.100614	Méga parade de métal
+mission.100650	Parade de joyaux !
+mission.100651	Super parade de joyaux
+mission.100652	Méga parade de joyaux
+mission.102920	Jardin des diablotins
+mission.11	Monstres de la prairie
+mission.12	Gardiens de la prairie
+mission.2	Élément et compétence
+mission.20	Grotte des flammes dansantes
+mission.200	Le désert brûlant
+mission.20000	Porte de l'enfer
+mission.2000000	Épreuve n° 001
+mission.2000001	Épreuve n° 002
+mission.2000002	Épreuve n° 003
+mission.20001	Assassins des grottes
+mission.20002	Le festin des bandits
+mission.20003	Caresse du vent brûlant
+mission.20004	Face à la princesse des flammes
+mission.20010	Au pied de l'arc-en-ciel
+mission.20011	Sous la cascade
+mission.20012	Derrière la chute d'eau
+mission.20013	Une présence invisible
+mission.20014	La hache s'abat
+mission.20020	Dans le feuillage
+mission.20021	Labyrinthe d'arbres
+mission.20022	Le piège des bandits
+mission.20023	Le guerrier rugissant
+mission.20024	Maître de Lomass
+mission.20030	La forteresse au clair de lune
+mission.20031	Charge sur l'ennemi
+mission.20032	Assaut aérien
+mission.20033	Sentinelles sans cœur
+mission.20034	Une cour paisible
+mission.20040	La tour scintillante
+mission.20041	Un rugissement des ténèbres
+mission.20042	Mélodie mortelle
+mission.20043	Le phénix et le monstre marin
+mission.20044	Danse du chevalier
+mission.20045	Hurlements et coups de feu
+mission.20046	La voix de Dieu
+mission.20050	Dans les ténèbres
+mission.20051	Protecteur de la nature
+mission.20052	Hurlements dans le vide
+mission.20053	Là où frappe la foudre
+mission.20054	Unificateur des démons
+mission.20055	Chasseur de mort
+mission.20056	Rondo des cauchemars
+mission.20060	Errance dans les ruines
+mission.20061	Dernière lueur des ruines
+mission.20062	Sous des ailes d'ébène
+mission.20063	Une étoile guide
+mission.20064	La fresque abîmée
+mission.20065	Le sens des âmes furieuses
+mission.20066	Déchaînement des géants
+mission.20067	Le dieu géant s'éveille
+mission.20070	L'être amorphe
+mission.201	Bandit du désert
+mission.202	Le dompteur imprévisible
+mission.203	Incarnation des flammes
+mission.204	Le bretteur avide de pouvoir
+mission.21	Porteur du feu
+mission.210	Les rivages infinis
+mission.211	Pirate des hauts-fonds
+mission.212	Chevalier des ondes
+mission.213	Incarnation de l'eau
+mission.214	Princesse à la lame de glace
+mission.22	La planque du voleur
+mission.220	Forêts obscures
+mission.221	Voleur de la forêt
+mission.222	Le chasseur du temps
+mission.223	Incarnation de la forêt
+mission.224	La lance qui brise la terre
+mission.23	La bête ardente
+mission.230	La terre ravagée par la foudre
+mission.231	Voleur venu du ciel
+mission.232	La tacticienne envoûtante
+mission.233	Incarnation du tonnerre
+mission.234	Un éclair
+mission.240	Terre de lumière
+mission.241	Le magnifique pégase
+mission.242	Guardian de la lumière
+mission.243	Incarnation de la lumière
+mission.244	Épée vive comme l'éclair
+mission.250	La terre dévorée par les monstres
+mission.251	Le serpent avide
+mission.252	Visage de sainte
+mission.253	Incarnation des ténèbres
+mission.254	L'étrange chevalier noir
+mission.260	La tour sans fin
+mission.261	Escalier vers les cieux
+mission.262	Danse des flammes foudroyantes
+mission.263	Bourrasque de l'arbre de glace
+mission.264	Créatures sans ombre
+mission.265	La barricade qui s'effrite
+mission.30	Neiges au souffle glacé
+mission.300	Sentiers brûlants
+mission.301	Chien de garde infernal
+mission.302	Ailes des cieux enflammés
+mission.303	Le dragon de feu banni
+mission.304	Phénix du volcan
+mission.31	Manipulateur de l'eau
+mission.310	Tempête en montagne
+mission.311	L'ondine captive
+mission.312	La source de pouvoir
+mission.313	Souverain des eaux
+mission.314	Le démon des montagnes
+mission.32	Le pirate des glaces
+mission.320	Vers les forêts pourpres
+mission.321	Frêle esprit des forêts
+mission.322	Discord de la terre
+mission.323	Demoiselle des arbres
+mission.324	L'arbre-monde
+mission.33	Le chevalier de glace tueur de dragons
+mission.330	Les cimes ternies
+mission.331	Cyclope de foudre
+mission.332	Voler comme un papillon
+mission.333	L'oiseau-tonnerre déchaîné
+mission.334	La bête furieuse de destruction
+mission.340	Terres sacrées interdites
+mission.341	Le jardin florissant
+mission.342	Chevalier de la lumière
+mission.343	La déesse de la guerre
+mission.344	Conquérant des cieux
+mission.350	Un abîme putride
+mission.351	Vagabond de l'antre des monstres
+mission.352	Demeure des âmes
+mission.353	L'aristocrate de minuit
+mission.354	Le démon qui appelle la mort
+mission.360	Vers le château abominable
+mission.361	Les portes de l'enfer
+mission.362	Le faux paradis
+mission.363	Sainte et démon
+mission.364	Le quadruple pilier
+mission.365	Créatrice du monde
+mission.40	Forêts ténébreuses
+mission.400	Les cicatrices de la guerre
+mission.401	Ruines abandonnées
+mission.402	Présence des flammes
+mission.403	De tonnerre et de flammes
+mission.404	Arrivée d'un dieu du feu
+mission.41	Marionnettiste des arbres
+mission.410	Fête à bord
+mission.411	Aventure à l'intérieur
+mission.412	Rugissement du dragon
+mission.413	Lames gelées
+mission.414	Un dieu de l'eau apparaît
+mission.42	Bandit de la forêt
+mission.420	Prairie balayée par le vent
+mission.421	La silhouette gracieuse
+mission.422	De l'ombre de la forêt
+mission.423	Princesse de l'étang
+mission.424	Le vaillant dieu de la terre
+mission.43	Chasseur de la forêt
+mission.430	Le pont pourri
+mission.431	L'éveil des âges
+mission.432	Là où gronde le tonnerre
+mission.433	Attaque éclair
+mission.434	Un dieu du tonnerre frappe
+mission.440	Sanctuaire de la forêt
+mission.441	Force descendante
+mission.442	Hélice radieuse
+mission.443	Souffle d'Hadès
+mission.444	L'avancée du dieu de la lumière
+mission.450	Pluie sans fin
+mission.451	Requiem de la nuit noire
+mission.452	Soif de sang
+mission.453	Barrière de magie pure
+mission.454	Un dieu des ténèbres surgit
+mission.460	La puissance du commandant
+mission.461	Le talent du commandant
+mission.462	Le bal de la princesse
+mission.463	Déferlante ténébreuse
+mission.464	Pulsation de lumière
+mission.465	Cérémonie malveillante
+mission.50	Marais foudroyés
+mission.500	La colline couverte de cendres
+mission.501	Les flammes souveraines
+mission.502	Dîner pour chiens de garde
+mission.503	Mort et renaissance
+mission.504	Le guerrier à la flamme noire
+mission.51	Commandant du tonnerre
+mission.510	Silence brisé
+mission.511	Le maître du lac
+mission.512	L'attrait du lac
+mission.513	Le guerrier de glace
+mission.514	Le maître de l'océan
+mission.52	Pirate des marais
+mission.520	Les portes du château s'ouvrent
+mission.521	Vents du château
+mission.522	Royauté féérique
+mission.523	L'arbre-monde et le sauveur
+mission.524	Tromperie du monde spirituel
+mission.53	Le stratège tonnant
+mission.530	Malédiction du ravin
+mission.531	Le vent divin souffle
+mission.532	Le géant borgne
+mission.533	Ennemis tonitruants
+mission.534	Noble héros de guerre
+mission.540	Malice et méchanceté
+mission.541	Le sens de la sainteté
+mission.542	Guerrier à la longue lame
+mission.543	Lame du vainqueur
+mission.544	Là où brille la lumière
+mission.550	Mer de pensées impies
+mission.551	Les rêves vils se réalisent
+mission.552	La sorcière qui meurt sans fin
+mission.553	Hostilité impie
+mission.554	Les cieux d'en haut
+mission.560	Fuir le fort céleste
+mission.561	Échapper aux hordes
+mission.562	Barrage sans fin
+mission.563	Pas de retour
+mission.564	Les bêtes du commandant
+mission.565	Le dieu fou descend
+mission.570	Les ruines du nid de la reine
+mission.60	Ruines sacrées
+mission.600	Le chemin calciné
+mission.601	Vague de chaleur furieuse
+mission.602	La grande muraille
+mission.603	Le commandant des flammes
+mission.604	Un échange brûlant
+mission.61	Porteur de la lumière
+mission.610	Le château couvert de glace
+mission.611	Salles gelées
+mission.612	Souffle glacial
+mission.613	La voie à suivre
+mission.614	La bête sur la muraille
+mission.62	Le cheval blanc de lumière
+mission.620	Sous le soleil
+mission.621	L'ombre dans les arbres
+mission.622	Le sauveur de la forêt
+mission.623	Forêt des nymphes
+mission.624	Vivre avec force
+mission.63	Combat au clair de lune
+mission.630	La cité en ruine
+mission.631	Course à travers la cité
+mission.632	L'oiseau dévoreur de ciel
+mission.633	La terre tremblante
+mission.634	Une attaque tonitruante
+mission.640	Une réponse à la dévotion
+mission.641	Là où tombe la lumière
+mission.642	La déesse espiègle
+mission.643	Invitation au paradis
+mission.644	Terres solennelles
+mission.645	Un adversaire familier
+mission.650	Cicatrices de la Grande Guerre
+mission.651	Restes de bataille
+mission.652	Ceux qui convoitent la mort
+mission.653	Le monde dans ses yeux
+mission.654	La lutte sans fin
+mission.655	Ballet frénétique
+mission.660	Le monde spirituel descend
+mission.661	Ambition vacillante
+mission.662	Foi en ses camarades
+mission.663	Le sceau se brise
+mission.664	Lumière et ténèbres se croisent
+mission.665	Une présence redoutable
+mission.666	Le sceau ouvert
+mission.70	La chambre odieuse
+mission.700	Le chemin commence
+mission.701	Là où les empires se rencontrent
+mission.702	Le bosquet des soupçons
+mission.703	Un festin pour humanoïdes
+mission.704	Le Guardian de la jeune fille
+mission.705	Le rêve du géant
+mission.71	Manipulateur des ténèbres
+mission.710	Le col couvert de cendres
+mission.711	Souffle de feu, crocs de foudre
+mission.712	Flammes dans la nuit
+mission.713	Un brasier intemporel
+mission.714	Le dieu qui s'effondre
+mission.72	Le serpent maudit
+mission.720	Sur la glace mince
+mission.721	La balle dans la glace
+mission.722	Dragon dans l'ombre
+mission.723	La surface gelée
+mission.724	Le piège du lac gelé
+mission.73	La lame tueuse de monstres
+mission.730	Eaux boueuses bouillonnantes
+mission.731	Sagesse et vitalité sans fin
+mission.732	Créatures des broussailles
+mission.733	Enraciné dans la terre
+mission.734	Racines au Nirvana
+mission.740	Pluie d'éclairs
+mission.741	Salves de foudre
+mission.742	Projet d'éternité
+mission.743	Foudre transperçante
+mission.744	Attaque surprise orageuse
+mission.750	Lueur florissante
+mission.751	L'épée protectrice
+mission.752	Flammes vives, lumière éclatante
+mission.753	Chevalier de la Cité sainte
+mission.754	Le vœu d'une jeune fille
+mission.755	La preuve d'un héros
+mission.756	Entre mer et ciel
+mission.760	Le pont vers la ruine
+mission.761	Refus de la malédiction de la mort
+mission.762	L'éclair de l'épée démoniaque
+mission.763	Défi des Enfers
+mission.764	Brave face aux ténèbres
+mission.765	Le destin d'un héros
+mission.766	Duel sur le pont
+mission.770	Porte du rejet
+mission.771	Salle de l'anéantissement
+mission.772	Escalier vers l'extinction
+mission.773	Couloir de la ruine
+mission.774	Ère de la mortalité
+mission.775	Barrière d'extermination
+mission.776	La machine à cadavres
+mission.780	La présence sous la surface
+mission.81	La tour céleste
+mission.82	Monstres du couloir
+mission.83	L'escalier de l'épreuve
+mission.8301001	Unholy Tower, étage 1-10
+mission.8302001	Unholy Tower, étage 11-20
+mission.8303001	Unholy Tower, étage 21-30
+mission.8304001	Unholy Tower, étage 31-40
+mission.8305001	Unholy Tower, étage 41-50
+mission.8306001	Unholy Tower, étage 51-60
+mission.8307001	Unholy Tower, étage 61-70
+mission.8308001	Unholy Tower, étage 71-80
+mission.8309001	Unholy Tower, étage 81-90
+mission.8310001	Unholy Tower, étage 91-100
+mission.8311002	Bande de voleurs
+mission.8312002	Soulèvement intrépide
+mission.8313002	Le règne sur Agni
+mission.8380000	Épreuve 01 - Désir ardent
+mission.8380130	Le chemin peu fréquenté
+mission.8381000	Épreuve 02 - Force destructrice
+mission.8381130	Sentiers déments
+mission.8382000	Épreuve 03 - Défense ultime
+mission.8382130	Les terres hantées
+mission.8383000	Épreuve 04 - Barrière ardente
+mission.8383130	Revanche démoniaque
+mission.8384000	Épreuve 05 - Rage divine
+mission.8384130	Possession infernale
+mission.8385000	Épreuve 06 - Vigueur alliée
+mission.8385130	Une croisée inexplorée
+mission.84	Les piliers de la force
+mission.85	Le Gigantor forgé
+mission.90	Endormi dans la glace

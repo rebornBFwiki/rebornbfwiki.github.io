@@ -1,7 +1,7 @@
 # Traduction anglaise : « texte français§§texte anglais », une entrée par ligne, appliquées dans l'ordre.
 # Les phrases longues d'abord ; en-2-words.tsv traite ensuite les mots isolés.
 <div class="empty">Chargement des données du jeu…</div>§§<div class="empty">Loading game data…</div>
-Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/__REPO__">code source sur GitHub</a>. Données et vignettes lues dans les fichiers publics du jeu Brave Frontier: Reborn (version du 14 novembre 2026). Brave Frontier appartient à ses ayants droit ; ce site n'est affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn.§§Reborn Wiki is an unofficial fan wiki, <a href="https://github.com/__REPO__">source code on GitHub</a>. Data and thumbnails come from the public files of Brave Frontier: Reborn (November 14, 2026 version). Brave Frontier belongs to its rights holders; this site is not affiliated with Alim, gumi or the Reborn team.
+Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données et vignettes lues dans les fichiers publics du jeu Brave Frontier: Reborn (version du 14 novembre 2026). Brave Frontier appartient à ses ayants droit ; ce site n'est affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn.§§Reborn Wiki is an unofficial fan wiki, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">source code on GitHub</a>. Data and thumbnails come from the public files of Brave Frontier: Reborn (November 14, 2026 version). Brave Frontier belongs to its rights holders; this site is not affiliated with Alim, gumi or the Reborn team.
 const EL_FR = { fire: "Feu", water: "Eau", earth: "Terre", thunder: "Foudre", light: "Lumière", dark: "Ténèbres" };§§const EL_FR = { fire: "Fire", water: "Water", earth: "Earth", thunder: "Thunder", light: "Light", dark: "Dark" };
 const STAT_FR = { hp: "PV", atk: "ATQ", def: "DÉF", rec: "REC" };§§const STAT_FR = { hp: "HP", atk: "ATK", def: "DEF", rec: "REC" };
 const AIL_FR = { poison: "Poison", weak: "Faiblesse", sick: "Maladie", injury: "Blessure", curse: "Malédiction", paralysis: "Paralysie" };§§const AIL_FR = { poison: "Poison", weak: "Weak", sick: "Sick", injury: "Injury", curse: "Curse", paralysis: "Paralysis" };
@@ -310,7 +310,7 @@ Une compétence de leader qui monte les PV et l'ATQ de toute l'équipe aide plus
 Les règles détaillées de l'arène ne sont pas dans les fichiers lus : ces conseils restent généraux.§§The detailed arena rules are not in the files we read: this advice stays general.
 "Ce texte ne vient pas du script d'export : il doit commencer par BFRCODEX1."§§"This text does not come from the export script: it must start with BFRCODEX1."
 "Mettre à jour ma collection" : "Importer ma collection"§§"Update my collection" : "Import my collection"
-<li>Installe le script <strong>bfr-collection.user.js</strong> dans Tampermonkey, comme la macro.</li>§§<li>Install the <strong>bfr-collection.user.js</strong> script in Tampermonkey (<a href="https://github.com/__REPO__/tree/main/tools">download it here</a>).</li>
+<li>Installe le script <strong>bfr-collection.user.js</strong> dans Tampermonkey, comme la macro.</li>§§<li>Install the <strong>bfr-collection.user.js</strong> script in Tampermonkey (<a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io/tree/main/tools">download it here</a>).</li>
 <li>Dans le jeu, ouvre <strong>Unité › Voir les unités</strong>, puis clique sur <strong>Copier ma collection pour le wiki</strong> en bas à droite.</li>§§<li>In the game, open <strong>Unit › View Units</strong>, then click <strong>Copy my collection for the wiki</strong> at the bottom right.</li>
 <li>Colle le texte ici, puis clique sur Importer.</li>§§<li>Paste the text here, then click Import.</li>
 Texte copié depuis le jeu§§Text copied from the game
@@ -416,3 +416,44 @@ aria-label="Rechercher"§§aria-label="Search"
 Sphère ${k + 1}${k === 1 ? " (emplacement à débloquer)" : ""}§§Sphere ${k + 1}${k === 1 ? " (slot to unlock)" : ""}
 ${list.length} quête${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} sans continue` : ""}§§${list.length} quest${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} without continues` : ""}
 Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}.§§Imported on ${new Date(COLL.date).toLocaleString("en-US")}.
+const LANG = "fr";§§const LANG = "en";
+placeholder="Rechercher une unité, une sphère, un objet, une quête…" aria-label="Recherche globale"§§placeholder="Search a unit, sphere, item or quest…" aria-label="Global search"
+`Première victoire : ${missionName(x.m)}`§§`First clear: ${missionName(x.m)}`
+`Rang de chasseur ${x.rank} (Frontier Hunter)`§§`Hunter rank ${x.rank} (Frontier Hunter)`
+`Récompense de ${missionName(x.m)} (Frontier Hunter)`§§`Reward from ${missionName(x.m)} (Frontier Hunter)`
+"Récompense du classement Frontier Hunter"§§"Frontier Hunter ladder reward"
+Pas de source dans les fichiers publics : elle se fabrique sans doute à la Forge à sphères, en ville.§§No source in the public files: it is most likely crafted at the Sphere Forge, in town.
+const SPHERE_KIND = { "all-stat": "Toutes stats", typed: "Spécialisée", signature: "Signature" };§§const SPHERE_KIND = { "all-stat": "All stats", typed: "Specialised", signature: "Signature" };
+const ITEM_KIND = { material: "Matériau", battle: "Objet de combat", buff: "Boost", cure: "Remède", heal: "Soin", revive: "Résurrection" };§§const ITEM_KIND = { material: "Material", battle: "Battle item", buff: "Buff", cure: "Cure", heal: "Heal", revive: "Revive" };
+sphères. Ouvre une sphère pour voir ses effets, où l'obtenir et les unités à qui elle convient. Les sphères signature ne s'activent qu'avec l'unité prévue.§§spheres. Open a sphere to see its effects, where to get it and which units it suits. Signature spheres only work on their own unit.
+Seulement celles avec une source connue§§Only those with a known source
+Aucune sphère ne correspond.§§No sphere matches.
+← Toutes les sphères§§← All spheres
+Cette sphère n'existe pas dans les données du jeu.§§This sphere does not exist in the game data.
+ · nom anglais : §§ · original name: 
+<h3>Effets</h3>§§<h3>Effects</h3>
+Aucun effet.§§No effect.
+Sphère Status Boost : une unité ne peut pas en porter deux.§§Status Boost sphere: a unit cannot hold two of them.
+"Aucune source dans les fichiers publics du jeu."§§"No source in the game's public files."
+Les sphères qui ne sont pas des récompenses se fabriquent en général à la <strong>Forge à sphères</strong>, en ville, avec des matériaux trouvés en quête. Ses recettes ne sont visibles qu'en jeu.§§Spheres that are not rewards are usually crafted at the <strong>Sphere Forge</strong> in town, with materials found in quests. Its recipes are only visible in the game.
+<h3>Sphère signature de</h3>§§<h3>Signature sphere of</h3>
+<h3>Conseillée pour</h3>§§<h3>Recommended for</h3>
+objets du jeu. Ouvre un matériau pour voir les quêtes où il tombe le plus.§§items in the game. Open a material to see the quests where it drops most.
+Le plus rentable : §§Best farm: 
+Aucune quête ne le fait tomber.§§No quest drops it.
+Aucun objet ne correspond.§§No item matches.
+← Tous les objets§§← All items
+Cet objet n'existe pas dans les données du jeu.§§This item does not exist in the game data.
+ · revente ${fmt(i.sellPrice)} Zel§§ · sells for ${fmt(i.sellPrice)} Zel
+<h3>Effet</h3>§§<h3>Effect</h3>
+<h3>Où le trouver</h3>§§<h3>Where to find it</h3>
+<th>Quête</th><th class="n">Par tour</th><th class="n">Énergie</th>§§<th>Quest</th><th class="n">Per run</th><th class="n">Energy</th>
+Classées par exemplaires obtenus par point d'énergie. « Par tour » est une moyenne calculée d'après les taux du jeu.§§Sorted by copies earned per energy point. "Per run" is an average computed from the game's drop rates.
+Aucune quête ne fait tomber cet objet dans les fichiers du jeu. Il s'obtient sans doute en récompense, en boutique ou en ville.§§No quest drops this item in the game files. It most likely comes from rewards, a shop or the town.
+k: "Unité", t:§§k: "Unit", t:
+k: "Sphère", t:§§k: "Sphere", t:
+k: "Objet", t:§§k: "Item", t:
+k: "Quête", t:§§k: "Quest", t:
+Aucun résultat.§§No results.
+aria-label="Aller à"§§aria-label="Jump to"
+[["sec-type", "Type"], ["sec-stats", "Stats"], ["sec-skills", "Compétences"], ["sec-spheres", "Sphères"], ["sec-evo", "Évolution"], ["sec-src", "Obtention"]]§§[["sec-type", "Type"], ["sec-stats", "Stats"], ["sec-skills", "Skills"], ["sec-spheres", "Spheres"], ["sec-evo", "Evolution"], ["sec-src", "Where to get"]]

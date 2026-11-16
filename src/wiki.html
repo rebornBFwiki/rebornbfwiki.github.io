@@ -51,8 +51,44 @@ header.top {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.topbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-block: 10px; }
-.brand { display: flex; align-items: baseline; gap: 10px; }
+.topbar { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; padding-block: 10px 6px; }
+.brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; }
+.search { position: relative; flex: 1 1 260px; max-width: 520px; min-width: 0; }
+.search input { width: 100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; }
+.search input:focus { border-color: var(--gold); outline: none; }
+.results { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; background: var(--panel); border: 1px solid var(--gold); border-radius: 12px; box-shadow: 0 12px 30px #000a; overflow: hidden; max-height: 70vh; overflow-y: auto; }
+.results a { display: grid; grid-template-columns: 32px 1fr auto; gap: 10px; align-items: center; padding: 7px 10px; text-decoration: none; color: var(--fg); }
+.results a:hover, .results a.on { background: var(--panel-2); }
+.results .kind { font-size: 11px; color: var(--mute); text-transform: uppercase; letter-spacing: .05em; }
+.results .sigil { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; box-shadow: none; }
+.results .none { padding: 12px; color: var(--mute); font-size: 14px; }
+nav.tabs { flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+nav.tabs a { white-space: nowrap; }
+.subnav { display: inline-flex; gap: 2px; margin-left: 10px; padding-left: 10px; border-left: 1px solid var(--line); flex: none; }
+.subnav a { font-weight: 500 !important; color: var(--mute) !important; font-size: 13px !important; }
+.subnav a[aria-current="page"] { color: #1a1406 !important; }
+.icon { width: 36px; height: 36px; object-fit: contain; flex: none; image-rendering: auto; }
+.icon.lg { width: 64px; height: 64px; }
+.row-ico { display: flex; gap: 10px; align-items: flex-start; min-width: 0; }
+.row-ico > div { min-width: 0; }
+.src { font-size: 13px; color: var(--gold-hi); margin-top: 2px; }
+.src.none { color: var(--mute); }
+.cover { position: relative; height: 120px; border-radius: 10px; overflow: hidden; background: var(--panel-2) center/cover no-repeat; }
+.cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b122200 30%, #0b1222e6 100%); }
+.cover .over { position: absolute; left: 12px; right: 12px; bottom: 8px; z-index: 1; }
+.cover .over h3 { margin: 0; text-shadow: 0 2px 4px #000; }
+.jump { display: flex; flex-wrap: wrap; gap: 6px; }
+.jump button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.jump button:hover { border-color: var(--gold); }
+.hero { background: linear-gradient(120deg, color-mix(in srgb, var(--el, var(--gold)) 22%, var(--panel)) 0%, var(--panel) 55%); }
+.sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.scard { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 10px; padding: 10px 12px; text-decoration: none; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.scard:hover { border-color: var(--gold); }
+.scard .name { font-weight: 700; line-height: 1.2; }
+.scard .meta { font-size: 12px; color: var(--mute); }
+.scard .fx { font-size: 13px; }
+.box[id] { scroll-margin-top: 130px; }
+.drops td img { width: 72px; height: 40px; object-fit: cover; border-radius: 6px; display: block; }
 .brand h1 { font-size: 24px; color: var(--gold-hi); text-shadow: 0 2px 0 #00000080; }
 .brand span { color: var(--mute); font-size: 13px; }
 .lang { font-weight: 700; text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
@@ -253,22 +289,29 @@ footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line);
 
 <header class="top">
   <div class="wrap topbar">
-    <div class="brand"><h1>Reborn Wiki</h1><span>Brave Frontier: Reborn · __LANGLINK__</span></div>
-    <nav class="tabs" id="tabs" aria-label="Sections">
+    <a class="brand" href="#accueil"><h1>Reborn Wiki</h1><span>Brave Frontier: Reborn</span></a>
+    <div class="search" id="search">
+      <input type="search" id="gq" placeholder="Rechercher une unité, une sphère, un objet, une quête…" aria-label="Recherche globale" autocomplete="off">
+      <div class="results" id="gr" hidden></div>
+    </div>
+    __LANGLINK__
+  </div>
+  <nav class="wrap tabs" id="tabs" aria-label="Sections">
       <a href="#accueil">Accueil</a>
       <a href="#unites">Unités</a>
-      <a href="#collection">Ma collection</a>
       <a href="#equipe">Team builder</a>
       <a href="#tierlist">Tier list</a>
       <a href="#defis">Défis</a>
-      <a href="#modes">Modes</a>
-      <a href="#types">Types</a>
+      <a href="#collection">Ma collection</a>
+      <span class="subnav" aria-label="Guides">
       <a href="#spheres">Sphères</a>
       <a href="#objets">Objets</a>
+      <a href="#modes">Modes</a>
+      <a href="#types">Types</a>
       <a href="#merite">Mérite</a>
       <a href="#farm">Farm</a>
-    </nav>
-  </div>
+      </span>
+  </nav>
 </header>
 
 <main class="wrap" id="main">
@@ -331,6 +374,37 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
 };
+
+/* ---------- Langue, images et sources ---------- */
+const LANG = "fr";
+const ASSET = "__ASSETS__";
+let I18N = { sphere: {}, item: {} }; // noms officiels du jeu dans la langue du site
+let SRC = { spheres: {}, items: {}, missions: {} };
+const arr = (x) => (Array.isArray(x) ? x : x ? [x] : []);
+const sName = (s) => (s && ((I18N.sphere[s.id] && I18N.sphere[s.id].n) || s.name)) || "";
+const sDesc = (s) => (s && ((I18N.sphere[s.id] && I18N.sphere[s.id].d) || s.description)) || "";
+const iName = (i) => (i && ((I18N.item[i.id] && I18N.item[i.id].n) || i.name)) || "";
+const iDesc = (i) => (i && ((I18N.item[i.id] && I18N.item[i.id].d) || i.description)) || "";
+const iconImg = (path, cls = "icon", alt = "") => (path ? `<img class="${cls}" src="${ASSET}${esc(path)}" alt="${esc(alt)}" loading="lazy">` : "");
+const dungeonImg = (id) => `${ASSET}dungeon/${id}.jpg`;
+const missionName = (m) => { const n = SRC.missions[m]; return n ? (n[LANG] || n.en) : `#${m}`; };
+// Où obtenir une sphère, d'après les récompenses présentes dans les fichiers publics du jeu.
+function sphereSources(s) {
+  return arr(SRC.spheres[s.id]).map((x) => {
+    switch (x.k) {
+      case "first-clear": return `Première victoire : ${missionName(x.m)}`;
+      case "hunter-rank": return `Rang de chasseur ${x.rank} (Frontier Hunter)`;
+      case "frontier-quest": return `Récompense de ${missionName(x.m)} (Frontier Hunter)`;
+      case "frontier-ladder": return "Récompense du classement Frontier Hunter";
+      default: return x.k;
+    }
+  });
+}
+function sphereSourceHTML(s, short) {
+  const l = [...new Set(sphereSources(s))];
+  if (!l.length) return `<div class="src none">Pas de source dans les fichiers publics : elle se fabrique sans doute à la Forge à sphères, en ville.</div>`;
+  return `<div class="src">${esc(short ? l[0] + (l.length > 1 ? ` (+${l.length - 1})` : "") : l.join(" · "))}</div>`;
+}
 
 /* ---------- Effets en français ---------- */
 function tail(e) {
@@ -566,7 +640,12 @@ function sphereAdvice(u, f, roles, n = 3) {
 async function load() {
   const get = (n) => fetch(`__DATA__${n}.json`).then((r) => { if (!r.ok) throw new Error(n); return r.json(); });
   const [units, guide, items, spheres, banners, challenges] = await Promise.all(["units", "guide", "items", "spheres", "banners", "challenges"].map(get));
+  const extra = await Promise.all([get("sources").catch(() => null), LANG === "fr" ? get("i18n-fr").catch(() => null) : null]);
+  if (extra[0]) SRC = extra[0];
+  if (extra[1]) I18N = { sphere: extra[1].sphere || {}, item: extra[1].item || {} };
   D.challenges = challenges;
+  D.challengeById = new Map(challenges.map((c) => [String(c.id), c]));
+  D.itemById = new Map(items.map((i) => [i.id, i]));
   for (const s of spheres) D.sphereById.set(s.id, s);
   for (const u of units) {
     const forms = u.forms || [];
@@ -587,9 +666,12 @@ const main = document.getElementById("main");
 const state = { el: store.get("codex-el", []), q: "", fodder: false, sort: "rarity", form: {} };
 function route() {
   const h = (location.hash || "#accueil").slice(1);
-  const view = h.startsWith("u-") ? "unites" : h;
+  const view = h.startsWith("u-") ? "unites" : h.startsWith("s-") ? "spheres" : h.startsWith("i-") ? "objets" : h;
   document.querySelectorAll("#tabs a").forEach((a) => a.setAttribute("aria-current", a.getAttribute("href") === "#" + view ? "page" : "false"));
+  closeSearch();
   if (h.startsWith("u-")) return renderUnit(h.slice(2));
+  if (h.startsWith("s-")) { renderSphere(h.slice(2)); return window.scrollTo(0, 0); }
+  if (h.startsWith("i-")) { renderItem(h.slice(2)); return window.scrollTo(0, 0); }
   ({ accueil: renderAccueil, collection: renderCollection, tierlist: renderTierlist, unites: renderUnits, equipe: renderTeam, defis: renderDefis, modes: renderModes, types: renderTypes, spheres: renderSpheres, objets: renderItems, merite: renderMerit, farm: renderFarm }[view] || renderAccueil)();
   window.scrollTo(0, 0);
 }
@@ -685,7 +767,7 @@ function statBars(f) {
     + `<p class="note">Barres : niveau max, comparé à la meilleure unité jouable du jeu.</p>`;
 }
 function briefHTML(u, f, roles, rec, g) {
-  const duo = sphereAdvice(u, f, roles).slice(0, 2).map((x) => x.s.name);
+  const duo = sphereAdvice(u, f, roles).slice(0, 2).map((x) => sName(x.s));
   const t = u.hero ? tierOf(u.id) : null;
   const mine = COLL ? bestOwned(u.id) : null;
   const firstSource = g && g.sources && g.sources[0] ? sourceText(g.sources[0]) : "Source inconnue";
@@ -718,12 +800,12 @@ function renderUnit(id) {
   const next = u.forms[idx + 1];
   const evoHTML = evo ? `<p>Vers <strong>${esc(next ? next.name : "la forme suivante")}</strong> :</p><ul class="fx">${(evo.units || []).map((m) => {
       const mu = D.byId.get(m.unit);
-      return `<li>${m.count} × ${mu ? `<a href="#u-${esc(mu.id)}">${esc(mu.best.name)}</a>` : esc(m.unit)}</li>`; }).join("")}<li>${fmt(evo.zel || 0)} Zel</li></ul>` : `<p class="muted">Forme finale : pas d'évolution.</p>`;
+      return `<li class="row-ico" style="align-items:center;margin:4px 0">${mu ? sigil(mu.best.name, mu.element, false, mu.best.id) : ""}<span>${m.count} × ${mu ? `<a href="#u-${esc(mu.id)}">${esc(mu.best.name)}</a>` : esc(m.unit)}</span></li>`; }).join("")}<li>${fmt(evo.zel || 0)} Zel</li></ul>` : `<p class="muted">Forme finale : pas d'évolution.</p>`;
   const quotes = (f.quotes && (f.quotes.summon || []).concat(f.quotes.evolution || [])) || [];
   main.innerHTML = `
     <a class="back" href="#unites">← Toutes les unités</a>
     <div class="detail">
-      <section class="frame hero">
+      <section class="frame hero el-${esc(u.element)}">
         ${sigil(f.name, u.element, true, f.id)}
         <div style="min-width:0">
           <h2>${esc(f.name)}</h2>
@@ -733,8 +815,9 @@ function renderUnit(id) {
         </div>
       </section>
       ${briefHTML(u, f, roles, rec, g)}
+      <nav class="jump" aria-label="Aller à">${[["sec-type", "Type"], ["sec-stats", "Stats"], ["sec-skills", "Compétences"], ["sec-spheres", "Sphères"], ["sec-evo", "Évolution"], ["sec-src", "Obtention"]].map(([id, lab]) => `<button type="button" data-jump="${id}">${lab}</button>`).join("")}</nav>
       <div class="cols">
-        <section class="panel box">
+        <section class="panel box" id="sec-type">
           <h3>Type conseillé : ${TYPE_FR[rec.type]}</h3>
           <p class="advice">${esc(rec.why)}</p>
           <div class="tablewrap" style="margin-top:10px"><table>
@@ -744,7 +827,7 @@ function renderUnit(id) {
           </table></div>
           <p class="note">Gains moyens par niveau, sans imps ni sphères. Le type se change avec une Type Frog, sauf vers Rex.</p>
         </section>
-        <section class="panel box">
+        <section class="panel box" id="sec-stats">
           <h3>Statistiques</h3>
           <div class="tablewrap"><table>
             <thead><tr><th></th><th class="n">PV</th><th class="n">ATQ</th><th class="n">DÉF</th><th class="n">REC</th></tr></thead>
@@ -761,16 +844,16 @@ function renderUnit(id) {
           </dl>
         </section>
       </div>
-      <section class="panel box">
+      <section class="panel box" id="sec-skills">
         <h3>Compétences</h3>
         ${skills.length ? skills.map(([tag, lab, name, desc, effects]) => `<div class="skill"><abbr class="tag" title="${esc(SKILL_HELP[tag] || "")}">${esc(lab)}</abbr><span class="sname">${esc(name)}</span>
           ${desc ? `<div class="desc">${esc(desc)}</div>` : ""}${effectList(effects)}</div>`).join("") : `<p class="muted">Aucune compétence.</p>`}
       </section>
       <div class="cols">
-        <section class="panel box">
+        <section class="panel box" id="sec-spheres">
           <h3>Sphères conseillées</h3>
-          ${sphereAdvice(u, f, roles).map(({ s, why }, k) => `<div class="sph"><div><span class="role${k < 2 ? " main" : ""}">${k < 2 ? `Duo · sphère ${k + 1}` : "Alternative"}</span> <strong>${esc(s.name)}</strong> <span class="muted small">${s.rarity ? s.rarity + "★" : ""}${s.type ? " · " + esc(s.type) : ""}</span></div>
-            <div class="why">${esc(why)}</div>${effectList(s.effects)}</div>`).join("")}
+          ${sphereAdvice(u, f, roles).map(({ s, why }, k) => `<div class="sph row-ico">${s.icon ? iconImg(s.icon, "icon", "") : ""}<div><div><span class="role${k < 2 ? " main" : ""}">${k < 2 ? `Duo · sphère ${k + 1}` : "Alternative"}</span> <a href="#s-${esc(s.id)}"><strong>${esc(sName(s))}</strong></a> <span class="muted small">${s.rarity ? s.rarity + "★" : ""}${s.type ? " · " + esc(s.type) : ""}</span></div>
+            <div class="why">${esc(why)}</div>${sphereSourceHTML(s)}${effectList(s.effects)}</div></div>`).join("")}
           <p class="note">2 emplacements : le premier est ouvert, le second se débloque sur chaque unité. Le jeu refuse deux sphères Status Boost (dont les sphères « toutes stats ») sur la même unité ; le duo conseillé respecte cette règle.</p>
         </section>
         <section class="panel box">
@@ -781,14 +864,15 @@ function renderUnit(id) {
         </section>
       </div>
       <div class="cols">
-        <section class="panel box"><h3>Évolution</h3>${evoHTML}</section>
-        <section class="panel box"><h3>Où l'obtenir</h3>
+        <section class="panel box" id="sec-evo"><h3>Évolution</h3>${evoHTML}</section>
+        <section class="panel box" id="sec-src"><h3>Où l'obtenir</h3>
           ${g && g.sources.length ? `<ul class="fx">${g.sources.map((s) => `<li>${esc(sourceText(s))}</li>`).join("")}</ul>` : `<p class="muted">Aucune source connue dans les données du jeu.</p>`}
         </section>
       </div>
       ${quotes.length ? `<section class="panel box"><h3>Répliques</h3>${quotes.map((q) => `<p class="quote">« ${esc(q)} »</p>`).join("")}</section>` : ""}
     </div>`;
   main.querySelectorAll("[data-form]").forEach((bt) => bt.addEventListener("click", () => { state.form[id] = Number(bt.dataset.form); renderUnit(id); }));
+  main.querySelectorAll("[data-jump]").forEach((bt) => bt.addEventListener("click", () => { const el = document.getElementById(bt.dataset.jump); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }));
   window.scrollTo(0, 0);
 }
 
@@ -918,15 +1002,15 @@ function renderTeam() {
 }
 let SPHERE_OPTIONS = null;
 function sphereSelect(x, i, k, roles) {
-  if (!SPHERE_OPTIONS) SPHERE_OPTIONS = D.spheres.slice().sort((a, b) => a.name.localeCompare(b.name)).map((s) => `<option value="${esc(s.id)}">${esc(s.name)}${s.rarity ? ` (${s.rarity}★)` : ""}</option>`).join("");
+  if (!SPHERE_OPTIONS) SPHERE_OPTIONS = uniqueSpheres().sort((a, b) => sName(a).localeCompare(sName(b))).map((s) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""}</option>`).join("");
   const cur = (x.m.spheres || [])[k] || "";
   const adv = sphereAdvice(x.u, x.f, roles, 5);
   const curSphere = cur && D.sphereById.get(cur);
   return `<label class="small muted" for="s${i}-${k}">Sphère ${k + 1}${k === 1 ? " (emplacement à débloquer)" : ""}</label>
     <select class="field" id="s${i}-${k}" data-slot-sphere="${i}:${k}">
       <option value="">Aucune</option>
-      ${curSphere ? `<option value="${esc(cur)}" selected>${esc(curSphere.name)} (équipée)</option>` : ""}
-      <optgroup label="Conseillées">${adv.map(({ s }) => `<option value="${esc(s.id)}">${esc(s.name)}${s.rarity ? ` (${s.rarity}★)` : ""}</option>`).join("")}</optgroup>
+      ${curSphere ? `<option value="${esc(cur)}" selected>${esc(sName(curSphere))} (équipée)</option>` : ""}
+      <optgroup label="Conseillées">${adv.map(({ s }) => `<option value="${esc(s.id)}">${esc(sName(s))}${s.rarity ? ` (${s.rarity}★)` : ""}</option>`).join("")}</optgroup>
       <optgroup label="Toutes les sphères">${SPHERE_OPTIONS}</optgroup>
     </select>`;
 }
@@ -940,6 +1024,7 @@ function slotHTML(x, i, mod) {
   const equipped = (x.m.spheres || []).slice(0, SPHERE_SLOTS).map((id) => D.sphereById.get(id)).filter(Boolean);
   const twoBoosts = equipped.filter(isStatusBoost).length > 1;
   const spheresHTML = Array.from({ length: SPHERE_SLOTS }, (_, k) => sphereSelect(x, i, k, roles)).join("")
+    + equipped.map((s) => `<div class="row-ico small">${iconImg(s.icon, "icon", "")}<div><a href="#s-${esc(s.id)}">${esc(sName(s))}</a>${sphereSourceHTML(s, true)}</div></div>`).join("")
     + (twoBoosts ? `<div class="small down">Le jeu refuse deux sphères Status Boost sur la même unité : seule la première compte dans les stats.</div>` : "");
   return `<section class="panel slot">
     <div class="label">${SLOTS[i]}</div>
@@ -1070,7 +1155,7 @@ function challengeHTML(c) {
   for (const m of c.mechanics) if (MECH_FR[m]) advice.push(MECH_FR[m]);
   if (c.immune.length) advice.push(`Les ennemis résistent à : ${c.immune.map((a) => AIL_FR[a] || a).join(", ")}. Inutile de miser sur ces altérations.`);
   return `<section class="panel challenge">
-    <div class="head"><div style="min-width:0"><h3>${esc(c.name)}</h3><div class="small muted">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div></div><span class="diff">Difficulté ${Math.round(c.score)}</span></div>
+    <div class="cover" style="background-image:url('${dungeonImg(c.dungeonId)}')"><div class="over head"><div style="min-width:0"><h3>${esc(c.name)}</h3><div class="small">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div></div><span class="diff">Difficulté ${Math.round(c.score)}</span></div></div>
     <div class="mini">${flags.join("")}</div>
     ${c.bosses.length ? `<div class="tablewrap"><table><thead><tr><th>Boss</th><th>Élément</th><th class="n">PV</th><th class="n">ATQ</th><th class="n">DÉF</th></tr></thead><tbody>
       ${c.bosses.map((b) => `<tr><td>${esc(b.name)}</td><td><span class="dot el-${esc(b.element)}"></span> ${EL_FR[b.element] || "—"}</td><td class="n">${fmt(b.hp)}</td><td class="n">${fmt(b.atk)}</td><td class="n">${fmt(b.def)}</td></tr>`).join("")}
@@ -1094,11 +1179,12 @@ function buildTeamFor(c) {
 }
 state.defisMode = "";
 function renderDefis() {
-  let q = "", limit = 20;
+  let q = state.defisQuery || "", limit = 20;
+  state.defisQuery = "";
   main.innerHTML = `
     <h2 class="section-title">Défis</h2>
     <p class="lede">Les quêtes les plus dures du jeu, classées d'après leurs boss : PV, attaque, altérations et mécaniques dangereuses. Pour chacune, le wiki propose les éléments à amener et des unités adaptées.</p>
-    <div class="toolbar"><input type="search" id="dq" placeholder="Rechercher une quête ou un boss" aria-label="Rechercher une quête">
+    <div class="toolbar"><input type="search" id="dq" placeholder="Rechercher une quête ou un boss" aria-label="Rechercher une quête" value="${esc(q)}">
       <select id="dm" aria-label="Mode de jeu"><option value="">Tous les modes</option>${MODES.map((m) => `<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select></div>
     <div class="count" id="dc"></div>
     <div class="detail" id="dl"></div>
@@ -1128,7 +1214,7 @@ function renderModes() {
       const list = D.challenges.filter((c) => m.test(c)).sort((a, b) => b.score - a.score);
       const noCont = list.filter((c) => c.continues === false).length;
       return `<section class="panel mode">
-        <h3>${esc(m.name)}</h3>
+        ${list.length ? `<div class="cover" style="background-image:url('${dungeonImg(list[0].dungeonId)}');margin-bottom:10px"><div class="over"><h3>${esc(m.name)}</h3></div></div>` : `<h3>${esc(m.name)}</h3>`}
         <p>${esc(m.rules)}</p>
         <p class="small muted">${list.length} quête${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} sans continue` : ""}</p>
         <ul class="fx">${m.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
@@ -1324,7 +1410,7 @@ function renderAccueil() {
   const owned = COLL ? heroes.filter((u) => ownedCount(u.id) > 0).length : 0;
   const top = computeTiers().rows.slice(0, 6);
   main.innerHTML = `
-    <section class="welcome">
+    <section class="welcome" style="background-image:linear-gradient(100deg, #0b1222f2 35%, #0b122299 100%), url('${dungeonImg(800011)}');background-size:cover;background-position:center">
       <h2>Bienvenue sur Reborn Wiki</h2>
       <p>Le wiki de Brave Frontier: Reborn : ${heroes.length} unités jouables, leurs compétences, le meilleur type et les meilleures sphères pour chacune, et des conseils pour les quêtes les plus dures.</p>
     </section>
@@ -1350,25 +1436,71 @@ function renderAccueil() {
 }
 
 /* ---------- Sphères ---------- */
+const SPHERE_KIND = { "all-stat": "Toutes stats", typed: "Spécialisée", signature: "Signature" };
+// Une sphère peut exister en double (même nom) : on n'affiche que la première.
+function uniqueSpheres() {
+  const seen = new Set();
+  return D.spheres.filter((s) => { const k = s.name; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+function sphereCard(s) {
+  return `<a class="scard" href="#s-${esc(s.id)}">${s.icon ? iconImg(s.icon, "icon lg", "") : `<span class="sigil" aria-hidden="true">◆</span>`}
+    <div style="min-width:0"><div class="name">${esc(sName(s))}</div>
+      <div class="meta">${s.rarity ? s.rarity + "★ · " : ""}${esc(s.type || SPHERE_KIND[s.kind] || "")}${sName(s) !== s.name ? ` · ${esc(s.name)}` : ""}</div>
+      ${sphereSourceHTML(s, true)}</div></a>`;
+}
+state.sphereKind = ""; state.sphereSrc = false;
 function renderSpheres() {
-  const KIND = { "all-stat": "Toutes stats", typed: "Spécialisée", signature: "Signature" };
-  let kind = "", q = "";
+  let q = "";
+  const types = [...new Set(D.spheres.map((s) => s.type).filter(Boolean))].sort();
+  const list0 = uniqueSpheres();
   main.innerHTML = `
     <h2 class="section-title">Sphères</h2>
-    <p class="lede">${D.spheres.length} sphères. Les sphères signature ne s'activent qu'avec l'unité prévue.</p>
+    <p class="lede">${list0.length} sphères. Ouvre une sphère pour voir ses effets, où l'obtenir et les unités à qui elle convient. Les sphères signature ne s'activent qu'avec l'unité prévue.</p>
     <div class="toolbar"><input type="search" id="sq" placeholder="Rechercher une sphère ou un effet" aria-label="Rechercher une sphère">
-      <select id="sk" aria-label="Catégorie"><option value="">Toutes les catégories</option>${Object.entries(KIND).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select></div>
+      <select id="sk" aria-label="Catégorie"><option value="">Toutes les catégories</option>${types.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("")}<option value="signature">Signature</option></select>
+      <label class="check"><input type="checkbox" id="ssrc" ${state.sphereSrc ? "checked" : ""}> Seulement celles avec une source connue</label></div>
     <div class="count" id="sc"></div>
-    <div class="tablewrap panel"><table><thead><tr><th>Sphère</th><th>Catégorie</th><th>Effets</th></tr></thead><tbody id="sb"></tbody></table></div>`;
+    <div class="sgrid" id="sb"></div>`;
+  document.getElementById("sk").value = state.sphereKind;
   const draw = () => {
     const ql = q.trim().toLowerCase();
-    const list = D.spheres.filter((s) => (!kind || s.kind === kind) && (!ql || s.name.toLowerCase().includes(ql) || (s.effects || []).some((e) => effectText(e).toLowerCase().includes(ql))));
+    const list = list0.filter((s) => (!state.sphereKind || s.type === state.sphereKind || s.kind === state.sphereKind) && (!state.sphereSrc || arr(SRC.spheres[s.id]).length)
+      && (!ql || sName(s).toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql) || (s.effects || []).some((e) => effectText(e).toLowerCase().includes(ql))))
+      .sort((a, b) => (b.rarity || 0) - (a.rarity || 0) || sName(a).localeCompare(sName(b)));
     document.getElementById("sc").textContent = `${list.length} sphère${list.length > 1 ? "s" : ""}`;
-    document.getElementById("sb").innerHTML = list.map((s) => `<tr><td><strong>${esc(s.name)}</strong></td><td class="muted">${KIND[s.kind] || esc(s.kind)}</td><td>${effectList(s.effects)}</td></tr>`).join("");
+    document.getElementById("sb").innerHTML = list.map(sphereCard).join("") || `<div class="empty">Aucune sphère ne correspond.</div>`;
   };
   document.getElementById("sq").addEventListener("input", (e) => { q = e.target.value; draw(); });
-  document.getElementById("sk").addEventListener("change", (e) => { kind = e.target.value; draw(); });
+  document.getElementById("sk").addEventListener("change", (e) => { state.sphereKind = e.target.value; draw(); });
+  document.getElementById("ssrc").addEventListener("change", (e) => { state.sphereSrc = e.target.checked; draw(); });
   draw();
+}
+function renderSphere(id) {
+  const s = D.sphereById.get(id);
+  if (!s) { main.innerHTML = `<a class="back" href="#spheres">← Toutes les sphères</a><div class="empty">Cette sphère n'existe pas dans les données du jeu.</div>`; return; }
+  const sig = s.signatureUnit && D.byId.get(s.signatureUnit);
+  // Unités qui ont cette sphère dans leur trio conseillé.
+  const fans = sig ? [] : D.units.filter((u) => u.hero && sphereAdvice(u, u.best, u.roles).some((x) => x.s.name === s.name)).slice(0, 12);
+  const srcs = [...new Set(sphereSources(s))];
+  main.innerHTML = `
+    <a class="back" href="#spheres">← Toutes les sphères</a>
+    <div class="detail">
+      <section class="frame hero">
+        ${s.icon ? iconImg(s.icon, "icon lg", sName(s)) : `<span class="sigil big" aria-hidden="true">◆</span>`}
+        <div style="min-width:0"><h2>${esc(sName(s))}</h2>
+          <div class="meta muted">${s.rarity ? `<span class="rar">${s.rarity}★</span> · ` : ""}${esc(s.type || SPHERE_KIND[s.kind] || "")}${sName(s) !== s.name ? ` · nom anglais : ${esc(s.name)}` : ""}</div>
+          ${sDesc(s) ? `<p style="margin:8px 0 0">${esc(sDesc(s))}</p>` : ""}</div>
+      </section>
+      <div class="cols">
+        <section class="panel box"><h3>Effets</h3>${effectList(s.effects) || `<p class="muted">Aucun effet.</p>`}
+          ${isStatusBoost(s) ? `<p class="note">Sphère Status Boost : une unité ne peut pas en porter deux.</p>` : ""}</section>
+        <section class="panel box"><h3>Où l'obtenir</h3>
+          ${srcs.length ? `<ul class="fx">${srcs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p>${esc("Aucune source dans les fichiers publics du jeu.")}</p><p class="note">Les sphères qui ne sont pas des récompenses se fabriquent en général à la <strong>Forge à sphères</strong>, en ville, avec des matériaux trouvés en quête. Ses recettes ne sont visibles qu'en jeu.</p>`}
+        </section>
+      </div>
+      ${sig ? `<section class="panel box"><h3>Sphère signature de</h3><div class="mini"><a href="#u-${esc(sig.id)}">${sigil(sig.best.name, sig.element, false, sig.best.id)}${esc(sig.best.name)}</a></div></section>` : ""}
+      ${fans.length ? `<section class="panel box"><h3>Conseillée pour</h3><div class="mini">${fans.map((u) => `<a href="#u-${esc(u.id)}">${sigil(u.best.name, u.element, false, u.best.id)}${esc(u.best.name)}</a>`).join("")}</div></section>` : ""}
+    </div>`;
 }
 
 /* ---------- Objets ---------- */
@@ -1379,22 +1511,91 @@ function itemEffect(e) {
     default: return Object.entries(e).map(([k, v]) => `${k} ${typeof v === "object" ? JSON.stringify(v) : v}`).join(" · ");
   }
 }
+const ITEM_KIND = { material: "Matériau", battle: "Objet de combat", buff: "Boost", cure: "Remède", heal: "Soin", revive: "Résurrection" };
+const itemWhere = (i) => arr(SRC.items[i.id]);
+function itemCard(i) {
+  const w = itemWhere(i)[0];
+  return `<a class="scard" href="#i-${esc(i.id)}">${iconImg(i.icon, "icon lg", "")}
+    <div style="min-width:0"><div class="name">${esc(iName(i))}</div>
+      <div class="meta">${esc(ITEM_KIND[i.kind] || i.kind || "")}${iName(i) !== i.name ? ` · ${esc(i.name)}` : ""}</div>
+      ${w ? `<div class="src">Le plus rentable : ${esc(missionName(w.m))}</div>` : (i.kind === "material" ? `<div class="src none">Aucune quête ne le fait tomber.</div>` : "")}</div></a>`;
+}
+state.itemKind = "";
 function renderItems() {
   let q = "";
   main.innerHTML = `
     <h2 class="section-title">Objets</h2>
-    <p class="lede">${D.items.length} objets du jeu, avec leur description d'origine.</p>
-    <div class="toolbar"><input type="search" id="iq" placeholder="Rechercher un objet" aria-label="Rechercher un objet"></div>
+    <p class="lede">${D.items.length} objets du jeu. Ouvre un matériau pour voir les quêtes où il tombe le plus.</p>
+    <div class="toolbar"><input type="search" id="iq" placeholder="Rechercher un objet" aria-label="Rechercher un objet">
+      <select id="ik" aria-label="Catégorie"><option value="">Toutes les catégories</option>${Object.entries(ITEM_KIND).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select></div>
     <div class="count" id="ic"></div>
-    <div class="tablewrap panel"><table><thead><tr><th>Objet</th><th>Description</th><th>Effet</th></tr></thead><tbody id="ib"></tbody></table></div>`;
+    <div class="sgrid" id="ib"></div>`;
+  document.getElementById("ik").value = state.itemKind;
   const draw = () => {
     const ql = q.trim().toLowerCase();
-    const list = D.items.filter((i) => !ql || i.name.toLowerCase().includes(ql) || (i.description || "").toLowerCase().includes(ql));
+    const list = D.items.filter((i) => (!state.itemKind || i.kind === state.itemKind) && (!ql || iName(i).toLowerCase().includes(ql) || i.name.toLowerCase().includes(ql) || iDesc(i).toLowerCase().includes(ql)));
     document.getElementById("ic").textContent = `${list.length} objet${list.length > 1 ? "s" : ""}`;
-    document.getElementById("ib").innerHTML = list.map((i) => `<tr><td><strong>${esc(i.name)}</strong></td><td class="muted">${esc(i.description || "")}</td><td>${esc((i.effects || []).map(itemEffect).join(" · ")) || "—"}</td></tr>`).join("");
+    document.getElementById("ib").innerHTML = list.map(itemCard).join("") || `<div class="empty">Aucun objet ne correspond.</div>`;
   };
   document.getElementById("iq").addEventListener("input", (e) => { q = e.target.value; draw(); });
+  document.getElementById("ik").addEventListener("change", (e) => { state.itemKind = e.target.value; draw(); });
   draw();
+}
+function renderItem(id) {
+  const i = D.itemById.get(id);
+  if (!i) { main.innerHTML = `<a class="back" href="#objets">← Tous les objets</a><div class="empty">Cet objet n'existe pas dans les données du jeu.</div>`; return; }
+  const where = itemWhere(i);
+  main.innerHTML = `
+    <a class="back" href="#objets">← Tous les objets</a>
+    <div class="detail">
+      <section class="frame hero">${iconImg(i.icon, "icon lg", iName(i))}
+        <div style="min-width:0"><h2>${esc(iName(i))}</h2>
+          <div class="meta muted">${esc(ITEM_KIND[i.kind] || i.kind || "")}${iName(i) !== i.name ? ` · nom anglais : ${esc(i.name)}` : ""}${i.sellPrice ? ` · revente ${fmt(i.sellPrice)} Zel` : ""}</div>
+          ${iDesc(i) ? `<p style="margin:8px 0 0">${esc(iDesc(i))}</p>` : ""}</div></section>
+      ${(i.effects || []).length ? `<section class="panel box"><h3>Effet</h3><p>${esc(i.effects.map(itemEffect).join(" · "))}</p></section>` : ""}
+      <section class="panel box"><h3>Où le trouver</h3>
+        ${where.length ? `<div class="tablewrap"><table class="drops"><thead><tr><th></th><th>Quête</th><th class="n">Par tour</th><th class="n">Énergie</th></tr></thead><tbody>
+          ${where.map((w) => { const c = D.challengeById.get(String(w.m)); return `<tr><td>${c ? `<img src="${dungeonImg(c.dungeonId)}" alt="" loading="lazy">` : ""}</td><td><strong>${esc(missionName(w.m))}</strong>${c ? `<div class="small muted">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div>` : ""}</td><td class="n">${w.e >= 1 ? fmt(Math.round(w.e * 10) / 10) : "≈ " + Math.round(w.e * 100) + " %"}</td><td class="n">${w.en ?? "—"}</td></tr>`; }).join("")}
+        </tbody></table></div><p class="note">Classées par exemplaires obtenus par point d'énergie. « Par tour » est une moyenne calculée d'après les taux du jeu.</p>`
+        : `<p class="muted">Aucune quête ne fait tomber cet objet dans les fichiers du jeu. Il s'obtient sans doute en récompense, en boutique ou en ville.</p>`}
+      </section>
+    </div>`;
+}
+
+/* ---------- Recherche globale ---------- */
+let SEARCH = null;
+function buildSearch() {
+  const out = [];
+  for (const u of D.units) if (u.hero) out.push({ k: "Unité", t: u.best.name, extra: u.forms.map((f) => f.name).join(" "), href: `#u-${u.id}`, img: sigil(u.best.name, u.element, false, u.best.id) });
+  for (const s of uniqueSpheres()) out.push({ k: "Sphère", t: sName(s), extra: s.name, href: `#s-${s.id}`, img: iconImg(s.icon, "icon", "") });
+  for (const i of D.items) out.push({ k: "Objet", t: iName(i), extra: i.name, href: `#i-${i.id}`, img: iconImg(i.icon, "icon", "") });
+  for (const c of D.challenges) out.push({ k: "Quête", t: c.name, extra: c.dungeon, href: "#defis", quest: c.name, img: `<img class="icon" src="${dungeonImg(c.dungeonId)}" alt="" loading="lazy" style="object-fit:cover;border-radius:6px">` });
+  for (const o of out) o.hay = (o.t + " " + o.extra).toLowerCase();
+  return out;
+}
+function closeSearch() { const r = document.getElementById("gr"); if (r) r.hidden = true; }
+function initSearch() {
+  const input = document.getElementById("gq"), box = document.getElementById("gr");
+  let hits = [], on = 0;
+  const draw = () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) { box.hidden = true; return; }
+    SEARCH = SEARCH || buildSearch();
+    const starts = SEARCH.filter((o) => o.t.toLowerCase().startsWith(q));
+    const rest = SEARCH.filter((o) => !o.t.toLowerCase().startsWith(q) && o.hay.includes(q));
+    hits = starts.concat(rest).slice(0, 10); on = 0;
+    box.innerHTML = hits.length ? hits.map((o, n) => `<a href="${esc(o.href)}" data-n="${n}" class="${n === 0 ? "on" : ""}">${o.img}<span>${esc(o.t)}</span><span class="kind">${o.k}</span></a>`).join("") : `<div class="none">Aucun résultat.</div>`;
+    box.hidden = false;
+    box.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => { const o = hits[Number(a.dataset.n)]; if (o && o.quest) state.defisQuery = o.quest; input.value = ""; box.hidden = true; }));
+  };
+  input.addEventListener("input", draw);
+  input.addEventListener("keydown", (e) => {
+    if (box.hidden || !hits.length) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); on = (on + (e.key === "ArrowDown" ? 1 : hits.length - 1)) % hits.length; box.querySelectorAll("a").forEach((a, n) => a.classList.toggle("on", n === on)); }
+    if (e.key === "Enter") { e.preventDefault(); const o = hits[on]; if (o.quest) state.defisQuery = o.quest; input.value = ""; box.hidden = true; if (location.hash === o.href) route(); else location.hash = o.href; }
+    if (e.key === "Escape") { box.hidden = true; }
+  });
+  document.addEventListener("click", (e) => { if (!document.getElementById("search").contains(e.target)) box.hidden = true; });
 }
 
 /* ---------- Mérite ---------- */
@@ -1441,6 +1642,7 @@ function renderFarm() {
 /* ---------- Démarrage ---------- */
 load().then(() => {
   window.addEventListener("hashchange", route);
+  initSearch();
   route();
   // Les vignettes arrivent après le reste ; elles s'ajoutent aussi aux écrans ouverts plus tard.
   new MutationObserver(() => paintImages(document)).observe(document.body, { childList: true, subtree: true });
