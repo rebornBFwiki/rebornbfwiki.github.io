@@ -388,7 +388,19 @@ const iDesc = (i) => (i && ((I18N.item[i.id] && I18N.item[i.id].d) || i.descript
 const iconImg = (path, cls = "icon", alt = "") => (path ? `<img class="${cls}" src="${ASSET}${esc(path)}" alt="${esc(alt)}" loading="lazy">` : "");
 const dungeonImg = (id) => `${ASSET}dungeon/${id}.jpg`;
 const missionName = (m) => { const n = SRC.missions[m]; return n ? (n[LANG] || n.en) : `#${m}`; };
-// Où obtenir une sphère, d'après les récompenses présentes dans les fichiers publics du jeu.
+let FORGE = {}; // recettes lues dans la Forge à sphères du jeu
+// Une recette est faisable si tous ses matériaux existent dans la version actuelle du jeu.
+function forgeAvailable(id, seen = new Set()) {
+  const r = FORGE[id]; if (!r) return false;
+  if (seen.has(id)) return true; seen.add(id);
+  return arr(r.mats).every((m) => m.k === "item" ? D.itemById.has(m.id) : m.k === "sphere" ? (arr(SRC.spheres[m.id]).length > 0 || forgeAvailable(m.id, seen)) : false);
+}
+const sphereObtainable = (s) => arr(SRC.spheres[s.id]).length > 0 || forgeAvailable(s.id);
+function forgeText(id) {
+  const r = FORGE[id]; if (!r) return "";
+  return `Forge à sphères${r.level ? ` (Forge Nv ${r.level})` : ""}${forgeAvailable(id) ? "" : " : un matériau n'est pas encore disponible"}`;
+}
+// Où obtenir une sphère : récompenses des fichiers publics du jeu, puis recette de la Forge.
 function sphereSources(s) {
   return arr(SRC.spheres[s.id]).map((x) => {
     switch (x.k) {
@@ -398,11 +410,11 @@ function sphereSources(s) {
       case "frontier-ladder": return "Récompense du classement Frontier Hunter";
       default: return x.k;
     }
-  });
+  }).concat(FORGE[s.id] ? [forgeText(s.id)] : []);
 }
 function sphereSourceHTML(s, short) {
   const l = [...new Set(sphereSources(s))];
-  if (!l.length) return `<div class="src none">Pas de source dans les fichiers publics : elle se fabrique sans doute à la Forge à sphères, en ville.</div>`;
+  if (!l.length) return `<div class="src none">Aucune source connue dans cette version du jeu.</div>`;
   return `<div class="src">${esc(short ? l[0] + (l.length > 1 ? ` (+${l.length - 1})` : "") : l.join(" · "))}</div>`;
 }
 
@@ -619,7 +631,8 @@ function sphereAdvice(u, f, roles, n = 3) {
   const role = roles.main || "dmg";
   const sig = D.spheres.filter((s) => s.signatureUnit === u.id);
   const ranked = D.spheres.filter((s) => s.kind !== "signature" && !(s.effects || []).some((e) => /^drop\.(zel|karma|item)$/.test(e.id)))
-    .map((s) => ({ s, p: sphereScore(s, role) })).filter((x) => x.p > 0).sort((a, b) => b.p - a.p || (b.s.rarity || 0) - (a.s.rarity || 0));
+    // Une sphère qu'on ne peut pas encore obtenir passe derrière celles qu'on peut obtenir.
+    .map((s) => ({ s, p: sphereScore(s, role), ok: sphereObtainable(s) ? 1 : 0 })).filter((x) => x.p > 0).sort((a, b) => b.ok - a.ok || b.p - a.p || (b.s.rarity || 0) - (a.s.rarity || 0));
   // Une signature peut exister sous deux noms avec les mêmes effets : on n'en garde qu'une.
   // Toutes les signatures d'une unité sont regroupées ; on met en avant la vraie sphère du jeu
   // (numéro officiel, icône ou source connue) plutôt qu'un doublon interne.
@@ -642,8 +655,9 @@ function sphereAdvice(u, f, roles, n = 3) {
 async function load() {
   const get = (n) => fetch(`__DATA__${n}.json`).then((r) => { if (!r.ok) throw new Error(n); return r.json(); });
   const [units, guide, items, spheres, banners, challenges] = await Promise.all(["units", "guide", "items", "spheres", "banners", "challenges"].map(get));
-  const extra = await Promise.all([get("sources").catch(() => null), LANG === "fr" ? get("i18n-fr").catch(() => null) : null]);
+  const extra = await Promise.all([get("sources").catch(() => null), LANG === "fr" ? get("i18n-fr").catch(() => null) : null, get("forge").catch(() => null)]);
   if (extra[0]) SRC = extra[0];
+  if (extra[2]) FORGE = extra[2];
   if (extra[1]) I18N = { sphere: extra[1].sphere || {}, item: extra[1].item || {} };
   D.challenges = challenges;
   D.challengeById = new Map(challenges.map((c) => [String(c.id), c]));
@@ -652,7 +666,7 @@ async function load() {
   for (const u of units) {
     const forms = u.forms || [];
     const best = forms[forms.length - 1];
-    const hero = forms.some((f) => f.leaderSkill);
+    const hero = forms.some((f) => f.leaderSkill) && !/placeholder/i.test(u.name + " " + (best && best.name));
     const roles = rolesOf(best);
     const unit = { ...u, forms, best, hero, roles, rec: recommendType(best, roles) };
     D.units.push(unit);
@@ -1466,7 +1480,7 @@ function renderSpheres() {
   document.getElementById("sk").value = state.sphereKind;
   const draw = () => {
     const ql = q.trim().toLowerCase();
-    const list = list0.filter((s) => (!state.sphereKind || s.type === state.sphereKind || s.kind === state.sphereKind) && (!state.sphereSrc || arr(SRC.spheres[s.id]).length)
+    const list = list0.filter((s) => (!state.sphereKind || s.type === state.sphereKind || s.kind === state.sphereKind) && (!state.sphereSrc || arr(SRC.spheres[s.id]).length || FORGE[s.id])
       && (!ql || sName(s).toLowerCase().includes(ql) || s.name.toLowerCase().includes(ql) || (s.effects || []).some((e) => effectText(e).toLowerCase().includes(ql))))
       .sort((a, b) => (b.rarity || 0) - (a.rarity || 0) || sName(a).localeCompare(sName(b)));
     document.getElementById("sc").textContent = `${list.length} sphère${list.length > 1 ? "s" : ""}`;
@@ -1476,6 +1490,20 @@ function renderSpheres() {
   document.getElementById("sk").addEventListener("change", (e) => { state.sphereKind = e.target.value; draw(); });
   document.getElementById("ssrc").addEventListener("change", (e) => { state.sphereSrc = e.target.checked; draw(); });
   draw();
+}
+// Recette de la Forge : matériaux avec icône et lien, coût en Karma, niveau de Forge requis.
+function recipeHTML(id) {
+  const r = FORGE[id]; if (!r) return "";
+  const ok = forgeAvailable(id);
+  const row = (m) => {
+    if (m.k === "item") { const i = D.itemById.get(m.id); return `<li class="row-ico" style="align-items:center;margin:4px 0">${iconImg(i && i.icon, "icon", "")}<span><strong>${m.n} ×</strong> <a href="#i-${esc(m.id)}">${esc(iName(i) || m.id)}</a></span></li>`; }
+    if (m.k === "sphere") { const s = D.sphereById.get(m.id); return `<li class="row-ico" style="align-items:center;margin:4px 0">${s && s.icon ? iconImg(s.icon, "icon", "") : `<span class="sigil" style="width:36px;height:36px" aria-hidden="true">◆</span>`}<span><strong>${m.n} ×</strong> <a href="#s-${esc(m.id)}">${esc(sName(s) || m.id)}</a> <span class="muted small">(sphère)</span></span></li>`; }
+    return `<li class="row-ico" style="align-items:center;margin:4px 0"><span class="sigil" style="width:36px;height:36px" aria-hidden="true">?</span><span><strong>${m.n} ×</strong> ${esc(m.name)} <span class="down small">(pas encore dans le jeu)</span></span></li>`;
+  };
+  return `<section class="panel box"><h3>Recette de la Forge à sphères</h3>
+    <ul class="fx" style="list-style:none;padding:0">${arr(r.mats).map(row).join("")}</ul>
+    <dl class="kv" style="margin-top:8px"><dt>Karma</dt><dd>${fmt(r.karma || 0)}</dd>${r.level ? `<dt>Niveau de Forge</dt><dd>${r.level} minimum</dd>` : ""}<dt>Disponible</dt><dd>${ok ? `<span class="up">Oui</span>` : `<span class="down">Pas encore : un matériau manque dans cette version</span>`}</dd></dl>
+    <p class="note">Recette lue dans la Forge à sphères du jeu, en ville. Le niveau de Forge n'est indiqué que pour les recettes encore verrouillées sur le compte qui les a lues.</p></section>`;
 }
 function renderSphere(id) {
   const s = D.sphereById.get(id);
@@ -1497,9 +1525,10 @@ function renderSphere(id) {
         <section class="panel box"><h3>Effets</h3>${effectList(s.effects) || `<p class="muted">Aucun effet.</p>`}
           ${isStatusBoost(s) ? `<p class="note">Sphère Status Boost : une unité ne peut pas en porter deux.</p>` : ""}</section>
         <section class="panel box"><h3>Où l'obtenir</h3>
-          ${srcs.length ? `<ul class="fx">${srcs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p>${esc("Aucune source dans les fichiers publics du jeu.")}</p><p class="note">Les sphères qui ne sont pas des récompenses se fabriquent en général à la <strong>Forge à sphères</strong>, en ville, avec des matériaux trouvés en quête. Ses recettes ne sont visibles qu'en jeu.</p>`}
+          ${srcs.length ? `<ul class="fx">${srcs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p>${esc("Aucune source connue dans cette version du jeu.")}</p>`}
         </section>
       </div>
+      ${recipeHTML(s.id)}
       ${sig ? `<section class="panel box"><h3>Sphère signature de</h3><div class="mini"><a href="#u-${esc(sig.id)}">${sigil(sig.best.name, sig.element, false, sig.best.id)}${esc(sig.best.name)}</a></div></section>` : ""}
       ${fans.length ? `<section class="panel box"><h3>Conseillée pour</h3><div class="mini">${fans.map((u) => `<a href="#u-${esc(u.id)}">${sigil(u.best.name, u.element, false, u.best.id)}${esc(u.best.name)}</a>`).join("")}</div></section>` : ""}
     </div>`;
@@ -1555,6 +1584,9 @@ function renderItem(id) {
           <div class="meta muted">${esc(ITEM_KIND[i.kind] || i.kind || "")}${iName(i) !== i.name ? ` · nom anglais : ${esc(i.name)}` : ""}${i.sellPrice ? ` · revente ${fmt(i.sellPrice)} Zel` : ""}</div>
           ${iDesc(i) ? `<p style="margin:8px 0 0">${esc(iDesc(i))}</p>` : ""}</div></section>
       ${(i.effects || []).length ? `<section class="panel box"><h3>Effet</h3><p>${esc(i.effects.map(itemEffect).join(" · "))}</p></section>` : ""}
+      ${(() => { const used = Object.entries(FORGE).filter(([sid, r]) => arr(r.mats).some((m) => m.k === "item" && m.id === i.id)).map(([sid, r]) => ({ s: D.sphereById.get(sid), n: arr(r.mats).find((m) => m.id === i.id).n })).filter((x) => x.s);
+        const seen = new Set(); const list = used.filter((x) => { if (seen.has(x.s.name)) return false; seen.add(x.s.name); return true; });
+        return list.length ? `<section class="panel box"><h3>Utilisé à la Forge pour</h3><div class="mini">${list.map((x) => `<a href="#s-${esc(x.s.id)}">${x.s.icon ? iconImg(x.s.icon, "icon", "").replace('class="icon"', 'class="icon" style="width:26px;height:26px"') : ""}${esc(sName(x.s))} <span class="muted small">×${x.n}</span></a>`).join("")}</div></section>` : ""; })()}
       <section class="panel box"><h3>Où le trouver</h3>
         ${where.length ? `<div class="tablewrap"><table class="drops"><thead><tr><th></th><th>Quête</th><th class="n">Par tour</th><th class="n">Énergie</th></tr></thead><tbody>
           ${where.map((w) => { const c = D.challengeById.get(String(w.m)); return `<tr><td>${c ? `<img src="${dungeonImg(c.dungeonId)}" alt="" loading="lazy">` : ""}</td><td><strong>${esc(missionName(w.m))}</strong>${c ? `<div class="small muted">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div>` : ""}</td><td class="n">${w.e >= 1 ? fmt(Math.round(w.e * 10) / 10) : "≈ " + Math.round(w.e * 100) + " %"}</td><td class="n">${w.en ?? "—"}</td></tr>`; }).join("")}

@@ -457,3 +457,12 @@ k: "Quête", t:§§k: "Quest", t:
 Aucun résultat.§§No results.
 aria-label="Aller à"§§aria-label="Jump to"
 [["sec-type", "Type"], ["sec-stats", "Stats"], ["sec-skills", "Compétences"], ["sec-spheres", "Sphères"], ["sec-evo", "Évolution"], ["sec-src", "Obtention"]]§§[["sec-type", "Type"], ["sec-stats", "Stats"], ["sec-skills", "Skills"], ["sec-spheres", "Spheres"], ["sec-evo", "Evolution"], ["sec-src", "Where to get"]]
+`Forge à sphères${r.level ? ` (Forge Nv ${r.level})` : ""}${forgeAvailable(id) ? "" : " : un matériau n'est pas encore disponible"}`§§`Sphere Forge${r.level ? ` (Forge Lv ${r.level})` : ""}${forgeAvailable(id) ? "" : ": a material is not available yet"}`
+Aucune source connue dans cette version du jeu.§§No known source in this version of the game.
+<h3>Recette de la Forge à sphères</h3>§§<h3>Sphere Forge recipe</h3>
+<span class="muted small">(sphère)</span>§§<span class="muted small">(sphere)</span>
+(pas encore dans le jeu)§§(not in the game yet)
+<dt>Niveau de Forge</dt><dd>${r.level} minimum</dd>§§<dt>Forge level</dt><dd>${r.level} minimum</dd>
+<dt>Disponible</dt><dd>${ok ? `<span class="up">Oui</span>` : `<span class="down">Pas encore : un matériau manque dans cette version</span>`}§§<dt>Available</dt><dd>${ok ? `<span class="up">Yes</span>` : `<span class="down">Not yet: a material is missing in this version</span>`}
+Recette lue dans la Forge à sphères du jeu, en ville. Le niveau de Forge n'est indiqué que pour les recettes encore verrouillées sur le compte qui les a lues.§§Recipe read from the in-game Sphere Forge, in town. The Forge level is only shown for recipes that were still locked on the account that read them.
+<h3>Utilisé à la Forge pour</h3>§§<h3>Used at the Forge for</h3>
