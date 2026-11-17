@@ -248,6 +248,12 @@ tr.best td { background: #2b2412; }
 .inv .small { flex-basis: 100%; margin-left: 44px; margin-top: -4px; }
 .inv { flex-wrap: wrap; }
 .proposal { display: grid; gap: 4px; }
+.guide { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); }
+.guide > summary { cursor: pointer; color: var(--gold-hi); }
+.fight { padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
+.fight:last-child { border-bottom: 0; }
+.fight h4 { font-family: var(--display); font-size: 16px; color: var(--gold-hi); }
+.fight details summary { cursor: pointer; color: var(--mute); }
 .proposal h3 { color: var(--gold-hi); }
 .pmem { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--line); min-width: 0; }
 .pmem .tag { font-family: var(--display); color: var(--gold); font-size: 13px; }
@@ -673,11 +679,15 @@ function walk(effects, fn, where) {
   for (const e of effects || []) { fn(e, where); if (e.effects) walk(e.effects, fn, where); }
 }
 // Rôles calculés à partir de la forme la plus évoluée.
+// Le rôle d'une unité se joue sur son BB et surtout son SBB, lancés presque chaque tour.
+// L'UBB est rare (une seule unité par remplissage de la jauge OD, très long à recharger) :
+// il ne compte presque pas. Compétences de leader et extra : un peu moins que le SBB.
+const ROLE_WEIGHT = { bb: 0.8, sbb: 1, ubb: 0.15, ls: 0.6, es: 0.6 };
 function rolesOf(f) {
   const s = { heal: 0, mitig: 0, bc: 0, buff: 0, status: 0, inflict: 0, dmg: 0 };
   const conv = new Set();
   const add = (e, w) => {
-    const k = w === "ls" || w === "es" ? 0.6 : 1;
+    const k = ROLE_WEIGHT[w] ?? 1;
     const id = e.id || "";
     if (/^heal\.|damage_to_heal|hc\.efficacy|^drop\.hc$|revive/.test(id)) s.heal += 1.2 * k;
     if (/^mitigation$|elemental_mitigation|barrier|angel_idol|chance_mitigation|guard_mitigation|^buff\.def$/.test(id)) s.mitig += 1.2 * k;
@@ -685,31 +695,46 @@ function rolesOf(f) {
     if (/^buff\.(atk|spark_dmg|crit_rate|crit_dmg|bb_atk|elem_weak_dmg|add_element)$|^attack\.def_ignore$/.test(id) && e.target === "party") s.buff += k;
     if (/ailment\.null|ailment\.cure|status_counter|debuff\.null|ailment_resist/.test(id)) s.status += k;
     if (/ailment\.inflict|add_ailment|^debuff\.(atk_down|def_down|spark_vuln|crit_vuln|elem_vuln)/.test(id)) s.inflict += 0.7 * k;
-    if (/^attack\./.test(id) && w === "ubb") s.dmg += Math.min(e.value || 0, 30) / 10;
-    if (/^attack\./.test(id) && w === "sbb") s.dmg += Math.min(e.value || 0, 20) / 10;
-    if (/^buff\.self_(atk|spark)/.test(id)) s.dmg += 1;
+    // Dégâts : multiplicateur total de chaque BB/SBB (médiane ≈ 2,7 en BB, 5 en SBB), plafonné à ×10 par burst.
+    if (/^attack\./.test(id) && atk[w] !== undefined) atk[w] += e.value || 0;
+    if (/^buff\.self_(atk|spark)/.test(id)) s.dmg += k;
     const m = id.match(/^buff\.atk_from_(def|hp|rec)$/);
-    if (m) conv.add(m[1]);
+    if (m && w !== "ubb") conv.add(m[1]);
   };
   const b = f.bursts || {};
+  const atk = { bb: 0, sbb: 0, ubb: 0 };
   for (const w of ["bb", "sbb", "ubb"]) if (b[w]) walk(b[w].effects, add, w);
+  for (const w of ["bb", "sbb", "ubb"]) s.dmg += ROLE_WEIGHT[w] * Math.min(atk[w], 10) / 5;
   if (f.leaderSkill) walk(f.leaderSkill.effects, add, "ls");
   if (f.extraSkill) walk(f.extraSkill.effects, add, "es");
-  const order = Object.entries(s).filter(([k, v]) => v >= 1).sort((a, b) => b[1] - a[1]);
-  const main = order.length ? order[0][0] : "dmg";
+  const order = Object.entries(s).filter(([k, v]) => v >= 0.8).sort((a, b) => b[1] - a[1]);
+  // Rôle principal : le score le plus haut, même faible (un petit soigneur reste un soigneur).
+  const top = Object.entries(s).sort((a, b) => b[1] - a[1])[0];
+  const main = top && top[1] > 0 ? top[0] : "dmg";
   return { scores: s, list: order.map(([k]) => k), main, conv };
 }
 function recommendType(f, roles) {
   if (roles.conv.has("def")) return { type: "guardian", why: "Ses BB convertissent la DÉF en ATQ : chaque point de DÉF gagné rend toute l'équipe plus forte." };
   if (roles.conv.has("hp")) return { type: "anima", why: "Ses BB convertissent les PV en ATQ : le gros bonus de PV d'Anima profite à toute l'équipe." };
   if (roles.conv.has("rec")) return { type: "oracle", why: "Ses BB convertissent la REC en ATQ : Oracle augmente directement ce bonus." };
+  // Une unité de soutien vaut par les effets de son SBB, pas par ses dégâts : elle doit surtout survivre
+  // pour le relancer chaque tour. Breaker est réservé aux unités dont le rôle principal est de frapper.
+  const sc = roles.scores;
+  const support = Math.max(sc.heal, sc.mitig, sc.bc, sc.buff, sc.status);
   switch (roles.main) {
-    case "heal": return { type: "oracle", why: "C'est un soigneur : ses soins montent avec la REC, et Oracle donne +2 à +4 REC par niveau." };
-    case "mitig": return { type: "anima", why: "C'est un défenseur : il doit survivre pour protéger l'équipe, et Anima donne +5 à +10 PV par niveau." };
-    case "bc": return { type: "anima", why: "Son rôle est de remplir les jauges de BB : il doit rester en vie, d'où les PV d'Anima." };
+    case "heal": return { type: "oracle", why: "C'est un soigneur : ses soins montent avec la REC, et Oracle donne +2 à +4 REC par niveau. Si tu manques de PV en défis, Anima reste un bon choix." };
+    case "mitig": return { type: "anima", why: "C'est un défenseur : s'il tombe, la réduction de dégâts disparaît. Anima donne +5 à +10 PV par niveau." };
+    case "bc": return { type: "anima", why: "Il remplit les jauges de BB de l'équipe : il doit rester en vie, d'où les PV d'Anima." };
     case "status": return { type: "anima", why: "Il protège des altérations : sa survie compte plus que ses dégâts." };
-    case "buff": return { type: "breaker", why: "Il booste l'attaque de l'équipe et frappe fort lui-même : Breaker donne +1 à +3 ATQ par niveau." };
-    default: return { type: "breaker", why: "C'est un attaquant : Breaker augmente son ATQ, au prix d'un peu de DÉF." };
+    case "buff": return sc.dmg >= sc.buff * 0.9
+      ? { type: "breaker", why: "Il booste l'équipe mais frappe aussi très fort : Breaker augmente ses propres dégâts." }
+      : { type: "anima", why: "Sa valeur vient des boosts de son SBB, relancés chaque tour : il doit surtout survivre. Anima lui donne des PV ; ses dégâts comptent moins." };
+    case "inflict": return sc.dmg >= 1.5 && support < 1
+      ? { type: "breaker", why: "Il affaiblit l'ennemi tout en frappant fort : Breaker augmente ses dégâts." }
+      : { type: "anima", why: "Il affaiblit l'ennemi (altérations, baisses de stats) : ses effets comptent plus que ses dégâts, donc on le rend plus solide." };
+    default: return support >= 1 && support >= sc.dmg * 0.8
+      ? { type: "anima", why: "Il frappe, mais apporte aussi du soutien à l'équipe : mieux vaut qu'il survive." }
+      : { type: "breaker", why: "C'est un attaquant : son BB et son SBB frappent fort. Breaker augmente son ATQ, au prix d'un peu de DÉF." };
   }
 }
 function statsAt(f, type) {
@@ -951,7 +976,7 @@ const SKILL_HELP = {
   ES: "Compétence extra : bonus passif propre à l'unité.",
   BB: "Brave Burst : se lance quand la jauge est pleine.",
   SBB: "Super Brave Burst : version renforcée, avec une jauge plus longue.",
-  UBB: "Ultimate Brave Burst : l'attaque ultime, une fois la jauge d'Overdrive pleine.",
+  UBB: "Ultimate Brave Burst : l'attaque ultime, une fois la jauge d'Overdrive pleine. Une seule unité peut la lancer, puis la jauge met longtemps à se recharger.",
 };
 // Barres : chaque stat au niveau max, comparée à la meilleure unité jouable du jeu.
 let STAT_MAX = null;
@@ -1319,7 +1344,7 @@ const MODES = [
       "Une mitigation élémentaire du bon élément réduit encore les dégâts reçus."] },
   { id: "chroniques", name: "Grand Gaia Chronicles", test: (c) => c.areaId === 150000,
     rules: "Combats contre les boss marquants de l'histoire, plus durs que la version d'origine.",
-    tips: ["Les boss se soignent ou changent de phase : garde tes BB et UBB pour les finir d'un coup.",
+    tips: ["Les boss se soignent ou changent de phase : garde tes SBB pour finir une phase d'un coup. L'UBB, rare, sert pour le moment le plus dur.",
       "Prévois une immunité aux altérations : plusieurs boss en infligent beaucoup."] },
   { id: "tour", name: "Unholy Tower", test: (c) => c.areaId === 800011 || c.areaId === 800012 || c.areaId === 800013,
     rules: "Tour en dix paliers, plus sa face sombre. Les derniers paliers et le Prologue XE interdisent les continues et limitent les objets à 2.",
@@ -1328,7 +1353,7 @@ const MODES = [
       "Une unité Anima ou Guardian en défenseur évite les morts sur les gros coups."] },
   { id: "epreuves", name: "Épreuves", test: (c) => c.areaId === 800051 || c.areaId === 2000000 || c.areaId === 800020,
     rules: "Épreuve des dieux, Épreuves de test et La tromperie de Leon : peu de combats, des boss très résistants.",
-    tips: ["Peu de vagues mais beaucoup de PV : les dégâts d'étincelle et les UBB font la différence.",
+    tips: ["Peu de vagues mais beaucoup de PV : ce sont les SBB lancés à chaque tour et les étincelles qui font les dégâts. L'UBB, rare, sert à finir une phase.",
       "Regarde les altérations du boss avant de partir et équipe une sphère d'immunité si personne ne la donne."] },
   { id: "chasseur", name: "Frontier Hunter", test: (c) => c.areaId === 1000010,
     rules: "Saison 6 de l'Uncharted Frontier : quatre étapes, sans continue.",
@@ -1340,7 +1365,7 @@ const MECH_FR = {
   bbDrain: "Vide vos jauges de BB : garde des soutiens BB et des sphères de remplissage.",
   buffRemoval: "Retire vos buffs : relance mitigation et boosts juste après.",
   hpPercent: "Attaques en pourcentage de PV : la DÉF ne protège pas, prévois des soins et un Ange gardien.",
-  selfHeal: "Le boss se soigne : garde tes BB et UBB pour finir une phase d'un coup.",
+  selfHeal: "Le boss se soigne : garde tes SBB pour finir une phase d'un coup.",
   nuke: "Attaques très puissantes : garde une réduction de dégâts active au bon tour.",
   statDown: "Baisse vos statistiques : une immunité aux baisses de stats aide.",
 };
@@ -1393,15 +1418,323 @@ function challengeHTML(c) {
       <div><div class="small muted">Réduction des dégâts</div>${miniList(sg.mitig)}</div>
       <div><div class="small muted">Soigneurs</div>${miniList(sg.healers)}</div>
     </div>
-    <div><button type="button" class="btn primary" data-build="${c.id}">Préparer cette équipe dans le team builder</button></div>
+    <details class="guide" data-fight="${c.id}"><summary><strong>Guide du combat : déroulé et plan de bataille</strong></summary><div class="fightbox muted small">Chargement…</div></details>
+    <div><button type="button" class="btn primary" data-build="${c.id}">${COLL ? "Préparer une équipe avec mes unités" : "Préparer cette équipe dans le team builder"}</button></div>
   </section>`;
 }
-function buildTeamFor(c) {
-  const sg = suggestFor(c), used = new Set(), out = [];
-  const take = (list) => { const u = list.find((x) => !used.has(x.id)); if (u) { used.add(u.id); return { unit: u.id, form: u.forms.length - 1, type: null }; } return null; };
-  out[0] = take(sg.attackers); out[1] = take(sg.mitig); out[2] = take(sg.nullers.length ? sg.nullers : sg.healers);
-  out[3] = take(sg.healers); out[4] = take(sg.attackers); out[5] = take(sg.attackers);
-  team = out.map((x) => x || null); saveTeam(); location.hash = "#equipe";
+/* ---------- Déroulé des combats ----------
+   Écrit à partir de l'IA des boss (fichier public « world » du jeu) : seuils de PV, tours, charges,
+   compétences et passifs. Dégâts estimés avec la formule du jeu : (ATQ × (1 + multiplicateur) − DÉF / 3),
+   pour une unité Omni typique (≈ 8 500 PV, 2 600 DÉF). Textes bilingues : L(français, anglais). */
+const L = (fr, en) => (LANG === "fr" ? fr : en);
+let FIGHTS = null;
+const loadFights = () => FIGHTS ? Promise.resolve(FIGHTS) : fetch("data/fights.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({})).then((j) => (FIGHTS = j));
+const TYPICAL = { hp: 8500, def: 2600 };
+const pc = (v) => Math.round(v * 100) + (LANG === "fr" ? " %" : "%");
+const P = LANG === "fr" ? " %" : "%";
+const turnsTxt = (e) => (e.turns && e.turns < 99 ? L(` (${e.turns} tour${e.turns > 1 ? "s" : ""})`, ` (${e.turns} turn${e.turns > 1 ? "s" : ""})`) : "");
+const Q = (n) => L(`« ${n} »`, `"${n}"`);
+const TGT = {
+  bb_full: ["les unités dont la jauge de BB est pleine", "units with a full BB gauge"], bb_over_50: ["les unités dont la jauge de BB dépasse 50 %", "units with a BB gauge above 50%"],
+  weak_to_element: ["les unités faibles à son élément", "units weak to its element"], highest_hp: ["l'unité qui a le plus de PV", "the unit with the most HP"],
+  lowest_hp: ["l'unité la plus blessée", "the most injured unit"], highest_atk: ["l'unité qui a le plus d'ATQ", "the unit with the most ATK"],
+  highest_def: ["l'unité qui a le plus de DÉF", "the unit with the most DEF"], lowest_atk: ["l'unité qui a le moins d'ATQ", "the unit with the least ATK"],
+  lowest_def: ["l'unité qui a le moins de DÉF", "the unit with the least DEF"], hp_under_25: ["les unités sous 25 % de PV", "units under 25% HP"],
+  hp_under_50: ["les unités sous 50 % de PV", "units under 50% HP"], hp_under_75: ["les unités sous 75 % de PV", "units under 75% HP"],
+  hp_over_50: ["les unités au-dessus de 50 % de PV", "units above 50% HP"], hp_over_75: ["les unités au-dessus de 75 % de PV", "units above 75% HP"],
+  has_ailment: ["les unités sous altération", "units with a status ailment"], has_buff_burst: ["tes unités de soutien", "your support units"],
+  has_attack_burst: ["tes attaquants", "your attackers"], has_heal_burst: ["tes soigneurs", "your healers"], element_dark: ["les unités Ténèbres", "Dark units"], mark_holder: ["l'unité marquée", "the marked unit"],
+};
+const STAT_N = { atk: ["ATQ", "ATK"], def: ["DÉF", "DEF"], rec: ["REC", "REC"], crit_rate: ["taux de critique", "critical rate"], spark_dmg: ["dégâts d'étincelle", "spark damage"] };
+const SN = (k) => L(STAT_N[k][0], STAT_N[k][1]);
+// Dégâts estimés d'une attaque du boss sur une unité typique. atkMul : bonus d'ATQ d'un passif (phase basse).
+function hitEstimate(boss, e, atkMul = 1) {
+  if (e.hpDamage) return null;
+  const raw = (boss.stats.atk * atkMul * (1 + (e.value || 0)) + (e.flatAtk || 0)) * (e.damageScale || 1) - TYPICAL.def / 3;
+  return Math.max(0, Math.round(raw));
+}
+// Bonus d'ATQ des passifs « sous X % de PV » actifs à ce niveau de PV.
+const atkMulAt = (boss, hp) => arr(boss.passives).filter((p) => p.kind === "hp_below" && hp !== null && hp <= p.hpPercent && p.atk).reduce((m, p) => m * (1 + p.atk / 100), 1);
+function fxText(e, boss, atkMul = 1) {
+  const own = e.target === "self" || e.target === "party" || e.target === "ally";
+  const v = e.value || 0;
+  const id = e.id || "";
+  if (/^attack\./.test(id)) {
+    const who = id === "attack.aoe" ? L("toute l'équipe", "the whole team") : id === "attack.random" ? L("des unités au hasard", "random units") : L("une unité", "one unit");
+    if (e.hpDamage) { const r = e.hpDamage.low === e.hpDamage.high ? e.hpDamage.low : e.hpDamage.low + "–" + e.hpDamage.high; return L(`retire ${r} % des PV max à ${who}`, `removes ${r}% of max HP from ${who}`); }
+    const d = hitEstimate(boss, e, atkMul), x = fmt(Math.round((1 + v) * 100) / 100);
+    return L(`frappe ${who} (×${x} ATQ, ≈ ${fmt(d)} dégâts par unité)`, `hits ${who} (×${x} ATK, ≈ ${fmt(d)} damage per unit)`);
+  }
+  if (id.startsWith("ailment.inflict.")) { const a = id.split(".")[2]; return `${(AIL_FR[a] || a).toLowerCase()} (${v}${P})`; }
+  switch (id) {
+    case "buff_removal": return own ? null : L("retire tous tes buffs", "removes all your buffs");
+    case "bb.drain": return v >= 1 ? L("vide entièrement tes jauges de BB", "empties your BB gauges") : L(`vole ${pc(e.min ?? v)}${e.max ? "–" + pc(e.max) : ""} de tes jauges de BB`, `drains ${pc(e.min ?? v)}${e.max ? "–" + pc(e.max) : ""} of your BB gauges`);
+    case "bb.set": return L("remet la jauge de BB d'une unité à zéro", "resets one unit's BB gauge to zero");
+    case "bb.gain_block": return L(`empêche tes jauges de BB de se remplir${turnsTxt(e)}`, `stops your BB gauges from filling${turnsTxt(e)}`);
+    case "debuff.atk_cut": return L(`réduit l'ATQ de ${pc(v)}${turnsTxt(e)}${e.unremovable ? ", impossible à retirer" : ""}`, `cuts ATK by ${pc(v)}${turnsTxt(e)}${e.unremovable ? ", cannot be removed" : ""}`);
+    case "debuff.bc_drop_down": return L(`réduit les cristaux BC obtenus${turnsTxt(e)}`, `reduces BC drops${turnsTxt(e)}`);
+    case "debuff.od_fill_down": return L(`ralentit ta jauge OD${turnsTxt(e)}`, `slows your OD gauge${turnsTxt(e)}`);
+    case "ls_lock": return L(`bloque ta compétence de leader${turnsTxt(e)}`, `locks your Leader Skill${turnsTxt(e)}`);
+    case "es_lock": return L(`bloque tes compétences extra${turnsTxt(e)}`, `locks your Extra Skills${turnsTxt(e)}`);
+    case "sphere_lock": return L(`bloque tes sphères${turnsTxt(e)}`, `locks your spheres${turnsTxt(e)}`);
+    case "mitigation": return own ? L(`réduit les dégâts qu'il reçoit de ${pc(v)}${turnsTxt(e)}`, `reduces damage it takes by ${pc(v)}${turnsTxt(e)}`) : null;
+    case "separate_mitigation": return L(`réduit encore les dégâts qu'il reçoit de ${pc(v)}`, `further reduces damage it takes by ${pc(v)}`);
+    case "angel_idol": return own ? L("survivra une fois à un coup fatal", "will survive one fatal blow") : null;
+    case "heal.instant": return own ? L(`se soigne${e.min ? ` de ${fmt(e.min)} à ${fmt(e.max)} PV` : v ? ` de ${fmt(v)} PV` : ""}`, `heals itself${e.min ? ` for ${fmt(e.min)}–${fmt(e.max)} HP` : v ? ` for ${fmt(v)} HP` : ""}`) : null;
+    case "heal.over_time": return own ? L(`se soigne à chaque tour${turnsTxt(e)}`, `heals every turn${turnsTxt(e)}`) : null;
+    case "heal.share": return L("partage ses PV avec ses alliés", "shares its HP with its allies");
+    case "od.fill_instant": return own ? null : L("remplit ta jauge OD : ton UBB est prêt", "fills your OD gauge: your UBB is ready");
+    case "element_shift": return L(`change d'élément et devient ${EL_FR[e.element] || e.element}`, `changes its element to ${EL_FR[e.element] || e.element}`);
+    case "stealth": return L(`devient impossible à cibler${turnsTxt(e)}`, `cannot be targeted${turnsTxt(e)}`);
+    case "summon.call": return L("appelle un renfort", "calls a reinforcement");
+    case "taunt": return L(`attire toutes tes attaques${turnsTxt(e)}`, `draws all your attacks${turnsTxt(e)}`);
+    case "shield": return L(`se protège d'un bouclier de ${fmt(v)} PV`, `raises a ${fmt(v)} HP shield`);
+    case "barrier.share": return L("se protège d'une barrière", "raises a barrier");
+    case "hp_set": return L("fait tomber une unité à 1 PV", "drops one unit to 1 HP");
+    case "hp_hold": return L(`ne peut pas descendre sous ${pc(v)} de PV pour l'instant`, `cannot drop below ${pc(v)} HP for now`);
+    case "self_damage": return L(`perd ${pc(v)} de ses PV`, `loses ${pc(v)} of its HP`);
+    case "revive": return L("ressuscite", "revives");
+    case "hits.add_normal": return L("frappe une fois de plus à chaque attaque", "hits one extra time per attack");
+    case "ailment.null": return own ? L("devient immunisé aux altérations", "becomes immune to status ailments") : null;
+    case "ailment.cure": return own ? L("se soigne de ses altérations", "cures its status ailments") : null;
+    case "attack.def_ignore": return L("ignore ta DÉF", "ignores your DEF");
+    case "buff.add_element": return L("ajoute un élément à ses attaques", "adds an element to its attacks");
+  }
+  let m = id.match(/^buff\.(atk|def|rec|crit_rate|spark_dmg)$/);
+  if (m) return own ? `${SN(m[1])} +${pc(v)}${turnsTxt(e)}` : null;
+  m = id.match(/^debuff\.(atk|def|rec)_down$/);
+  if (m) return own ? null : L(`baisse ton ${SN(m[1])} de ${pc(v)}${turnsTxt(e)}`, `lowers your ${SN(m[1])} by ${pc(v)}${turnsTxt(e)}`);
+  if (/^buff\.atk_from/.test(id)) return own ? L("renforce son ATQ", "boosts its ATK") : null;
+  return null;
+}
+function skillEffects(boss, sid, atkMul = 1) {
+  const s = boss.skills[sid]; if (!s) return "";
+  const parts = arr(s.effects).map((e) => ({ e, t: fxText(e, boss, atkMul) })).filter((x) => x.t);
+  // On regroupe les altérations en une seule phrase.
+  const ail = parts.filter((x) => x.e.id.startsWith("ailment.inflict.")).map((x) => x.t);
+  const rest = parts.filter((x) => !x.e.id.startsWith("ailment.inflict.")).map((x) => x.t);
+  if (ail.length) rest.push(L("peut infliger ", "may inflict ") + ail.join(", "));
+  return rest.join(", ") || L("sans effet notable", "no notable effect");
+}
+function skillText(boss, sid) {
+  if (sid === "normal") return L("attaque normale", "normal attack");
+  const s = boss.skills[sid]; if (!s) return null;
+  return `${Q(s.name)}${COLON()}${skillEffects(boss, sid)}`;
+}
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+const COLON = () => L(" : ", ": ");
+function condText(c) {
+  switch (c.type) {
+    case "on_turn": return L(`au tour ${c.turn}`, `on turn ${c.turn}`);
+    case "every_n_turns": return L(`tous les ${c.n} tours${c.first ? ` (à partir du tour ${c.first})` : ""}`, `every ${c.n} turns${c.first ? ` (from turn ${c.first})` : ""}`);
+    case "ally_defeated": return L("quand un de ses alliés tombe", "when one of its allies falls");
+    case "side_alive": return c.count === 1 ? L("quand il reste seul", "when it is left alone") : L(`quand il ne reste que ${c.count} ennemis`, `when only ${c.count} enemies remain`);
+    case "ally_hp_under": return L(`quand un allié passe sous ${c.hpPercent} % de PV`, `when an ally drops under ${c.hpPercent}% HP`);
+    case "ally_alive": return L("tant qu'un allié est en vie", "while an ally is alive");
+    case "damage_log": return L(`si tu lui infliges plus de ${fmt(c.value)} dégâts`, `if you deal more than ${fmt(c.value)} damage to it`);
+    case "flag_term": return L("après un certain nombre de tours", "after a number of turns");
+    default: return null;
+  }
+}
+const every = (conds) => (conds.find((c) => c.type === "every_n_turns") || {}).n || null;
+// Transforme les règles d'IA en événements lisibles, triés : seuils de PV, tours, enchaînements, le reste.
+function bossTimeline(boss) {
+  const rules = arr(boss.ai), ev = [];
+  const setter = (flag) => rules.find((r) => arr(r.setFlags).some((f) => f.flag === flag && f.value === 1) && r.skill && !/^(end_turn|wait_action)$/.test(r.skill));
+  for (const r of rules) {
+    if (!r.skill || r.skill === "end_turn") continue;
+    const conds = arr(r.conditions);
+    const once = conds.some((c) => c.type === "limit");
+    const hpU = r.when === "hp_threshold_once" ? r.hpPercent : (conds.find((c) => c.type === "hp_under") || {}).hpPercent;
+    const hpO = (conds.find((c) => c.type === "hp_over") || {}).hpPercent;
+    const flagOn = conds.find((c) => c.type === "flag_on");
+    const cycle = conds.find((c) => c.type === "flag_cycle");
+    if (r.skill === "wait_action") { if (once || conds.some((c) => c.type === "flag_off")) ev.push({ k: 0, sort: 999, text: L("Il passe son premier tour sans attaquer.", "It skips its first turn without attacking.") }); continue; }
+    const what = skillText(boss, r.skill); if (!what) continue;
+    let when = [], k = 3, sort = 0;
+    if (r.when === "default") { ev.push({ k: 9, text: L(`Le reste du temps : ${what}.`, `The rest of the time: ${what}.`) }); continue; }
+    if (hpU !== undefined && (once || r.when === "hp_threshold_once")) { k = 1; sort = hpU; when.push(L(`À ${hpU} % de PV (une fois)`, `At ${hpU}% HP (once)`)); }
+    else if (hpU !== undefined) when.push(L(`Sous ${hpU} % de PV`, `Under ${hpU}% HP`));
+    if (hpO !== undefined && !flagOn) when.push(L(`tant qu'il a plus de ${hpO} % de PV`, `while above ${hpO}% HP`));
+    const srcName = (src) => { const nm = Q((boss.skills[src.skill] || {}).name || src.skill); const th = arr(src.conditions).find((c) => c.type === "hp_under"); return th && r !== src ? L(`${nm} des ${th.hpPercent} %`, `${nm} at ${th.hpPercent}%`) : nm; };
+    if (flagOn) {
+      const src = setter(flagOn.flag);
+      if (src) {
+        k = 2; when.push(L(`Au tour qui suit ${srcName(src)}`, `On the turn after ${srcName(src)}`));
+        if (hpO !== undefined) when.push(L(`s'il a plus de ${hpO} % de PV`, `if above ${hpO}% HP`));
+        else {
+          // Variante « sinon » : une règle sœur sur le même signal demande plus de X % de PV.
+          const sib = rules.find((o) => o !== r && arr(o.conditions).some((c) => c.type === "flag_on" && c.flag === flagOn.flag) && arr(o.conditions).some((c) => c.type === "hp_over"));
+          if (sib) { const p = arr(sib.conditions).find((c) => c.type === "hp_over").hpPercent; when.push(L(`s'il a ${p} % de PV ou moins`, `if at ${p}% HP or less`)); }
+        }
+      } else if (!when.length) continue; // drapeau interne sans lien lisible
+    }
+    if (cycle) { const src = setter(cycle.flag); k = 2; when.push(L(`Tous les ${cycle.n} tours après ${src ? srcName(src) : "sa charge"}`, `Every ${cycle.n} turns after ${src ? srcName(src) : "its charge"}`)); }
+    for (const c of conds) { const t = condText(c); if (t) { when.push(t); if (c.type === "on_turn") { k = Math.min(k, 2); sort = 100 - c.turn; } if (c.type === "every_n_turns") k = Math.min(k, 2); } }
+    if (!when.length) { when.push(r.chance && r.chance < 100 ? L(`Parfois (${r.chance} %)`, `Sometimes (${r.chance}%)`) : L("À chaque tour possible", "Any turn")); k = 4; }
+    else if (r.chance && r.chance < 100) when.push(L(`${r.chance} % de chances`, `${r.chance}% chance`));
+    const tgt = TGT[r.target] ? L(`, en visant ${TGT[r.target][0]}`, `, targeting ${TGT[r.target][1]}`) : "";
+    ev.push({ k, sort, text: `${cap(when.join(", "))}${COLON()}${what}${tgt}.`, sid: r.skill, hp: k === 1 ? hpU : null, cycle: cycle ? cycle.n : every(conds), target: r.target });
+  }
+  for (const x of arr(boss.reactions)) {
+    const what = skillText(boss, x.skill); if (!what) continue;
+    const T = { hits_taken: [`Après ${x.hits} coups reçus`, `After taking ${x.hits} hits`], ubb: ["Quand tu lances un UBB", "When you cast a UBB"], item_used: ["Quand tu utilises un objet Ange gardien", "When you use an Angel Idol item"], revived: ["Quand une de tes unités est ressuscitée", "When one of your units is revived"], loss_capped: ["Quand il a perdu trop de PV en un tour", "When it loses too much HP in one turn"], hold_reached: ["Quand un effet d'UBB est maintenu", "When a UBB effect is held"] }[x.trigger] || ["En réaction", "In reaction"];
+    ev.push({ k: 2, sort: 0, text: `${L(T[0], T[1])}${COLON()}${what}.` });
+  }
+  if (boss.entry) { const w = skillText(boss, boss.entry); if (w) ev.push({ k: 0, sort: 1000, text: L(`Dès son arrivée : ${w}.`, `As soon as it appears: ${w}.`) }); }
+  // Doublons (même texte) retirés, puis tri.
+  const seen = new Set();
+  return ev.filter((e) => (seen.has(e.text) ? false : seen.add(e.text))).sort((a, b) => a.k - b.k || b.sort - a.sort);
+}
+function passiveText(p) {
+  const st = (o) => [o.atk && `${SN("atk")} +${o.atk}${P}`, o.def && `${SN("def")} +${o.def}${P}`, o.crit && `${L("critique", "critical")} +${o.crit}${P}`].filter(Boolean).join(", ");
+  switch (p.kind) {
+    case "hp_below": return L(`Sous ${p.hpPercent} % de PV, il devient plus fort : ${st(p)}.`, `Under ${p.hpPercent}% HP it gets stronger: ${st(p)}.`);
+    case "hp_above": return L(`Au-dessus de ${p.hpPercent} % de PV : ${st(p)}.`, `Above ${p.hpPercent}% HP: ${st(p)}.`);
+    case "crit_resist": return L("Immunisé aux coups critiques : les boosts de critique ne servent à rien.", "Immune to critical hits: critical boosts are useless.");
+    case "ignore_def": return L(`${p.chance} % de chances d'ignorer ta DÉF à chaque coup.`, `${p.chance}% chance to ignore your DEF on each hit.`);
+    case "damage_reduction": return L(`${p.chance} % de chances de réduire de ${p.value} % les dégâts qu'il reçoit.`, `${p.chance}% chance to reduce damage it takes by ${p.value}%.`);
+    case "damage_reflect": return L(`Renvoie ${p.low}–${p.high} % des dégâts reçus à l'attaquant.`, `Reflects ${p.low}–${p.high}% of damage taken back to the attacker.`);
+    case "turn_heal": return L(`Se soigne de ${fmt(p.low)}–${fmt(p.high)} PV à chaque tour.`, `Heals ${fmt(p.low)}–${fmt(p.high)} HP every turn.`);
+    case "extra_actions": return L(`Agit ${p.count} fois de plus par tour.`, `Acts ${p.count} more time(s) per turn.`);
+    case "extra_hits": return L("Frappe parfois une fois de plus.", "Sometimes hits one extra time.");
+    case "crit_damage": return L(`Ses coups critiques font +${p.value} % de dégâts.`, `Its critical hits deal +${p.value}% damage.`);
+    case "first_turns": return L(`Plus fort pendant ses ${p.turns} premiers tours (ATQ +${p.atk} %).`, `Stronger during its first ${p.turns} turns (ATK +${p.atk}%).`);
+    case "element_resist": return L(`Résiste à l'élément ${EL_FR[p.element] || p.element} (−${p.value} % de dégâts reçus).`, `Resists ${EL_FR[p.element] || p.element} (−${p.value}% damage taken).`);
+    case "hp_drain": return L("Se soigne d'une partie des dégâts qu'il inflige.", "Heals from part of the damage it deals.");
+    case "stat_boost": return L(`Statistiques renforcées (ATQ +${p.atk || 0} %, DÉF +${p.def || 0} %).`, `Boosted stats (ATK +${p.atk || 0}%, DEF +${p.def || 0}%).`);
+    case "atk_buff": return L(`ATQ +${p.value} % contre certains éléments.`, `ATK +${p.value}% against some elements.`);
+    default: return null;
+  }
+}
+const needMitig = (dmg) => Math.min(95, Math.max(0, Math.ceil((1 - (TYPICAL.hp * 0.85) / dmg) * 20) * 5));
+// Plan de bataille : ce qu'il faut emporter et comment gérer chaque moment dangereux.
+function battlePlan(boss) {
+  const plan = [], prep = [];
+  const sk = Object.entries(boss.skills || {});
+  const all = sk.flatMap(([, s]) => arr(s.effects).map((e) => ({ e, s })));
+  const foe = (e) => !(e.target === "self" || e.target === "party" || e.target === "ally");
+  const has = (re) => all.filter(({ e }) => re.test(e.id) && foe(e));
+  const ail = [...new Set(has(/^ailment\.inflict\./).map(({ e }) => e.id.split(".")[2]))].filter(Boolean);
+  if (ail.length) prep.push(L(`Immunité aux altérations : ${ail.map((a) => AIL_FR[a] || a).join(", ")}. Une unité ou une sphère qui les annule, sinon des remèdes.`, `Status immunity: ${ail.map((a) => AIL_FR[a] || a).join(", ")}. A unit or sphere that nullifies them, otherwise cure items.`));
+  // Plus gros coup : réduction de dégâts nécessaire pour survivre.
+  let worst = null;
+  for (const [, s] of sk) for (const e of arr(s.effects)) if (/^attack\./.test(e.id) && !e.hpDamage && foe(e)) { const d = hitEstimate(boss, e); if (!worst || d > worst.d) worst = { d, s, aoe: e.id === "attack.aoe" }; }
+  if (worst && worst.d > TYPICAL.hp * 0.6) {
+    const need = needMitig(worst.d);
+    prep.push(L(`Son coup le plus fort, ${Q(worst.s.name)}, fait environ ${fmt(worst.d)} dégâts ${worst.aoe ? "à chaque unité" : "à une unité"} (PV typiques : ${fmt(TYPICAL.hp)}).${need > 0 ? ` Il faut au moins ${need} % de réduction de dégâts active ce tour-là.` : ""}`,
+      `Its strongest hit, ${Q(worst.s.name)}, deals about ${fmt(worst.d)} damage ${worst.aoe ? "to each unit" : "to one unit"} (typical HP: ${fmt(TYPICAL.hp)}).${need > 0 ? ` You need at least ${need}% damage reduction active that turn.` : ""}`));
+  }
+  const fatal = all.filter(({ e }) => e.hpDamage && e.hpDamage.low >= 100 && foe(e));
+  if (fatal.length) prep.push(L(`${Q(fatal[0].s.name)} retire ${fatal[0].e.hpDamage.low} % des PV : c'est mortel quelle que soit ta DÉF. Garde un Ange gardien (unité, sphère ou objet), ou tue le boss avant qu'il ne le lance.`, `${Q(fatal[0].s.name)} removes ${fatal[0].e.hpDamage.low}% of HP: it is lethal whatever your DEF. Keep an Angel Idol (unit, sphere or item), or kill the boss before it casts it.`));
+  else if (all.some(({ e }) => e.hpDamage && foe(e))) prep.push(L("Certaines attaques retirent un pourcentage des PV : la DÉF et la réduction de dégâts ne les diminuent pas. Garde tes soins prêts juste après.", "Some attacks remove a percentage of HP: DEF and damage reduction do not lower them. Keep your heals ready right after."));
+  if (has(/^bb\.drain$|^bb\.set$|^bb\.gain_block$/).length) prep.push(L("Il vide ou bloque tes jauges de BB : emporte des objets qui remplissent les BB (Fujin, Valor) et des unités qui remplissent les BB d'un coup, pour relancer ta réduction de dégâts juste après.", "It drains or blocks your BB gauges: bring BB-filling items (Fujin, Valor) and units that fill BB instantly, to recast your damage reduction right after."));
+  if (has(/^buff_removal$/).length) prep.push(L("Il retire tes buffs : après chaque retrait, relance ta réduction de dégâts et tes soins sur la durée avant son tour suivant.", "It removes your buffs: after each removal, recast your damage reduction and heal over time before its next turn."));
+  if (has(/^ls_lock$|^es_lock$|^sphere_lock$/).length) prep.push(L("Il bloque compétences de leader, compétences extra ou sphères : ne dépends pas d'elles pour survivre.", "It locks Leader Skills, Extra Skills or spheres: do not rely on them to survive."));
+  if (has(/^debuff\.atk_cut$/).length) prep.push(L("Il réduit fortement l'ATQ d'une unité, sans remède : répartis les dégâts sur plusieurs attaquants.", "It heavily cuts one unit's ATK, with no cure: spread your damage across several attackers."));
+  if (has(/^od\.fill_instant$/).length) prep.push(L("À certains moments, il remplit ta jauge OD : ton UBB est prêt tout de suite, c'est le moment de le lancer.", "At some points it fills your OD gauge: your UBB is ready at once, that is the moment to cast it."));
+  for (const p of arr(boss.passives)) { const t = passiveText(p); if (t) prep.push(t); }
+  if (boss.stats.def >= 3000) prep.push(L(`DÉF très élevée (${fmt(boss.stats.def)}) : les unités qui ignorent la DÉF font beaucoup plus de dégâts.`, `Very high DEF (${fmt(boss.stats.def)}): units that ignore DEF deal much more damage.`));
+  const res = Object.entries(boss.resists || {}).filter(([, v]) => v >= 90).map(([k]) => AIL_FR[k] || k);
+  if (res.length) prep.push(L(`Il résiste à : ${res.join(", ")}. Inutile de compter sur ces altérations.`, `It resists: ${res.join(", ")}. Do not count on these ailments.`));
+  // Le déroulé : moments clés.
+  const tl = bossTimeline(boss);
+  // Ce qu'il lance au tour suivant une compétence (charge puis coup), selon ses PV à ce moment-là.
+  const followUp = (sid, hp) => {
+    const setters = arr(boss.ai).filter((r) => r.skill === sid && arr(r.setFlags).some((f) => f.value === 1));
+    const flags = new Set(setters.flatMap((r) => arr(r.setFlags).filter((f) => f.value === 1).map((f) => f.flag)));
+    const r = arr(boss.ai).find((o) => {
+      const cs = arr(o.conditions);
+      if (!cs.some((c) => c.type === "flag_on" && flags.has(c.flag)) || !boss.skills[o.skill]) return false;
+      const over = cs.find((c) => c.type === "hp_over");
+      return !over || hp === null || hp > over.hpPercent;
+    });
+    return r ? r.skill : null;
+  };
+  const danger = (sid) => arr((boss.skills[sid] || {}).effects).some((e) => foe(e) && (e.hpDamage || /^(buff_removal|bb\.drain|bb\.set|bb\.gain_block|ls_lock|sphere_lock|es_lock|debuff\.atk_cut|hp_set)$/.test(e.id) || e.id.startsWith("ailment.inflict.") || (/^attack\./.test(e.id) && hitEstimate(boss, e) > TYPICAL.hp * 0.4)));
+  for (const x of tl.filter((t) => t.k === 1)) {
+    const s = boss.skills[x.sid]; const nx = s && followUp(x.sid, x.hp);
+    if (!s || (!danger(x.sid) && !nx)) continue;
+    const fx = arr(s.effects), mul = atkMulAt(boss, x.hp);
+    const drains = fx.some((e) => /^bb\.(drain|set)$/.test(e.id) && foe(e));
+    const pctHp = fx.find((e) => e.hpDamage && foe(e));
+    const selfMit = fx.find((e) => e.id === "mitigation" && e.target === "self");
+    let step = L(`À ${x.hp} % de PV : ${Q(s.name)} (${skillEffects(boss, x.sid, mul)}).`, `At ${x.hp}% HP: ${Q(s.name)} (${skillEffects(boss, x.sid, mul)}).`);
+    if (pctHp && pctHp.hpDamage.low >= 100) step += L(" C'est mortel : il faut un Ange gardien actif, ou l'achever avant ce seuil.", " It is lethal: you need an active Angel Idol, or finish it before this threshold.");
+    else if (pctHp) { const h = Math.min(95, pctHp.hpDamage.high + 15); step += L(` Remonte les PV de toute l'équipe au-dessus de ${h} % avant de franchir ce seuil.`, ` Heal the whole team above ${h}% HP before crossing this threshold.`); }
+    else step += L(" Avant de franchir ce seuil, aie ta réduction de dégâts et tes soins sur la durée actifs.", " Before crossing this threshold, have your damage reduction and heal over time active.");
+    if (nx) {
+      const big = arr(boss.skills[nx].effects).filter((e) => /^attack\./.test(e.id) && !e.hpDamage).map((e) => hitEstimate(boss, e, mul)).sort((a, b) => b - a)[0];
+      const need = big ? needMitig(big) : 0;
+      step += L(` Au tour suivant, il lance ${Q(boss.skills[nx].name)}${big ? ` (≈ ${fmt(big)} dégâts par unité)` : ""} : relance ta réduction de dégâts${need ? ` (au moins ${need} %)` : ""} juste avant${drains ? ", avec un objet qui remplit les BB puisque tes jauges sont vides" : ""}.`,
+        ` On the next turn it casts ${Q(boss.skills[nx].name)}${big ? ` (≈ ${fmt(big)} damage per unit)` : ""}: recast your damage reduction${need ? ` (at least ${need}%)` : ""} just before${drains ? ", with a BB-filling item since your gauges are empty" : ""}.`);
+    }
+    if (selfMit) { const t = selfMit.turns || 1; step += L(` Pendant ${t} tour${t > 1 ? "s" : ""}, il encaisse ${pc(selfMit.value)} de dégâts en moins : remplis tes jauges au lieu de gaspiller tes SBB.`, ` For ${t} turn${t > 1 ? "s" : ""} it takes ${pc(selfMit.value)} less damage: fill your gauges instead of wasting your SBBs.`); }
+    plan.push(step);
+  }
+  // Moments liés aux tours (tour N, tous les N tours, enchaînements) : ce qu'il faut faire juste avant.
+  for (const x of tl.filter((t) => t.k === 2 && t.sid && danger(t.sid))) {
+    const s = boss.skills[x.sid]; if (!s) continue;
+    const fx = arr(s.effects);
+    const pctHp = fx.find((e) => e.hpDamage && foe(e));
+    const big = fx.filter((e) => /^attack\./.test(e.id) && !e.hpDamage && foe(e)).map((e) => hitEstimate(boss, e)).sort((a, b) => b - a)[0];
+    const aoe = fx.some((e) => e.id === "attack.aoe");
+    let tip;
+    if (pctHp && pctHp.hpDamage.low >= 100) tip = aoe
+      ? L("Toute l'équipe meurt sans Ange gardien : active-le juste avant (unité, sphère ou objet), ou termine le combat avant.", "The whole team dies without Angel Idol: activate it just before (unit, sphere or item), or end the fight first.")
+      : L("L'unité visée meurt sans Ange gardien : protège-la ou accepte de la ressusciter ensuite.", "The targeted unit dies without Angel Idol: protect it or be ready to revive it.");
+    else if (pctHp) tip = L("La DÉF ne réduit pas ces dégâts : soigne l'équipe juste avant.", "DEF does not reduce this damage: heal the team just before.");
+    else if (big && big > TYPICAL.hp * 0.4) { const n = needMitig(big); tip = L(`Aie ta réduction de dégâts active${n ? ` (au moins ${n} %)` : ""} ce tour-là.`, `Have your damage reduction active${n ? ` (at least ${n}%)` : ""} that turn.`); }
+    else tip = L("Relance tes buffs et remplis tes jauges juste après.", "Recast your buffs and refill your gauges right after.");
+    plan.push(`${x.text.split(COLON())[0]}${COLON()}${Q(s.name)} (${skillEffects(boss, x.sid)}). ${tip}`);
+  }
+  if (tl.some((t) => t.target === "bb_full" || t.target === "bb_over_50")) plan.push(L("Il vise les unités dont la jauge de BB est pleine : lance tes BB dès qu'ils sont prêts au lieu de les garder.", "It targets units with a full BB gauge: cast your BBs as soon as they are ready instead of holding them."));
+  const lowRule = tl.find((t) => t.k === 1 && t.hp !== null && t.hp <= 5);
+  if (lowRule) plan.push(L(`Dernière phase : à ${lowRule.hp} % de PV il lance encore une attaque. Garde tes SBB pour l'achever d'un seul tour depuis plus haut, et ton UBB si ta jauge OD est pleine.`, `Last phase: at ${lowRule.hp}% HP it casts one more attack. Save your SBBs to finish it in a single turn from higher up, and your UBB if your OD gauge is full.`));
+  return { prep, plan, timeline: tl };
+}
+function fightHTML(fight) {
+  if (!fight) return `<p class="muted small">${L("Le comportement de ces ennemis n'est pas détaillé dans les fichiers du jeu.", "These enemies' behaviour is not detailed in the game files.")}</p>`;
+  return fight.waves.map((w) => w.enemies.map((b) => {
+    const bp = battlePlan(b);
+    const acts = b.acts ? (b.acts.min === b.acts.max ? b.acts.min : b.acts.min + "–" + b.acts.max) : null;
+    return `<div class="fight">
+      <h4>${w.wave === fight.total ? L("Combat final", "Final battle") : L(`Vague ${w.wave} sur ${fight.total}`, `Wave ${w.wave} of ${fight.total}`)}${COLON()}${esc(b.name)} <span class="dot el-${esc(b.element)}"></span> <span class="muted small">${EL_FR[b.element] || ""} · ${fmt(b.stats.hp)} ${L("PV", "HP")} · ${SN("atk")} ${fmt(b.stats.atk)} · ${SN("def")} ${fmt(b.stats.def)}${acts ? L(` · ${acts} action${b.acts.max > 1 ? "s" : ""} par tour`, ` · ${acts} action${b.acts.max > 1 ? "s" : ""} per turn`) : ""}</span></h4>
+      ${bp.prep.length ? `<div class="small muted">${L("À préparer", "To prepare")}</div><ul class="fx">${bp.prep.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
+      ${bp.plan.length ? `<div class="small muted">${L("Plan de bataille", "Battle plan")}</div><ol class="steps">${bp.plan.map((t) => `<li>${esc(t)}</li>`).join("")}</ol>` : ""}
+      ${bp.timeline.length ? `<details><summary class="small">${L("Tout ce qu'il fait, dans l'ordre", "Everything it does, in order")}</summary><ul class="fx">${bp.timeline.map((t) => `<li>${esc(t.text)}</li>`).join("")}</ul></details>` : ""}
+    </div>`;
+  }).join("")).join("") + `<p class="note">${L("Déroulé lu dans le comportement des boss (fichiers du jeu). Dégâts estimés avec la formule du jeu pour une unité Omni typique (8 500 PV, 2 600 DÉF), sans faiblesse élémentaire ni réduction : ce sont des ordres de grandeur.", "Sequence read from the bosses' behaviour (game files). Damage estimated with the game formula for a typical Omni unit (8,500 HP, 2,600 DEF), without elemental weakness or reduction: these are rough figures.")}</p>`;
+}
+// Besoins d'un combat, lus dans le comportement de ses boss.
+function fightNeeds(fight) {
+  const n = { mitig: 0.3, heal: 0.35, bc: 0.2, buff: 0.2, status: 0.2, angel: false, defIgnore: false, noCrit: false, ail: [] };
+  if (!fight) return n;
+  for (const w of fight.waves) for (const b of w.enemies) {
+    for (const s of Object.values(b.skills || {})) for (const e of arr(s.effects)) {
+      const foe = !(e.target === "self" || e.target === "party" || e.target === "ally");
+      if (!foe) continue;
+      if (/^attack\./.test(e.id) && !e.hpDamage && hitEstimate(b, e) > TYPICAL.hp * 0.6) n.mitig = 0.7;
+      if (e.hpDamage && e.hpDamage.low >= 100) n.angel = true;
+      if (e.hpDamage) n.heal = 0.5;
+      if (/^bb\.(drain|set|gain_block)$|^buff_removal$/.test(e.id)) n.bc = 0.45;
+      if (e.id.startsWith("ailment.inflict.")) { n.status = 0.55; n.ail.push(e.id.split(".")[2]); }
+    }
+    if (b.stats.def >= 3000) n.defIgnore = true;
+    if (arr(b.passives).some((p) => p.kind === "crit_resist")) n.noCrit = true;
+  }
+  return n;
+}
+async function buildTeamFor(c) {
+  const F = await loadFights();
+  const n = fightNeeds(F[c.id]);
+  const enemy = (c.bosses[0] && c.bosses[0].element) || c.elements[0] || "";
+  const pool = COLL ? ownedRoster() : allHeroesRoster();
+  const bonus = (x, team) => (n.angel && !team.some((t) => formHas(t.f, /angel_idol/)) && formHas(x.f, /angel_idol/) ? 0.4 : 0)
+    + (n.defIgnore && formHas(x.f, /^attack\.def_ignore$/) ? 0.3 : 0)
+    + (n.ail.length && !team.some((t) => formHas(t.f, /^ailment\.null$/)) && formHas(x.f, /^ailment\.null$/) ? 0.3 : 0);
+  const p = proposeTeam(enemy, { pool, need: { heal: n.heal, mitig: n.mitig, bc: n.bc, buff: n.noCrit ? 0.1 : n.buff, status: n.status }, bonus });
+  if (p) loadProposal(p);
 }
 state.defisMode = "";
 function renderDefis() {
@@ -1426,6 +1759,11 @@ function renderDefis() {
     document.getElementById("dl").innerHTML = list.slice(0, limit).map(challengeHTML).join("") || `<div class="empty">Aucune quête ne correspond.</div>`;
     document.getElementById("more").hidden = list.length <= limit;
     document.querySelectorAll("[data-build]").forEach((b) => b.addEventListener("click", () => buildTeamFor(D.challenges.find((c) => String(c.id) === b.dataset.build))));
+    document.querySelectorAll("details[data-fight]").forEach((d) => d.addEventListener("toggle", () => {
+      if (!d.open || d.dataset.done) return;
+      d.dataset.done = "1";
+      loadFights().then((F) => { const box = d.querySelector(".fightbox"); box.className = "fightbox"; box.innerHTML = fightHTML(F[d.dataset.fight]); });
+    }));
   };
   document.getElementById("dq").addEventListener("input", (e) => { q = e.target.value; limit = 20; draw(); });
   document.getElementById("dm").addEventListener("change", (e) => { state.defisMode = e.target.value; limit = 20; draw(); });
@@ -1560,9 +1898,23 @@ const elemFactor = (u, enemy) => (!enemy ? 1 : counterOf(enemy).includes(u.eleme
 const ROLE_NEED = { heal: 0.35, mitig: 0.3, bc: 0.2, buff: 0.2, status: 0.2 };
 const GOALS = [{ id: "", label: "Équipe équilibrée" }, ...ELEMENTS.map((e) => ({ id: e, label: `Contre un boss ${EL_FR[e]}` }))];
 function needsElements(f) { let n = 0; if (f && f.leaderSkill) walk(f.leaderSkill.effects, (e) => { if (e.id === "cond.unique_elements") n = Math.max(n, e.value); }); return n; }
-function proposeTeam(enemy) {
-  const pool = ownedRoster();
+// Effet présent dans le BB ou le SBB d'une forme (l'UBB ne compte pas : trop rare).
+function formHas(f, re, party = true) {
+  let ok = false;
+  for (const w of ["bb", "sbb"]) if (f.bursts && f.bursts[w]) walk(f.bursts[w].effects, (e) => { if (re.test(e.id) && (!party || e.target === "party")) ok = true; });
+  if (f.leaderSkill) walk(f.leaderSkill.effects, (e) => { if (re.test(e.id)) ok = true; });
+  return ok;
+}
+function allHeroesRoster() {
+  const T = computeTiers();
+  return D.units.filter((u) => u.hero).map((u) => ({ u, f: u.best, type: null, level: null, slot2: true, roles: u.roles, power: T.score(u, u.best), ls: T.lsPower(u.best), any: true }));
+}
+// opts.pool : unités candidates ; opts.need : poids des rôles ; opts.bonus(c) : bonus propre au combat.
+function proposeTeam(enemy, opts = {}) {
+  const pool = opts.pool || ownedRoster();
   if (!pool.length) return null;
+  const NEED = opts.need || ROLE_NEED;
+  const bonus = opts.bonus || (() => 0);
   const leaderVal = (x) => (x.ls * 1.2 + x.power * 0.5) * elemFactor(x.u, enemy);
   const leader = pool.slice().sort((a, b) => leaderVal(b) - leaderVal(a))[0];
   const team = [leader];
@@ -1571,8 +1923,9 @@ function proposeTeam(enemy) {
     const covered = new Set(team.flatMap((x) => x.roles.list));
     const els = new Set(team.map((x) => x.u.element));
     const gain = (c) => c.power * elemFactor(c.u, enemy)
-      + Object.entries(ROLE_NEED).reduce((a, [r, w]) => a + (!covered.has(r) && c.roles.list.includes(r) ? w : 0), 0)
-      + (need && els.size < need && !els.has(c.u.element) ? 0.25 : 0);
+      + Object.entries(NEED).reduce((a, [r, w]) => a + (!covered.has(r) && c.roles.list.includes(r) ? w : 0), 0)
+      + bonus(c, team)
+      + (need && els.size + (5 - team.length) <= need && !els.has(c.u.element) ? 1.5 : need && els.size < need && !els.has(c.u.element) ? 0.4 : 0);
     const next = pool.filter((c) => !team.some((t) => t.u.id === c.u.id)).sort((a, b) => gain(b) - gain(a))[0];
     if (!next) break;
     team.push(next);
@@ -1585,6 +1938,8 @@ function proposeTeam(enemy) {
   const stock = new Map(Object.entries(hasInventory() ? COLL.spheres : {}).map(([id, o]) => [id, o.count]));
   const order = team.slice().sort((a, b) => b.power - a.power);
   for (const m of order) {
+    // Sans collection : les sphères conseillées pour l'unité.
+    if (m.any) { m.spheres = sphereAdvice(m.u, m.f, m.roles, 2, "best").map((x) => x.s.id); m.target = sphereAdvice(m.u, m.f, m.roles, 2, "easy").map((x) => x.s).filter((s) => !m.spheres.includes(s.id)); continue; }
     m.spheres = [];
     const slots = m.slot2 ? 2 : 1;
     const role = m.roles.main || "dmg";
@@ -1778,7 +2133,7 @@ function renderTierlist() {
     <div class="toolbar"><select id="tr" aria-label="Rôle"><option value="">Tous les rôles</option>${Object.entries(ROLE_FR).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>${elChips(state.tierEl, "tier")}</div>
     <div id="tl"></div>
     <section class="panel box" style="margin-top:14px"><h3>Comment la note est calculée</h3>
-      <ul class="fx"><li>35 % statistiques au niveau max (ATQ, PV, REC, DÉF).</li><li>25 % utilité : soins, réduction des dégâts, remplissage des BB, immunités et boosts d'équipe.</li><li>20 % compétence de leader.</li><li>20 % puissance des SBB et UBB.</li><li>Petit bonus pour les formes Omni et 7★.</li></ul>
+      <ul class="fx"><li>35 % statistiques au niveau max (ATQ, PV, REC, DÉF).</li><li>25 % utilité : soins, réduction des dégâts, remplissage des BB, immunités et boosts d'équipe.</li><li>20 % compétence de leader.</li><li>20 % puissance du BB et du SBB (l'UBB compte très peu : il est rare).</li><li>Petit bonus pour les formes Omni et 7★.</li></ul>
       <p class="note">S = 10 % les mieux notées, A = 25 % suivantes, B = 35 %, C = le reste. Survole une unité pour voir sa note. Une ✓ verte signale une unité de ta collection.</p></section>`;
   document.getElementById("tr").value = state.tierRole;
   const draw = () => {

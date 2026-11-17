@@ -1,4 +1,11 @@
 # Traduction anglaise : « texte français§§texte anglais », une entrée par ligne, appliquées dans l'ordre.
+"Sa valeur vient des boosts de son SBB, relancés chaque tour : il doit surtout survivre. Anima lui donne des PV ; ses dégâts comptent moins."§§"Its value comes from its SBB buffs, recast every turn: above all it must survive. Anima gives it HP; its damage matters less."
+"Il affaiblit l'ennemi tout en frappant fort : Breaker augmente ses dégâts."§§"It weakens the enemy while hitting hard: Breaker raises its damage."
+"Il affaiblit l'ennemi (altérations, baisses de stats) : ses effets comptent plus que ses dégâts, donc on le rend plus solide."§§"It weakens the enemy (ailments, stat downs): its effects matter more than its damage, so we make it sturdier."
+"Il frappe, mais apporte aussi du soutien à l'équipe : mieux vaut qu'il survive."§§"It hits, but also supports the party: better keep it alive."
+<strong>Guide du combat : déroulé et plan de bataille</strong>§§<strong>Battle guide: sequence and battle plan</strong>
+"Préparer une équipe avec mes unités"§§"Build a team with my units"
+>Chargement…</div>§§>Loading…</div>
 # Les phrases longues d'abord ; en-2-words.tsv traite ensuite les mots isolés.
 <div class="empty">Chargement des données du jeu…</div>§§<div class="empty">Loading game data…</div>
 Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données et vignettes lues dans les fichiers publics du jeu Brave Frontier: Reborn (version du 14 novembre 2026). Brave Frontier appartient à ses ayants droit ; ce site n'est affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn.§§Reborn Wiki is an unofficial fan wiki, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">source code on GitHub</a>. Data and thumbnails come from the public files of Brave Frontier: Reborn (November 14, 2026 version). Brave Frontier belongs to its rights holders; this site is not affiliated with Alim, gumi or the Reborn team.
@@ -103,12 +110,12 @@ return `Inflige ${AIL_FR[a] || a} (${v}% de chance)${tail({ ...e, chance: 0 })}`
 "Ses BB convertissent la DÉF en ATQ : chaque point de DÉF gagné rend toute l'équipe plus forte."§§"Its BBs convert DEF into ATK: every DEF point gained makes the whole party stronger."
 "Ses BB convertissent les PV en ATQ : le gros bonus de PV d'Anima profite à toute l'équipe."§§"Its BBs convert HP into ATK: Anima's big HP bonus benefits the whole party."
 "Ses BB convertissent la REC en ATQ : Oracle augmente directement ce bonus."§§"Its BBs convert REC into ATK: Oracle raises that bonus directly."
-"C'est un soigneur : ses soins montent avec la REC, et Oracle donne +2 à +4 REC par niveau."§§"It is a healer: its heals scale with REC, and Oracle gives +2 to +4 REC per level."
-"C'est un défenseur : il doit survivre pour protéger l'équipe, et Anima donne +5 à +10 PV par niveau."§§"It is a defender: it must survive to protect the party, and Anima gives +5 to +10 HP per level."
-"Son rôle est de remplir les jauges de BB : il doit rester en vie, d'où les PV d'Anima."§§"Its job is to fill BB gauges: it has to stay alive, hence Anima's HP."
+"C'est un soigneur : ses soins montent avec la REC, et Oracle donne +2 à +4 REC par niveau. Si tu manques de PV en défis, Anima reste un bon choix."§§"It is a healer: its heals scale with REC, and Oracle gives +2 to +4 REC per level. If you lack HP in challenges, Anima is still a good choice."
+"C'est un défenseur : s'il tombe, la réduction de dégâts disparaît. Anima donne +5 à +10 PV par niveau."§§"It is a defender: if it falls, the damage reduction is gone. Anima gives +5 to +10 HP per level."
+"Il remplit les jauges de BB de l'équipe : il doit rester en vie, d'où les PV d'Anima."§§"It fills the party's BB gauges: it has to stay alive, hence Anima's HP."
 "Il protège des altérations : sa survie compte plus que ses dégâts."§§"It protects against status ailments: its survival matters more than its damage."
-"Il booste l'attaque de l'équipe et frappe fort lui-même : Breaker donne +1 à +3 ATQ par niveau."§§"It buffs the party's attack and hits hard itself: Breaker gives +1 to +3 ATK per level."
-"C'est un attaquant : Breaker augmente son ATQ, au prix d'un peu de DÉF."§§"It is an attacker: Breaker raises its ATK at the cost of some DEF."
+"Il booste l'équipe mais frappe aussi très fort : Breaker augmente ses propres dégâts."§§"It buffs the party but also hits very hard: Breaker raises its own damage."
+"C'est un attaquant : son BB et son SBB frappent fort. Breaker augmente son ATQ, au prix d'un peu de DÉF."§§"It is an attacker: its BB and SBB hit hard. Breaker raises its ATK at the cost of some DEF."
 "Augmente ses dégâts : ATQ, étincelles, critiques ou faiblesse élémentaire."§§"Raises its damage: ATK, Sparks, criticals or elemental weakness."
 "Augmente ses dégâts tout en gardant ses buffs d'équipe."§§"Raises its damage while it keeps buffing the party."
 "Augmente ses dégâts et ses chances d'infliger des altérations."§§"Raises its damage and its chance to inflict ailments."
@@ -140,7 +147,7 @@ title="Dans ta collection"§§title="In your collection"
 "Compétence extra : bonus passif propre à l'unité."§§"Extra Skill: a passive bonus specific to the unit."
 "Brave Burst : se lance quand la jauge est pleine."§§"Brave Burst: cast when the gauge is full."
 "Super Brave Burst : version renforcée, avec une jauge plus longue."§§"Super Brave Burst: the stronger version, with a longer gauge."
-"Ultimate Brave Burst : l'attaque ultime, une fois la jauge d'Overdrive pleine."§§"Ultimate Brave Burst: the ultimate attack, once the Overdrive gauge is full."
+"Ultimate Brave Burst : l'attaque ultime, une fois la jauge d'Overdrive pleine. Une seule unité peut la lancer, puis la jauge met longtemps à se recharger."§§"Ultimate Brave Burst: the ultimate attack, once the Overdrive gauge is full. Only one unit can cast it, then the gauge takes a long time to refill."
 title="${p} % de la meilleure unité"§§title="${p}% of the best unit"
 Barres : niveau max, comparé à la meilleure unité jouable du jeu.§§Bars: max level, compared with the best playable unit in the game.
 `<a href="#collection">Importe ta collection</a>`§§`<a href="#collection">Import your collection</a>`
@@ -255,7 +262,7 @@ name: "Vortex élémentaires",§§name: "Elemental vortex",
 "Chaque donjon a un élément : amène l'élément qui le domine, et laisse au banc celui qu'il domine."§§"Each dungeon has an element: bring the element that beats it and bench the one it beats."
 "Une mitigation élémentaire du bon élément réduit encore les dégâts reçus."§§"Elemental mitigation for the right element cuts damage taken even more."
 "Combats contre les boss marquants de l'histoire, plus durs que la version d'origine."§§"Fights against the story's major bosses, harder than the originals."
-"Les boss se soignent ou changent de phase : garde tes BB et UBB pour les finir d'un coup."§§"Bosses heal or change phase: save your BBs and UBB to finish them in one go."
+"Les boss se soignent ou changent de phase : garde tes SBB pour finir une phase d'un coup. L'UBB, rare, sert pour le moment le plus dur."§§"Bosses heal or change phase: save your SBBs to finish a phase in one go. The UBB is rare: keep it for the hardest moment."
 "Prévois une immunité aux altérations : plusieurs boss en infligent beaucoup."§§"Bring ailment immunity: several bosses inflict a lot of them."
 "Tour en dix paliers, plus sa face sombre. Les derniers paliers et le Prologue XE interdisent les continues et limitent les objets à 2."§§"A ten-stage tower plus its Dark Side. The last stages and the XE Prologue forbid continues and limit items to 2."
 "Sans continue, une seule erreur coûte la course : mitigation, soins et Ange gardien sont obligatoires."§§"With no continues, one mistake ends the run: mitigation, healing and Angel Idol are a must."
@@ -263,7 +270,7 @@ name: "Vortex élémentaires",§§name: "Elemental vortex",
 "Une unité Anima ou Guardian en défenseur évite les morts sur les gros coups."§§"An Anima or Guardian defender prevents deaths on big hits."
 name: "Épreuves",§§name: "Trials",
 "Épreuve des dieux, Épreuves de test et La tromperie de Leon : peu de combats, des boss très résistants."§§"Trial of the Gods, the Test Trials and Leon's Deception: few battles, very tough bosses."
-"Peu de vagues mais beaucoup de PV : les dégâts d'étincelle et les UBB font la différence."§§"Few waves but lots of HP: Spark damage and UBBs make the difference."
+"Peu de vagues mais beaucoup de PV : ce sont les SBB lancés à chaque tour et les étincelles qui font les dégâts. L'UBB, rare, sert à finir une phase."§§"Few waves but lots of HP: SBBs cast every turn and sparks do the damage. The UBB is rare: use it to finish a phase."
 "Regarde les altérations du boss avant de partir et équipe une sphère d'immunité si personne ne la donne."§§"Check the boss's ailments before you go, and equip an immunity sphere if nobody provides it."
 "Saison 6 de l'Uncharted Frontier : quatre étapes, sans continue."§§"Uncharted Frontier season 6: four stages, no continues."
 "Toutes les altérations sont présentes : l'immunité est indispensable."§§"Every ailment shows up: immunity is essential."
@@ -271,7 +278,7 @@ name: "Épreuves",§§name: "Trials",
 "Vide vos jauges de BB : garde des soutiens BB et des sphères de remplissage."§§"Drains your BB gauges: bring BB support and BB-fill spheres."
 "Retire vos buffs : relance mitigation et boosts juste après."§§"Removes your buffs: reapply mitigation and buffs right after."
 "Attaques en pourcentage de PV : la DÉF ne protège pas, prévois des soins et un Ange gardien."§§"Percentage-of-HP attacks: DEF does not help, bring healing and an Angel Idol."
-"Le boss se soigne : garde tes BB et UBB pour finir une phase d'un coup."§§"The boss heals itself: save your BBs and UBB to finish a phase in one go."
+"Le boss se soigne : garde tes SBB pour finir une phase d'un coup."§§"The boss heals itself: save your SBBs to finish a phase in one go."
 "Attaques très puissantes : garde une réduction de dégâts active au bon tour."§§"Very strong attacks: keep damage reduction up on the right turn."
 "Baisse vos statistiques : une immunité aux baisses de stats aide."§§"Lowers your stats: stat-reduction immunity helps."
 Aucune unité trouvée.§§No unit found.
@@ -337,7 +344,7 @@ Classement calculé par le wiki pour les ${T.rows.length} unités jouables, à l
 voir la tier list de la communauté§§see the community tier list
 aria-label="Rôle"><option value="">Tous les rôles</option>§§aria-label="Role"><option value="">All roles</option>
 <h3>Comment la note est calculée</h3>§§<h3>How the score is computed</h3>
-<li>35 % statistiques au niveau max (ATQ, PV, REC, DÉF).</li><li>25 % utilité : soins, réduction des dégâts, remplissage des BB, immunités et boosts d'équipe.</li><li>20 % compétence de leader.</li><li>20 % puissance des SBB et UBB.</li><li>Petit bonus pour les formes Omni et 7★.</li>§§<li>35% stats at max level (ATK, HP, REC, DEF).</li><li>25% utility: healing, damage reduction, BB fill, immunities and party buffs.</li><li>20% Leader Skill.</li><li>20% SBB and UBB power.</li><li>Small bonus for Omni and 7★ forms.</li>
+<li>35 % statistiques au niveau max (ATQ, PV, REC, DÉF).</li><li>25 % utilité : soins, réduction des dégâts, remplissage des BB, immunités et boosts d'équipe.</li><li>20 % compétence de leader.</li><li>20 % puissance du BB et du SBB (l'UBB compte très peu : il est rare).</li><li>Petit bonus pour les formes Omni et 7★.</li>§§<li>35% stats at max level (ATK, HP, REC, DEF).</li><li>25% utility: healing, damage reduction, BB fill, immunities and party buffs.</li><li>20% Leader Skill.</li><li>20% BB and SBB power (the UBB barely counts: it is rare).</li><li>Small bonus for Omni and 7★ forms.</li>
 S = 10 % les mieux notées, A = 25 % suivantes, B = 35 %, C = le reste. Survole une unité pour voir sa note. Une ✓ verte signale une unité de ta collection.§§S = top 10%, A = next 25%, B = 35%, C = the rest. Hover a unit to see its score. A green ✓ marks a unit from your collection.
 title="Note ${Math.round(x.score * 100)} · stats ${Math.round(x.parts.stat * 100)} · utilité ${Math.round(x.parts.util * 100)}§§title="Score ${Math.round(x.score * 100)} · stats ${Math.round(x.parts.stat * 100)} · utility ${Math.round(x.parts.util * 100)}
 `<span class="muted small" style="padding:14px">Aucune unité.</span>`§§`<span class="muted small" style="padding:14px">No unit.</span>`

@@ -13,6 +13,7 @@ Le script [`tools/bfr-collection.user.js`](tools/bfr-collection.user.js) s'insta
 - `src/wiki.html` : la source unique du site.
 - `build/build.ps1` : génère `index.html` (français) et `en/index.html` (anglais, d'après `build/en-*.tsv`).
 - `build/challenges.ps1` : recalcule `data/challenges.json` et `data/challenges-en.json` à partir du fichier `world` public du jeu.
+- `build/fights.ps1` : extrait le comportement des boss des défis (IA, compétences, passifs) dans `data/fights.json`, d'où le wiki tire le déroulé et le plan de bataille de chaque combat.
 - `data/` : fichiers publics du jeu (unités, guide, objets, sphères, bannières) et vignettes.
 
 ```powershell
