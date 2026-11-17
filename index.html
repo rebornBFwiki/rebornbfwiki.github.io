@@ -1362,9 +1362,13 @@ const MODES = [
     tips: ["Peu de vagues mais beaucoup de PV : ce sont les SBB lancés à chaque tour et les étincelles qui font les dégâts. L'UBB, rare, sert à finir une phase.",
       "Regarde les altérations du boss avant de partir et équipe une sphère d'immunité si personne ne la donne."] },
   { id: "chasseur", name: "Frontier Hunter", test: (c) => c.areaId === 1000010,
-    rules: "Saison 6 de l'Uncharted Frontier : quatre étapes, sans continue.",
-    tips: ["Toutes les altérations sont présentes : l'immunité est indispensable.",
-      "Les boss volent les jauges de BB et retirent les buffs : garde des soutiens BB et relance tes buffs."] },
+    rules: "Mode classé ouvert 5 jours à chaque mise à jour (2 jours après sa sortie, à 00:00 UTC). 3 Orbes de chasseur par jour, 15 par saison, cumulables jusqu'à la fin. Quatre quêtes en chaîne : Entrée, Milieu, Fin, puis Terminus. Pas de continue, pas d'objets personnels (tu choisis un lot d'objets fourni), 20 minutes par course, Auto désactivé au départ.",
+    tips: ["Le score récompense les étincelles, les coups sur un élément faible, plusieurs ennemis tués au même tour, les kills au BB et les victoires rapides (surtout au tour 1) : privilégie des BB/SBB de zone à beaucoup de coups, des boosts d'étincelle et d'élément.",
+      "Les vagues avec beaucoup d'ennemis rapportent le plus : répartis tes attaques pour faire des étincelles sur tous, et achève-les au même tour.",
+      "Un combat sans objet et une course sans aucune unité tombée donnent des bonus : une équipe solide rapporte plus qu'une équipe fragile qui frappe fort.",
+      "Une course perdue garde les points déjà gagnés. Ne recharge jamais la page en pleine course, et ne lance aucun autre combat (sauf l'Arène) : la course s'arrête et l'orbe est perdu.",
+      "Les récompenses arrivent dans la boîte de cadeaux et expirent au bout de 5 jours. Le rang de chasseur est plafonné à 30 pour l'instant.",
+      "Les boss volent les jauges de BB et retirent les buffs : garde un soutien BB et une immunité aux altérations."] },
 ];
 const modeOf = (c) => MODES.find((m) => m.test(c));
 const MECH_FR = {
@@ -1410,6 +1414,7 @@ function challengeHTML(c) {
   if (avoidOnly.length) advice.push(`Évite les unités ${avoidOnly.map((e) => EL_FR[e]).join(" et ")} : elles prennent ×1,5 de dégâts de la part des boss.`);
   if (c.ailments.length) advice.push(`Altérations infligées : ${c.ailments.map((a) => AIL_FR[a] || a).join(", ")}. Prends une immunité aux altérations.`);
   for (const m of c.mechanics) if (MECH_FR[m]) advice.push(MECH_FR[m]);
+  if (mode && mode.id === "chasseur") advice.unshift(L("Score du Frontier Hunter : étincelles, coups sur un élément faible, plusieurs ennemis tués au même tour, kills au BB, victoire rapide (surtout au tour 1), aucun objet utilisé et personne de tombé. Prends des BB/SBB de zone à beaucoup de coups.", "Frontier Hunter score: sparks, hits on a weak element, several enemies killed on the same turn, BB kills, quick wins (especially on turn 1), no items used and nobody defeated. Bring AoE BB/SBB with many hits."));
   if (c.immune.length) advice.push(`Les ennemis résistent à : ${c.immune.map((a) => AIL_FR[a] || a).join(", ")}. Inutile de miser sur ces altérations.`);
   return `<section class="panel challenge">
     <div class="cover" style="background-image:url('${dungeonImg(c.dungeonId)}')"><div class="over head"><div style="min-width:0"><h3>${esc(c.name)}</h3><div class="small">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div></div><span class="diff">Difficulté ${Math.round(c.score)}</span></div></div>
@@ -1744,10 +1749,15 @@ async function buildTeamFor(c) {
   const n = fightNeeds(F[c.id]);
   const enemy = (c.bosses[0] && c.bosses[0].element) || c.elements[0] || "";
   const pool = COLL ? ownedRoster() : allHeroesRoster();
+  // Frontier Hunter (doc officielle) : le score vient des étincelles, des coups sur un élément faible, des kills
+  // multiples et au BB, et des victoires rapides. On favorise donc les BB/SBB de zone à beaucoup de coups,
+  // les boosts d'étincelle et d'élément, tout en gardant une équipe qui ne perd personne (bonus de score).
+  const fh = (modeOf(c) || {}).id === "chasseur";
   const bonus = (x, team) => (n.angel && !team.some((t) => formHas(t.f, /angel_idol/)) && formHas(x.f, /angel_idol/) ? 0.4 : 0)
     + (n.defIgnore && formHas(x.f, /^attack\.def_ignore$/) ? 0.3 : 0)
-    + (n.ail.length && !team.some((t) => formHas(t.f, /^ailment\.null$/)) && formHas(x.f, /^ailment\.null$/) ? 0.3 : 0);
-  const p = proposeTeam(enemy, { pool, trial: c.score >= 80 || n.mitig > 0.5 || n.angel, need: { heal: n.heal, mitig: n.mitig, bc: n.bc, buff: n.noCrit ? 0.1 : n.buff, status: n.status }, bonus });
+    + (n.ail.length && !team.some((t) => formHas(t.f, /^ailment\.null$/)) && formHas(x.f, /^ailment\.null$/) ? 0.3 : 0)
+    + (fh ? Math.min(0.6, aoeHits(x.f) / 40) + (formHas(x.f, /^buff\.(spark_dmg|add_element|elem_weak_dmg)$/) && !team.some((t) => formHas(t.f, /^buff\.(spark_dmg|add_element|elem_weak_dmg)$/)) ? 0.35 : 0) : 0);
+  const p = proposeTeam(enemy, { pool, trial: !fh && (c.score >= 80 || n.mitig > 0.5 || n.angel), need: { heal: n.heal, mitig: fh ? Math.min(n.mitig, 0.4) : n.mitig, bc: n.bc, buff: n.noCrit ? 0.1 : fh ? 0.4 : n.buff, status: n.status }, bonus });
   if (p) loadProposal(p);
 }
 state.defisMode = "";
@@ -1762,9 +1772,10 @@ function renderDefis() {
         <li>${L("<strong>Le leader et l'ami</strong> : contre un boss seul qui frappe fort, prends une compétence de leader défensive (réduction des dégâts, PV et DÉF), qui remplit les BB, ou qui annule les altérations. Les leaders d'attaque ou de critique sont plutôt pour les quêtes rapides et l'arène.", "<strong>Leader and friend</strong>: against a single boss that hits hard, take a defensive Leader Skill (damage reduction, HP and DEF), one that fills BB, or one that nullifies ailments. Attack or critical leaders are better for quick quests and the arena.")}</li>
         <li>${L("<strong>Les rôles</strong> : un défenseur (réduction de dégâts à chaque tour), un soigneur, une protection contre les altérations, un soutien BB, puis un ou deux attaquants. Deux buffs de même nature ne se cumulent pas : le dernier lancé remplace l'autre.", "<strong>Roles</strong>: a defender (damage reduction every turn), a healer, ailment protection, a BB support, then one or two attackers. Two buffs of the same kind do not stack: the last one cast replaces the other.")}</li>
         <li>${L("<strong>Le combat</strong> : ouvre le guide du combat de la quête. Repère les seuils de PV et les tours où le boss frappe fort, compte les tours, et franchis chaque seuil seulement quand ta réduction de dégâts est prête.", "<strong>The battle</strong>: open the quest's battle guide. Spot the HP thresholds and the turns where the boss hits hard, count turns, and only cross each threshold when your damage reduction is ready.")}</li>
+        <li>${L("<strong>Teste avant</strong> : le Terrain d'entraînement (Capitale impériale Randall, Bureau des enquêtes) est gratuit. Règle la DÉF des mannequins comme celle du boss (3 000 ou plus), mets la jauge de BB infinie pour vérifier tes étincelles et tes dégâts, et note quel ordre d'attaque fait le plus d'étincelles.", "<strong>Test first</strong>: the Summoners' Training Ground (Imperial Capital Randall, Survey Office) is free. Set the dummies' DEF like the boss's (3,000 or more), set the BB gauge to infinite to check your sparks and damage, and note which attack order sparks the most.")}</li>
         <li>${L("<strong>Pourquoi j'ai perdu ?</strong> Trop de dégâts : défenseur, buff de DÉF, leader défensif ou Garde (−50 % de dégâts). Paralysé ou maudit au mauvais moment : une unité ou une sphère d'immunité. BB pas prêts pour protéger : soutien BB, objets Fujin, sphères de BC par tour sur le défenseur.", "<strong>Why did I lose?</strong> Too much damage: defender, DEF buff, defensive leader or Guard (−50% damage). Paralysed or cursed at the wrong time: an immunity unit or sphere. BB not ready to protect: BB support, Fujin items, BC-per-turn spheres on the defender.")}</li>
       </ol>
-      <p class="note">${L("D'après le guide « Comment créer une team efficace » du wiki francophone Brave Frontier RPG, adapté aux règles de Reborn.", "Based on the \"How to build an efficient team\" guide from the French Brave Frontier RPG wiki, adapted to Reborn's rules.")}</p>
+      <p class="note">${L("D'après le guide « Comment créer une team efficace » du wiki francophone Brave Frontier RPG. Reborn reprend les mécaniques du jeu d'origine (documentation officielle), ces conseils s'appliquent donc toujours. Pour le Frontier Hunter, c'est l'inverse : le score récompense l'attaque, voir la fiche du mode.", "Based on the \"How to build an efficient team\" guide from the French Brave Frontier RPG wiki. Reborn rebuilds the original game's mechanics (official docs), so this advice still applies. Frontier Hunter is the opposite: the score rewards offense, see the mode's card.")}</p>
     </details>
     <div class="toolbar"><input type="search" id="dq" placeholder="Rechercher une quête ou un boss" aria-label="Rechercher une quête" value="${esc(q)}">
       <select id="dm" aria-label="Mode de jeu"><option value="">Tous les modes</option>${MODES.map((m) => `<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select></div>
@@ -1927,6 +1938,16 @@ function formHas(f, re, party = true) {
   for (const w of ["bb", "sbb"]) if (f.bursts && f.bursts[w]) walk(f.bursts[w].effects, (e) => { if (re.test(e.id) && (!party || e.target === "party")) ok = true; });
   if (f.leaderSkill) walk(f.leaderSkill.effects, (e) => { if (re.test(e.id)) ok = true; });
   return ok;
+}
+// Nombre de coups des BB et SBB de zone (étincelles et score du Frontier Hunter).
+function aoeHits(f) {
+  let n = 0;
+  for (const w of ["bb", "sbb"]) {
+    const b = f.bursts && f.bursts[w]; if (!b) continue;
+    if (!arr(b.effects).some((e) => e.id === "attack.aoe")) continue;
+    for (const a of arr(b.attacks)) n += arr(a.hitFrames).length;
+  }
+  return n;
 }
 // Valeur défensive d'une compétence de leader (0 à 1) : PV/DÉF, réductions de dégâts, BB, soins, immunité.
 function lsDefense(f) {
