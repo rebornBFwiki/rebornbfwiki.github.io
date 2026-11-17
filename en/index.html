@@ -515,14 +515,22 @@ const dungeonImg = (id) => `${ASSET}dungeon/${id}.jpg`;
 const missionName = (m) => { const n = SRC.missions[m]; return n ? (n[LANG] || n.en) : `#${m}`; };
 let FORGE = {}; // recettes lues dans la Forge à sphères du jeu
 let EXCH = null; // Hall des échanges (points de mérite), relevé en jeu
-// Une recette est faisable si tous ses matériaux existent dans la version actuelle du jeu.
+// Rang de chasseur atteignable aujourd'hui : la doc officielle donne au plus +10 rangs par saison du Frontier Hunter,
+// et une seule saison a eu lieu (Release 8, novembre 2026). À augmenter de 10 à chaque nouvelle saison.
+const HUNTER_SEASONS = 1;
+const HUNTER_RANK_MAX = Math.min(30, 10 * HUNTER_SEASONS);
+// Une source est atteignable si un joueur peut vraiment l'obtenir maintenant. Le classement MVP du Frontier Hunter
+// ne récompense que le n°1 de chaque tableau : on ne le compte pas.
+const srcReachable = (x) => x.k === "hunter-rank" ? x.rank <= HUNTER_RANK_MAX : x.k !== "frontier-ladder";
+const reachableSources = (id) => arr(SRC.spheres[id]).filter(srcReachable);
+// Une recette est faisable si tous ses matériaux existent et s'obtiennent dans la version actuelle du jeu.
 function forgeAvailable(id, seen = new Set()) {
   const r = FORGE[id]; if (!r) return false;
   if (seen.has(id)) return true; seen.add(id);
-  return arr(r.mats).every((m) => m.k === "item" ? D.itemById.has(m.id) : m.k === "sphere" ? (arr(SRC.spheres[m.id]).length > 0 || forgeAvailable(m.id, seen)) : false);
+  return arr(r.mats).every((m) => m.k === "item" ? D.itemById.has(m.id) : m.k === "sphere" ? (reachableSources(m.id).length > 0 || !!(EXCH && EXCH.spheres && EXCH.spheres[m.id]) || !!GUILD().spheres[m.id] || forgeAvailable(m.id, seen)) : false);
 }
 const GUILD = () => (EXCH && EXCH.guild) || { spheres: {}, items: {}, units: {}, other: [] };
-const sphereObtainable = (s) => !!s && (arr(SRC.spheres[s.id]).length > 0 || !!(EXCH && EXCH.spheres && EXCH.spheres[s.id]) || !!GUILD().spheres[s.id] || forgeAvailable(s.id));
+const sphereObtainable = (s) => !!s && (reachableSources(s.id).length > 0 || !!(EXCH && EXCH.spheres && EXCH.spheres[s.id]) || !!GUILD().spheres[s.id] || forgeAvailable(s.id));
 // Une unité est disponible si une de ses formes a une source (invocation, capture, évolution…) ou est en boutique.
 function unitAvailable(u) {
   if (u.forms.some((f) => { const g = D.guide.get(f.id); return g && g.sources && g.sources.length; })) return true;
@@ -543,9 +551,9 @@ function sphereSources(s) {
   return arr(SRC.spheres[s.id]).map((x) => {
     switch (x.k) {
       case "first-clear": return `First clear: ${missionName(x.m)}`;
-      case "hunter-rank": return `Hunter rank ${x.rank} (Frontier Hunter)`;
+      case "hunter-rank": return `Hunter rank ${x.rank} (Frontier Hunter)${x.rank > HUNTER_RANK_MAX ? `, not reachable yet (rank ${HUNTER_RANK_MAX} at most for now)` : ""}`;
       case "frontier-quest": return `Reward from ${missionName(x.m)} (Frontier Hunter)`;
-      case "frontier-ladder": return "Frontier Hunter ladder reward";
+      case "frontier-ladder": return "Frontier Hunter ladder reward (only the #1 of an MVP board)";
       default: return x.k;
     }
   }).concat(EXCH && EXCH.spheres && EXCH.spheres[s.id] ? [`Exchange Hall: ${fmt(EXCH.spheres[s.id].pts)} merit points`] : [])
@@ -816,6 +824,7 @@ function sphereDifficulty(s, depth = 0) {
   const opts = [];
   for (const x of arr(SRC.spheres[s.id])) {
     if (x.k === "first-clear") { const c = D.challengeById.get(String(x.m)); opts.push({ d: c ? Math.min(1, Math.max(0.1, (c.score - 55) / 60)) : 0.5, how: "victoire" }); }
+    else if (!srcReachable(x)) continue; // pas encore atteignable : ne rend pas la sphère plus facile
     else if (x.k === "hunter-rank") opts.push({ d: Math.min(1, 0.25 + x.rank / 35), how: "frontier" });
     else opts.push({ d: 0.85, how: "frontier" });
   }

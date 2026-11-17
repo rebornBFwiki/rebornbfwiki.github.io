@@ -433,9 +433,9 @@ Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}.§§Imported on ${ne
 const LANG = "fr";§§const LANG = "en";
 placeholder="Rechercher une unité, une sphère, un objet, une quête…" aria-label="Recherche globale"§§placeholder="Search a unit, sphere, item or quest…" aria-label="Global search"
 `Première victoire : ${missionName(x.m)}`§§`First clear: ${missionName(x.m)}`
-`Rang de chasseur ${x.rank} (Frontier Hunter)`§§`Hunter rank ${x.rank} (Frontier Hunter)`
+`Rang de chasseur ${x.rank} (Frontier Hunter)${x.rank > HUNTER_RANK_MAX ? `, pas encore atteignable (rang ${HUNTER_RANK_MAX} au plus pour l'instant)` : ""}`§§`Hunter rank ${x.rank} (Frontier Hunter)${x.rank > HUNTER_RANK_MAX ? `, not reachable yet (rank ${HUNTER_RANK_MAX} at most for now)` : ""}`
 `Récompense de ${missionName(x.m)} (Frontier Hunter)`§§`Reward from ${missionName(x.m)} (Frontier Hunter)`
-"Récompense du classement Frontier Hunter"§§"Frontier Hunter ladder reward"
+"Récompense du classement Frontier Hunter (seulement le n°1 d'un tableau MVP)"§§"Frontier Hunter ladder reward (only the #1 of an MVP board)"
 Pas de source dans les fichiers publics : elle se fabrique sans doute à la Forge à sphères, en ville.§§No source in the public files: it is most likely crafted at the Sphere Forge, in town.
 const SPHERE_KIND = { "all-stat": "Toutes stats", typed: "Spécialisée", signature: "Signature" };§§const SPHERE_KIND = { "all-stat": "All stats", typed: "Specialised", signature: "Signature" };
 const ITEM_KIND = { material: "Matériau", battle: "Objet de combat", buff: "Boost", cure: "Remède", heal: "Soin", revive: "Résurrection" };§§const ITEM_KIND = { material: "Material", battle: "Battle item", buff: "Buff", cure: "Cure", heal: "Heal", revive: "Revive" };
