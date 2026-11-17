@@ -754,17 +754,23 @@ function sphereScore(s, role) {
     const v = e.value || 0, id = e.id;
     const st = (stat) => (id === "passive.stat_pct" && e.stat === stat ? v : 0);
     const avg = e.min || e.max ? (e.min + e.max) / 2 : v;
-    if (role === "dmg" || role === "buff" || role === "inflict") {
+    const bbFill = (id === "passive.bc_per_turn" ? v * 2 : 0) + (id === "bb.fill_rate" ? v * 8 : 0) + (id === "bb.fill_on_hit" ? avg : 0) + (id === "drop.bc" ? v / 8 : 0);
+    // Conseils de rôle (guide des sphères de la communauté Brave Frontier) :
+    // défenseur = SBB chaque tour (BC par tour, BC quand il est frappé) ; soigneur et anti-statut = immunité + BB, PV/DÉF plutôt qu'ATQ ;
+    // boosteur = ses buffs durent plusieurs tours : sphère de cristaux BC pour remplir les jauges des autres.
+    if (role === "buff") {
+      pts += k * (st("hp") * 4 + st("def") * 3 + st("atk") * 3 + bbFill + (id === "drop.bc" ? v / 6 : 0) + (id === "buff.spark_dmg" ? v * 2 : 0) + (id === "ailment.null" ? 1 : 0));
+    } else if (role === "dmg" || role === "inflict") {
       pts += k * (st("atk") * 10 + st("hp") * 2 + (id === "buff.spark_dmg" ? v * 6 : 0) + (id === "buff.crit_dmg" ? v * 4 : 0) + (id === "buff.crit_rate" ? v * 6 : 0)
         + (id === "buff.bb_atk" ? v * 3 : 0) + (id === "buff.elem_weak_dmg" ? v * 4 : 0) + (id === "attack.def_ignore" ? v / 20 : 0)
         + (id === "passive.atk_hp_scaled" ? 2.5 : 0) + (id === "hits.add_normal" ? 1 : 0) + (id === "buff.add_ailment" && role === "inflict" ? 1.5 : 0));
     } else if (role === "heal") {
       pts += k * (st("rec") * 10 + st("hp") * 4 + st("def") * 2 + (id.startsWith("heal.") ? 2 : 0) + (id === "damage_to_heal" ? 2 : 0) + (id === "drop.hc" ? v / 8 : 0)
-        + (id === "hc.efficacy" ? v * 5 : 0) + (id === "passive.bc_per_turn" ? v : 0));
+        + (id === "hc.efficacy" ? v * 5 : 0) + bbFill * 0.6 + (id === "ailment.null" ? 4 : 0) + (id === "passive.ailment_resist" ? 1 : 0));
     } else if (role === "mitig" || role === "status") {
       pts += k * (st("hp") * 10 + st("def") * 6 + st("rec") * 2 + (id === "chance_mitigation" ? 3 : 0) + (id === "passive.angel_idol" ? 4 : 0)
         + (id === "elemental_mitigation" ? 1 : 0) + (id === "ailment.null" ? (role === "status" ? 6 : 2) : 0) + (id === "debuff.null" ? 1.5 : 0)
-        + (id === "passive.stat_hp_scaled" ? 2 : 0) + (id === "damage_to_heal" ? 1.5 : 0));
+        + (id === "passive.stat_hp_scaled" ? 2 : 0) + (id === "damage_to_heal" ? 1.5 : 0) + bbFill * (role === "mitig" ? 1.2 : 0.6));
     } else if (role === "bc") {
       pts += k * (st("hp") * 4 + st("def") * 2 + (id === "passive.bc_per_turn" ? v * 2 : 0) + (id === "bb.fill_rate" ? v * 8 : 0) + (id === "bb.fill_on_hit" ? avg : 0)
         + (id === "drop.bc" ? v / 8 : 0) + (id === "bb.cost_reduction" ? v * 10 : 0) + (id === "od.fill_rate" ? v * 3 : 0) + (id === "bb.fill_on_spark" ? avg * 1.5 : 0)
@@ -776,11 +782,11 @@ function sphereScore(s, role) {
 }
 const SPHERE_WHY = {
   dmg: "Augmente ses dégâts : ATQ, étincelles, critiques ou faiblesse élémentaire.",
-  buff: "Augmente ses dégâts tout en gardant ses buffs d'équipe.",
+  buff: "Ses boosts durent plusieurs tours : une sphère qui le rend solide et fait tomber plus de cristaux BC aide toute l'équipe.",
   inflict: "Augmente ses dégâts et ses chances d'infliger des altérations.",
-  heal: "Monte la REC, donc la puissance de ses soins.",
-  mitig: "Le rend plus solide pour qu'il reste en vie et protège l'équipe.",
-  status: "Le rend plus solide et renforce la protection contre les altérations.",
+  heal: "Monte la REC et le protège des altérations : il doit pouvoir soigner à chaque tour.",
+  mitig: "Le rend solide et lui donne des BC à chaque tour : il doit pouvoir relancer sa réduction de dégâts à chaque tour.",
+  status: "Le protège des altérations et l'aide à relancer son SBB : s'il est paralysé ou maudit, personne ne protège l'équipe.",
   bc: "Remplit plus vite les jauges de BB.",
 };
 // Règle du jeu : deux emplacements au plus (le 2e se débloque), et jamais deux sphères Status Boost.
@@ -1608,6 +1614,8 @@ function passiveText(p) {
   }
 }
 const needMitig = (dmg) => Math.min(95, Math.max(0, Math.ceil((1 - (TYPICAL.hp * 0.85) / dmg) * 20) * 5));
+// La Garde divise les dégâts reçus par deux (code du jeu : guardMultiplier = 0,5), en plus de la réduction de dégâts.
+const guardAlt = (dmg) => { const g = needMitig(dmg * 0.5); return g === 0 ? L(", ou la Garde seule", ", or Guard alone") : g < 95 ? L(`, ou ${g} % avec la Garde`, `, or ${g}% with Guard`) : ""; };
 // Plan de bataille : ce qu'il faut emporter et comment gérer chaque moment dangereux.
 function battlePlan(boss) {
   const plan = [], prep = [];
@@ -1622,8 +1630,9 @@ function battlePlan(boss) {
   for (const [, s] of sk) for (const e of arr(s.effects)) if (/^attack\./.test(e.id) && !e.hpDamage && foe(e)) { const d = hitEstimate(boss, e); if (!worst || d > worst.d) worst = { d, s, aoe: e.id === "attack.aoe" }; }
   if (worst && worst.d > TYPICAL.hp * 0.6) {
     const need = needMitig(worst.d);
-    prep.push(L(`Son coup le plus fort, ${Q(worst.s.name)}, fait environ ${fmt(worst.d)} dégâts ${worst.aoe ? "à chaque unité" : "à une unité"} (PV typiques : ${fmt(TYPICAL.hp)}).${need > 0 ? ` Il faut au moins ${need} % de réduction de dégâts active ce tour-là.` : ""}`,
-      `Its strongest hit, ${Q(worst.s.name)}, deals about ${fmt(worst.d)} damage ${worst.aoe ? "to each unit" : "to one unit"} (typical HP: ${fmt(TYPICAL.hp)}).${need > 0 ? ` You need at least ${need}% damage reduction active that turn.` : ""}`));
+    prep.push(L(`Son coup le plus fort, ${Q(worst.s.name)}, fait environ ${fmt(worst.d)} dégâts ${worst.aoe ? "à chaque unité" : "à une unité"} (PV typiques : ${fmt(TYPICAL.hp)}).${need > 0 ? ` Il faut au moins ${need} % de réduction de dégâts active ce tour-là${guardAlt(worst.d)}.` : ""}`,
+      `Its strongest hit, ${Q(worst.s.name)}, deals about ${fmt(worst.d)} damage ${worst.aoe ? "to each unit" : "to one unit"} (typical HP: ${fmt(TYPICAL.hp)}).${need > 0 ? ` You need at least ${need}% damage reduction active that turn${guardAlt(worst.d)}.` : ""}`));
+    prep.push(L("La Garde divise par deux les dégâts reçus par l'unité qui l'utilise, en plus de la réduction de dégâts : sur les gros coups, mets en Garde les unités qui n'ont rien d'utile à lancer ce tour-là.", "Guard halves the damage taken by the unit that uses it, on top of damage reduction: on big hits, guard with the units that have nothing useful to cast that turn."));
   }
   const fatal = all.filter(({ e }) => e.hpDamage && e.hpDamage.low >= 100 && foe(e));
   if (fatal.length) prep.push(L(`${Q(fatal[0].s.name)} retire ${fatal[0].e.hpDamage.low} % des PV : c'est mortel quelle que soit ta DÉF. Garde un Ange gardien (unité, sphère ou objet), ou tue le boss avant qu'il ne le lance.`, `${Q(fatal[0].s.name)} removes ${fatal[0].e.hpDamage.low}% of HP: it is lethal whatever your DEF. Keep an Angel Idol (unit, sphere or item), or kill the boss before it casts it.`));
@@ -1633,6 +1642,7 @@ function battlePlan(boss) {
   if (has(/^ls_lock$|^es_lock$|^sphere_lock$/).length) prep.push(L("Il bloque compétences de leader, compétences extra ou sphères : ne dépends pas d'elles pour survivre.", "It locks Leader Skills, Extra Skills or spheres: do not rely on them to survive."));
   if (has(/^debuff\.atk_cut$/).length) prep.push(L("Il réduit fortement l'ATQ d'une unité, sans remède : répartis les dégâts sur plusieurs attaquants.", "It heavily cuts one unit's ATK, with no cure: spread your damage across several attackers."));
   if (has(/^od\.fill_instant$/).length) prep.push(L("À certains moments, il remplit ta jauge OD : ton UBB est prêt tout de suite, c'est le moment de le lancer.", "At some points it fills your OD gauge: your UBB is ready at once, that is the moment to cast it."));
+  if (all.some(({ e }) => e.id === "attack.def_ignore" && !foe(e)) || arr(boss.passives).some((p) => p.kind === "ignore_def" && p.chance >= 50)) prep.push(L("Il ignore ta DÉF : les buffs et sphères de DÉF ne servent presque à rien ici, mise sur la réduction de dégâts et les PV.", "It ignores your DEF: DEF buffs and spheres are nearly useless here, rely on damage reduction and HP."));
   for (const p of arr(boss.passives)) { const t = passiveText(p); if (t) prep.push(t); }
   if (boss.stats.def >= 3000) prep.push(L(`DÉF très élevée (${fmt(boss.stats.def)}) : les unités qui ignorent la DÉF font beaucoup plus de dégâts.`, `Very high DEF (${fmt(boss.stats.def)}): units that ignore DEF deal much more damage.`));
   const res = Object.entries(boss.resists || {}).filter(([, v]) => v >= 90).map(([k]) => AIL_FR[k] || k);
@@ -1666,8 +1676,8 @@ function battlePlan(boss) {
     if (nx) {
       const big = arr(boss.skills[nx].effects).filter((e) => /^attack\./.test(e.id) && !e.hpDamage).map((e) => hitEstimate(boss, e, mul)).sort((a, b) => b - a)[0];
       const need = big ? needMitig(big) : 0;
-      step += L(` Au tour suivant, il lance ${Q(boss.skills[nx].name)}${big ? ` (≈ ${fmt(big)} dégâts par unité)` : ""} : relance ta réduction de dégâts${need ? ` (au moins ${need} %)` : ""} juste avant${drains ? ", avec un objet qui remplit les BB puisque tes jauges sont vides" : ""}.`,
-        ` On the next turn it casts ${Q(boss.skills[nx].name)}${big ? ` (≈ ${fmt(big)} damage per unit)` : ""}: recast your damage reduction${need ? ` (at least ${need}%)` : ""} just before${drains ? ", with a BB-filling item since your gauges are empty" : ""}.`);
+      step += L(` Au tour suivant, il lance ${Q(boss.skills[nx].name)}${big ? ` (≈ ${fmt(big)} dégâts par unité)` : ""} : relance ta réduction de dégâts${need ? ` (au moins ${need} %${guardAlt(big)})` : ""} juste avant${drains ? ", avec un objet qui remplit les BB puisque tes jauges sont vides" : ""}.`,
+        ` On the next turn it casts ${Q(boss.skills[nx].name)}${big ? ` (≈ ${fmt(big)} damage per unit)` : ""}: recast your damage reduction${need ? ` (at least ${need}%${guardAlt(big)})` : ""} just before${drains ? ", with a BB-filling item since your gauges are empty" : ""}.`);
     }
     if (selfMit) { const t = selfMit.turns || 1; step += L(` Pendant ${t} tour${t > 1 ? "s" : ""}, il encaisse ${pc(selfMit.value)} de dégâts en moins : remplis tes jauges au lieu de gaspiller tes SBB.`, ` For ${t} turn${t > 1 ? "s" : ""} it takes ${pc(selfMit.value)} less damage: fill your gauges instead of wasting your SBBs.`); }
     plan.push(step);
@@ -1684,9 +1694,13 @@ function battlePlan(boss) {
       ? L("Toute l'équipe meurt sans Ange gardien : active-le juste avant (unité, sphère ou objet), ou termine le combat avant.", "The whole team dies without Angel Idol: activate it just before (unit, sphere or item), or end the fight first.")
       : L("L'unité visée meurt sans Ange gardien : protège-la ou accepte de la ressusciter ensuite.", "The targeted unit dies without Angel Idol: protect it or be ready to revive it.");
     else if (pctHp) tip = L("La DÉF ne réduit pas ces dégâts : soigne l'équipe juste avant.", "DEF does not reduce this damage: heal the team just before.");
-    else if (big && big > TYPICAL.hp * 0.4) { const n = needMitig(big); tip = L(`Aie ta réduction de dégâts active${n ? ` (au moins ${n} %)` : ""} ce tour-là.`, `Have your damage reduction active${n ? ` (at least ${n}%)` : ""} that turn.`); }
+    else if (big && big > TYPICAL.hp * 0.4) { const n = needMitig(big); tip = L(`Aie ta réduction de dégâts active${n ? ` (au moins ${n} %${guardAlt(big)})` : ""} ce tour-là.`, `Have your damage reduction active${n ? ` (at least ${n}%${guardAlt(big)})` : ""} that turn.`); }
     else tip = L("Relance tes buffs et remplis tes jauges juste après.", "Recast your buffs and refill your gauges right after.");
     plan.push(`${x.text.split(COLON())[0]}${COLON()}${Q(s.name)} (${skillEffects(boss, x.sid)}). ${tip}`);
+  }
+  // Le boss se donne un Ange gardien : inutile de l'achever ce tour-là (exemple classique de Maxwell).
+  for (const [id, s] of sk.filter(([, s]) => arr(s.effects).some((e) => e.id === "angel_idol" && !foe(e)))) {
+    for (const x of tl.filter((t) => t.sid === id)) plan.push(`${x.text.split(COLON())[0]}${COLON()}${L(`${Q(s.name)} lui donne un Ange gardien : il survivra une fois à un coup fatal. Ne gaspille pas ta plus grosse attaque pour l'achever ce tour-là.`, `${Q(s.name)} gives it an Angel Idol: it will survive one fatal blow. Do not waste your biggest attack trying to finish it that turn.`)}`);
   }
   if (tl.some((t) => t.target === "bb_full" || t.target === "bb_over_50")) plan.push(L("Il vise les unités dont la jauge de BB est pleine : lance tes BB dès qu'ils sont prêts au lieu de les garder.", "It targets units with a full BB gauge: cast your BBs as soon as they are ready instead of holding them."));
   const lowRule = tl.find((t) => t.k === 1 && t.hp !== null && t.hp <= 5);
@@ -1733,7 +1747,7 @@ async function buildTeamFor(c) {
   const bonus = (x, team) => (n.angel && !team.some((t) => formHas(t.f, /angel_idol/)) && formHas(x.f, /angel_idol/) ? 0.4 : 0)
     + (n.defIgnore && formHas(x.f, /^attack\.def_ignore$/) ? 0.3 : 0)
     + (n.ail.length && !team.some((t) => formHas(t.f, /^ailment\.null$/)) && formHas(x.f, /^ailment\.null$/) ? 0.3 : 0);
-  const p = proposeTeam(enemy, { pool, need: { heal: n.heal, mitig: n.mitig, bc: n.bc, buff: n.noCrit ? 0.1 : n.buff, status: n.status }, bonus });
+  const p = proposeTeam(enemy, { pool, trial: c.score >= 80 || n.mitig > 0.5 || n.angel, need: { heal: n.heal, mitig: n.mitig, bc: n.bc, buff: n.noCrit ? 0.1 : n.buff, status: n.status }, bonus });
   if (p) loadProposal(p);
 }
 state.defisMode = "";
@@ -1743,6 +1757,15 @@ function renderDefis() {
   main.innerHTML = `
     <h2 class="section-title">Défis</h2>
     <p class="lede">Les quêtes les plus dures du jeu, classées d'après leurs boss : PV, attaque, altérations et mécaniques dangereuses. Pour chacune, le wiki propose les éléments à amener et des unités adaptées.</p>
+    <details class="guide" style="margin-bottom:12px"><summary><strong>${L("Méthode : préparer un défi difficile", "Method: preparing a hard challenge")}</strong></summary>
+      <ol class="steps" style="margin-top:8px">
+        <li>${L("<strong>Le leader et l'ami</strong> : contre un boss seul qui frappe fort, prends une compétence de leader défensive (réduction des dégâts, PV et DÉF), qui remplit les BB, ou qui annule les altérations. Les leaders d'attaque ou de critique sont plutôt pour les quêtes rapides et l'arène.", "<strong>Leader and friend</strong>: against a single boss that hits hard, take a defensive Leader Skill (damage reduction, HP and DEF), one that fills BB, or one that nullifies ailments. Attack or critical leaders are better for quick quests and the arena.")}</li>
+        <li>${L("<strong>Les rôles</strong> : un défenseur (réduction de dégâts à chaque tour), un soigneur, une protection contre les altérations, un soutien BB, puis un ou deux attaquants. Deux buffs de même nature ne se cumulent pas : le dernier lancé remplace l'autre.", "<strong>Roles</strong>: a defender (damage reduction every turn), a healer, ailment protection, a BB support, then one or two attackers. Two buffs of the same kind do not stack: the last one cast replaces the other.")}</li>
+        <li>${L("<strong>Le combat</strong> : ouvre le guide du combat de la quête. Repère les seuils de PV et les tours où le boss frappe fort, compte les tours, et franchis chaque seuil seulement quand ta réduction de dégâts est prête.", "<strong>The battle</strong>: open the quest's battle guide. Spot the HP thresholds and the turns where the boss hits hard, count turns, and only cross each threshold when your damage reduction is ready.")}</li>
+        <li>${L("<strong>Pourquoi j'ai perdu ?</strong> Trop de dégâts : défenseur, buff de DÉF, leader défensif ou Garde (−50 % de dégâts). Paralysé ou maudit au mauvais moment : une unité ou une sphère d'immunité. BB pas prêts pour protéger : soutien BB, objets Fujin, sphères de BC par tour sur le défenseur.", "<strong>Why did I lose?</strong> Too much damage: defender, DEF buff, defensive leader or Guard (−50% damage). Paralysed or cursed at the wrong time: an immunity unit or sphere. BB not ready to protect: BB support, Fujin items, BC-per-turn spheres on the defender.")}</li>
+      </ol>
+      <p class="note">${L("D'après le guide « Comment créer une team efficace » du wiki francophone Brave Frontier RPG, adapté aux règles de Reborn.", "Based on the \"How to build an efficient team\" guide from the French Brave Frontier RPG wiki, adapted to Reborn's rules.")}</p>
+    </details>
     <div class="toolbar"><input type="search" id="dq" placeholder="Rechercher une quête ou un boss" aria-label="Rechercher une quête" value="${esc(q)}">
       <select id="dm" aria-label="Mode de jeu"><option value="">Tous les modes</option>${MODES.map((m) => `<option value="${m.id}">${esc(m.name)}</option>`).join("")}</select></div>
     <div class="count" id="dc"></div>
@@ -1905,6 +1928,19 @@ function formHas(f, re, party = true) {
   if (f.leaderSkill) walk(f.leaderSkill.effects, (e) => { if (re.test(e.id)) ok = true; });
   return ok;
 }
+// Valeur défensive d'une compétence de leader (0 à 1) : PV/DÉF, réductions de dégâts, BB, soins, immunité.
+function lsDefense(f) {
+  let p = 0;
+  if (f && f.leaderSkill) walk(f.leaderSkill.effects, (e) => {
+    const v = e.value || 0;
+    if (e.id === "passive.stat_pct" && (e.stat === "hp" || e.stat === "def") && v > 0) p += v;
+    if (/^(chance_mitigation|elemental_mitigation|mitigation_after_damage|damage_to_heal|heal\.over_time|hc\.efficacy)$/.test(e.id)) p += 0.25;
+    if (/^(passive\.bc_per_turn|bb\.fill_rate|bb\.fill_on_hit|bb\.fill_on_damage_taken|drop\.bc_spark|bb\.cost_reduction)$/.test(e.id)) p += 0.25;
+    if (e.id === "ailment.null" || e.id === "passive.ailment_resist") p += 0.3;
+    if (e.id === "passive.angel_idol") p += 0.4;
+  });
+  return Math.min(1, p / 1.5);
+}
 function allHeroesRoster() {
   const T = computeTiers();
   return D.units.filter((u) => u.hero).map((u) => ({ u, f: u.best, type: null, level: null, slot2: true, roles: u.roles, power: T.score(u, u.best), ls: T.lsPower(u.best), any: true }));
@@ -1915,15 +1951,20 @@ function proposeTeam(enemy, opts = {}) {
   if (!pool.length) return null;
   const NEED = opts.need || ROLE_NEED;
   const bonus = opts.bonus || (() => 0);
-  const leaderVal = (x) => (x.ls * 1.2 + x.power * 0.5) * elemFactor(x.u, enemy);
+  // En défi difficile (opts.trial), la communauté conseille un leader défensif : réduction des dégâts, PV/DÉF,
+  // remplissage des BB ou immunité, plutôt qu'un leader d'attaque ou de critique.
+  const leaderVal = (x) => (opts.trial ? lsDefense(x.f) * 1.2 + x.ls * 0.4 : x.ls * 1.2) * elemFactor(x.u, enemy) + x.power * 0.5 * elemFactor(x.u, enemy);
   const leader = pool.slice().sort((a, b) => leaderVal(b) - leaderVal(a))[0];
   const team = [leader];
   const need = needsElements(leader.f);
   while (team.length < 5) {
     const covered = new Set(team.flatMap((x) => x.roles.list));
     const els = new Set(team.map((x) => x.u.element));
+    // Deux buffs de même nature ne se cumulent pas : un 2e soutien du même rôle principal vaut moins.
+    const same = (c) => (c.roles.main === "dmg" ? 0 : team.filter((t) => t.roles.main === c.roles.main).length);
     const gain = (c) => c.power * elemFactor(c.u, enemy)
       + Object.entries(NEED).reduce((a, [r, w]) => a + (!covered.has(r) && c.roles.list.includes(r) ? w : 0), 0)
+      - 0.3 * same(c)
       + bonus(c, team)
       + (need && els.size + (5 - team.length) <= need && !els.has(c.u.element) ? 1.5 : need && els.size < need && !els.has(c.u.element) ? 0.4 : 0);
     const next = pool.filter((c) => !team.some((t) => t.u.id === c.u.id)).sort((a, b) => gain(b) - gain(a))[0];

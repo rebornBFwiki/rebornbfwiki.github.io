@@ -117,11 +117,11 @@ return `Inflige ${AIL_FR[a] || a} (${v}% de chance)${tail({ ...e, chance: 0 })}`
 "Il booste l'équipe mais frappe aussi très fort : Breaker augmente ses propres dégâts."§§"It buffs the party but also hits very hard: Breaker raises its own damage."
 "C'est un attaquant : son BB et son SBB frappent fort. Breaker augmente son ATQ, au prix d'un peu de DÉF."§§"It is an attacker: its BB and SBB hit hard. Breaker raises its ATK at the cost of some DEF."
 "Augmente ses dégâts : ATQ, étincelles, critiques ou faiblesse élémentaire."§§"Raises its damage: ATK, Sparks, criticals or elemental weakness."
-"Augmente ses dégâts tout en gardant ses buffs d'équipe."§§"Raises its damage while it keeps buffing the party."
+"Ses boosts durent plusieurs tours : une sphère qui le rend solide et fait tomber plus de cristaux BC aide toute l'équipe."§§"Its buffs last several turns: a sphere that makes it sturdy and drops more BC helps the whole party."
 "Augmente ses dégâts et ses chances d'infliger des altérations."§§"Raises its damage and its chance to inflict ailments."
-"Monte la REC, donc la puissance de ses soins."§§"Raises REC, and with it the power of its heals."
-"Le rend plus solide pour qu'il reste en vie et protège l'équipe."§§"Makes it sturdier so it stays alive and protects the party."
-"Le rend plus solide et renforce la protection contre les altérations."§§"Makes it sturdier and strengthens ailment protection."
+"Monte la REC et le protège des altérations : il doit pouvoir soigner à chaque tour."§§"Raises REC and protects it from ailments: it must be able to heal every turn."
+"Le rend solide et lui donne des BC à chaque tour : il doit pouvoir relancer sa réduction de dégâts à chaque tour."§§"Makes it sturdy and gives it BC every turn: it must be able to recast its damage reduction every turn."
+"Le protège des altérations et l'aide à relancer son SBB : s'il est paralysé ou maudit, personne ne protège l'équipe."§§"Protects it from ailments and helps it recast its SBB: if it is paralysed or cursed, nobody protects the party."
 "Remplit plus vite les jauges de BB."§§"Fills BB gauges faster."
 `Sa sphère signature${g.length > 1 ? ` (aussi appelée ${g.slice(1).map((x) => x.name).join(", ")})` : ""} : ses bonus et sa compétence extra s'activent avec elle.`§§`Its signature sphere${g.length > 1 ? ` (also called ${g.slice(1).map((x) => x.name).join(", ")})` : ""}: its bonuses and Extra Skill activate with it.`
 Toutes les unités du jeu, de leur première forme à l'Omni. Ouvre une fiche pour voir statistiques, compétences, évolutions, où l'obtenir et le type conseillé.§§Every unit in the game, from first form to Omni. Open a unit page for stats, skills, evolutions, where to get it and the recommended type.
