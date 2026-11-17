@@ -1,4 +1,18 @@
 # Traduction anglaise : « texte français§§texte anglais », une entrée par ligne, appliquées dans l'ordre.
+Tier list votée par les joueurs sur <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">le site du jeu</a> (notes de 1 à 5, classée à partir de 15 votes), données du §§Tier list voted by players on <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">the game's site</a> (scores from 1 to 5, ranked from 15 votes), data from 
+. Les votes portent sur l'unité, pas sur une forme précise.§§. Votes are for the unit, not a specific form.
+Votée par les joueurs : S à partir de 4,25 de moyenne, A de 3,6, B de 3, C de 2,4, D en dessous.§§Voted by players: S from a 4.25 average, A from 3.6, B from 3, C from 2.4, D below.
+Classement calculé par le wiki pour les §§Ranking computed by the wiki for the 
+ unités jouables, à leur meilleure forme.§§ playable units, at their best form.
+>Calculée par le wiki<§§>Computed by the wiki<
+>Votée par les joueurs<§§>Voted by players<
+aria-label="Classement"§§aria-label="Ranking"
+"k">Avis des joueurs<§§"k">Players' rating<
+"k">Tier du wiki<§§"k">Wiki tier<
+`Pas encore classée (${c.votes}/15 votes)`§§`Not ranked yet (${c.votes}/15 votes)`
+ combats joués avec elle<§§ battles played with it<
+`Moyenne ${x.c.t.average.toFixed(2)} · ${x.c.t.votes} votes · ${fmt(x.c.battles)} combats`§§`Average ${x.c.t.average.toFixed(2)} · ${x.c.t.votes} votes · ${fmt(x.c.battles)} battles`
+.toFixed(1).replace(".", ",")}/5§§.toFixed(1)}/5
 "Mode classé ouvert 5 jours à chaque mise à jour (2 jours après sa sortie, à 00:00 UTC). 3 Orbes de chasseur par jour, 15 par saison, cumulables jusqu'à la fin. Quatre quêtes en chaîne : Entrée, Milieu, Fin, puis Terminus. Pas de continue, pas d'objets personnels (tu choisis un lot d'objets fourni), 20 minutes par course, Auto désactivé au départ."§§"Ranked mode open for 5 days with each release (2 days after it goes live, at 00:00 UTC). 3 Hunter Orbs a day, 15 a season, carried over until the end. Four chained quests: Entrance, Middle, End, then Terminus. No continues, no personal items (you pick a provided item set), 20 minutes per run, Auto off at the start."
 "Le score récompense les étincelles, les coups sur un élément faible, plusieurs ennemis tués au même tour, les kills au BB et les victoires rapides (surtout au tour 1) : privilégie des BB/SBB de zone à beaucoup de coups, des boosts d'étincelle et d'élément."§§"The score rewards sparks, hits on a weak element, several enemies killed on the same turn, BB kills and quick wins (especially on turn 1): favour AoE BB/SBB with many hits, spark and element buffs."
 "Les vagues avec beaucoup d'ennemis rapportent le plus : répartis tes attaques pour faire des étincelles sur tous, et achève-les au même tour."§§"Waves with many enemies pay the most: spread your attacks to spark on all of them, and finish them on the same turn."
@@ -15,7 +29,7 @@
 >Chargement…</div>§§>Loading…</div>
 # Les phrases longues d'abord ; en-2-words.tsv traite ensuite les mots isolés.
 <div class="empty">Chargement des données du jeu…</div>§§<div class="empty">Loading game data…</div>
-Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données du jeu <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com), version du 14 novembre 2026. Site non commercial, affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn. <strong>Brave Frontier © Alim/gumi</strong>§§Reborn Wiki is an unofficial fan wiki, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">source code on GitHub</a>. Game data from <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com), November 14, 2026 version. Non-commercial site, not affiliated with Alim, gumi or the Reborn team. <strong>Brave Frontier © Alim/gumi</strong>
+Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données du jeu <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com) via sa Data API officielle, version du 17 novembre 2026. Images tirées des packs officiels. Site non commercial, affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn. <strong>Brave Frontier © Alim/gumi</strong>§§Reborn Wiki is an unofficial fan wiki, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">source code on GitHub</a>. Game data from <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com) through its official Data API, November 17, 2026 version. Images from the official art packs. Non-commercial site, not affiliated with Alim, gumi or the Reborn team. <strong>Brave Frontier © Alim/gumi</strong>
 const EL_FR = { fire: "Feu", water: "Eau", earth: "Terre", thunder: "Foudre", light: "Lumière", dark: "Ténèbres" };§§const EL_FR = { fire: "Fire", water: "Water", earth: "Earth", thunder: "Thunder", light: "Light", dark: "Dark" };
 const STAT_FR = { hp: "PV", atk: "ATQ", def: "DÉF", rec: "REC" };§§const STAT_FR = { hp: "HP", atk: "ATK", def: "DEF", rec: "REC" };
 const AIL_FR = { poison: "Poison", weak: "Faiblesse", sick: "Maladie", injury: "Blessure", curse: "Malédiction", paralysis: "Paralysie" };§§const AIL_FR = { poison: "Poison", weak: "Weak", sick: "Sick", injury: "Injury", curse: "Curse", paralysis: "Paralysis" };

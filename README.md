@@ -11,12 +11,14 @@ Le script [`tools/bfr-collection.user.js`](tools/bfr-collection.user.js) s'insta
 ## Mettre à jour le site
 
 - `src/wiki.html` : la source unique du site.
+- `build/api.ps1` : télécharge la [Data API officielle](https://rebornbf.com/product/data) (unités, sphères, objets, bannières, drops, recettes de forge, tier list votée et utilisation des unités) et les packs d'images officiels (vignettes, icônes, sprites de combat d'où viennent les poses des unités). Les fichiers sont gardés en cache et ne sont retéléchargés que si leur nom change.
 - `build/build.ps1` : génère `index.html` (français) et `en/index.html` (anglais, d'après `build/en-*.tsv`).
 - `build/challenges.ps1` : recalcule `data/challenges.json` et `data/challenges-en.json` à partir du fichier `world` public du jeu.
 - `build/fights.ps1` : extrait le comportement des boss des défis (IA, compétences, passifs) dans `data/fights.json`, d'où le wiki tire le déroulé et le plan de bataille de chaque combat.
-- `data/` : fichiers publics du jeu (unités, guide, objets, sphères, bannières) et vignettes.
+- `data/` : données du jeu (Data API, plus le guide, les noms français et le monde des quêtes, qui ne sont pas encore dans l'API). Les images de `assets/` viennent uniquement des packs officiels.
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File build\api.ps1
 powershell -ExecutionPolicy Bypass -File build\build.ps1
 ```
 
@@ -30,4 +32,6 @@ To see your own account, install [`tools/bfr-collection.user.js`](tools/bfr-coll
 
 ---
 
-Brave Frontier, its characters, art and trademarks belong to their rights holders (Alim, gumi). This project is not affiliated with them or with the Brave Frontier: Reborn team. Game data and thumbnails come from the game's public files.
+Data and images: [Brave Frontier: Reborn](https://rebornbf.com) (rebornbf.com), through its official Data API and art packs. Non-commercial fan project, not affiliated with Alim, gumi or the Brave Frontier: Reborn team.
+
+**Brave Frontier © Alim/gumi**

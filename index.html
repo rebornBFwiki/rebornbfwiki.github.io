@@ -80,6 +80,8 @@ nav.tabs a { white-space: nowrap; }
 .src { font-size: 13px; color: var(--gold-hi); margin-top: 2px; }
 .src.none { color: var(--mute); }
 .cover { position: relative; height: 120px; border-radius: 10px; overflow: hidden; background: var(--panel-2) center/cover no-repeat; }
+.dthumb { display: inline-block; width: 64px; height: 40px; border-radius: 6px; vertical-align: middle; }
+.icon.dthumb { width: 36px; height: 36px; }
 .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b122200 30%, #0b1222e6 100%); }
 .cover .over { position: absolute; left: 12px; right: 12px; bottom: 8px; z-index: 1; }
 .cover .over h3 { margin: 0; text-shadow: 0 2px 4px #000; }
@@ -298,7 +300,7 @@ abbr[title] { text-decoration: underline dotted; cursor: help; }
 .tier .units a { position: relative; display: grid; justify-items: center; gap: 2px; width: 74px; text-decoration: none; color: var(--fg); font-size: 11px; text-align: center; line-height: 1.15; }
 .tier .units a .sigil { width: 52px; height: 52px; }
 .tier .units a.owned::after { content: "✓"; position: absolute; top: -4px; right: 6px; background: var(--good); color: #0b1222; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
-.t-S { background: #f2d68b; } .t-A { background: #e8a85a; } .t-B { background: #8fb4e8; } .t-C { background: #8b96b3; }
+.t-S { background: #f2d68b; } .t-A { background: #e8a85a; } .t-B { background: #8fb4e8; } .t-C { background: #8b96b3; } .t-D { background: #6b7280; }
 .tierbadge { font-family: var(--display); font-size: 12px; color: #1a1406; padding: 0 6px; border-radius: 6px; }
 
 /* Collection */
@@ -335,8 +337,7 @@ body::after {
     radial-gradient(900px 520px at 12% 0%, #e0b45038 0%, transparent 62%),
     radial-gradient(780px 620px at 100% 35%, #b44fd636 0%, transparent 62%),
     radial-gradient(900px 600px at 25% 100%, #2fb3a02e 0%, transparent 62%),
-    linear-gradient(180deg, #0c111db8 0%, #0c111dd9 55%, #0c111de6 100%),
-    url("assets/bg/grand-gaia.jpg") center 30% / cover no-repeat;
+    linear-gradient(180deg, #0c111d 0%, #10172a 55%, #0c111d 100%);
   filter: blur(4px) saturate(1.2);
 }
 .panel, .frame, .showcase { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
@@ -444,7 +445,7 @@ td { border-bottom-color: #ffffff0a; }
 </main>
 
 <footer class="wrap">
-  Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données du jeu <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com), version du 14 novembre 2026. Site non commercial, affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn. <strong>Brave Frontier © Alim/gumi</strong>
+  Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données du jeu <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com) via sa Data API officielle, version du 17 novembre 2026. Images tirées des packs officiels. Site non commercial, affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn. <strong>Brave Frontier © Alim/gumi</strong>
 </footer>
 
 <script>
@@ -511,9 +512,21 @@ const sDesc = (s) => (s && ((I18N.sphere[s.id] && I18N.sphere[s.id].d) || s.desc
 const iName = (i) => (i && ((I18N.item[i.id] && I18N.item[i.id].n) || i.name)) || "";
 const iDesc = (i) => (i && ((I18N.item[i.id] && I18N.item[i.id].d) || i.description)) || "";
 const iconImg = (path, cls = "icon", alt = "") => (path ? `<img class="${cls}" src="${ASSET}${esc(path)}" alt="${esc(alt)}" loading="lazy">` : "");
-const dungeonImg = (id) => `${ASSET}dungeon/${id}.jpg`;
+// Les images des donjons ne sont pas dans les packs officiels : la couverture prend les couleurs des éléments ennemis.
+const coverBg = (c) => {
+  const els = [...new Set([...((c && c.bosses) || []).map((b) => b.element), ...((c && c.elements) || [])])].filter((e) => ELEMENTS.includes(e));
+  const a = els[0] || "dark", b = els[1] || a, z = els[2] || b;
+  return `background-image:radial-gradient(120% 140% at 85% 10%, color-mix(in srgb, var(--${a}) 75%, transparent) 0%, transparent 55%),radial-gradient(90% 120% at 10% 100%, color-mix(in srgb, var(--${b}) 55%, transparent) 0%, transparent 60%),linear-gradient(135deg, color-mix(in srgb, var(--${z}) 35%, #0d1220) 0%, #0d1220 100%)`;
+};
+const coverThumb = (c, cls = "dthumb") => `<span class="${cls}" style="${coverBg(c)}" aria-hidden="true"></span>`;
 const missionName = (m) => { const n = SRC.missions[m]; return n ? (n[LANG] || n.en) : `#${m}`; };
 let FORGE = {}; // recettes lues dans la Forge à sphères du jeu
+let COMM = null; // tier list votée et utilisation des unités (Data API, mise à jour chaque jour)
+const COMM_TIERS = [["S", 4.25], ["A", 3.6], ["B", 3], ["C", 2.4], ["D", -1]];
+const commOf = (id) => {
+  const t = COMM && COMM.tiers.get(id);
+  return { t: t && t.votes >= 15 ? { ...t, tier: COMM_TIERS.find(([, m]) => t.average >= m)[0] } : null, votes: t ? t.votes : 0, battles: COMM ? COMM.battles[id] || 0 : 0 };
+};
 let EXCH = null; // Hall des échanges (points de mérite), relevé en jeu
 // Rang de chasseur atteignable aujourd'hui : la doc officielle donne au plus +10 rangs par saison du Frontier Hunter,
 // et une seule saison a eu lieu (Release 8, novembre 2026). À augmenter de 10 à chaque nouvelle saison.
@@ -869,10 +882,11 @@ function sphereAdvice(u, f, roles, n = 3, mode = "best") {
 async function load() {
   const get = (n) => fetch(`data/${n}.json`).then((r) => { if (!r.ok) throw new Error(n); return r.json(); });
   const [units, guide, items, spheres, banners, challenges] = await Promise.all(["units", "guide", "items", "spheres", "banners", "challenges"].map(get));
-  const extra = await Promise.all([get("sources").catch(() => null), LANG === "fr" ? get("i18n-fr").catch(() => null) : null, get("forge").catch(() => null), get("exchange").catch(() => null)]);
+  const extra = await Promise.all([get("sources").catch(() => null), LANG === "fr" ? get("i18n-fr").catch(() => null) : null, get("forge").catch(() => null), get("exchange").catch(() => null), get("community").catch(() => null)]);
   if (extra[0]) SRC = extra[0];
   if (extra[2]) FORGE = extra[2];
   if (extra[3]) EXCH = extra[3];
+  if (extra[4] && extra[4].tiers) COMM = { date: extra[4].date, tiers: new Map(extra[4].tiers.units.map((x) => [x.unitId, x])), battles: (extra[4].usage && extra[4].usage.unitBattles) || {} };
   if (extra[1]) I18N = { sphere: extra[1].sphere || {}, item: extra[1].item || {} };
   D.challenges = challenges;
   D.challengeById = new Map(challenges.map((c) => [String(c.id), c]));
@@ -1010,7 +1024,8 @@ function briefHTML(u, f, roles, rec, g) {
   const own = !COLL ? `<a href="#collection">Importe ta collection</a>` : mine ? `Oui : ${esc(u.forms[mine.form].name)}${mine.type ? ` (${TYPE_FR[mine.type]})` : ""}${ownedCount(u.id) > 1 ? `, ${ownedCount(u.id)} exemplaires` : ""}` : `Pas encore. ${esc(firstSource)}`;
   return `<section class="panel brief">
     <div><div class="k">Rôle</div><div class="v">${roles.list.length ? roles.list.slice(0, 2).map((r) => ROLE_FR[r]).join(" et ") : "Matériau de fusion ou d'évolution"}</div></div>
-    ${t ? `<div><div class="k">Tier</div><div class="v"><span class="tierbadge t-${t}">${t}</span> <a href="#tierlist" class="small">voir la tier list</a></div></div>` : ""}
+    ${t ? `<div><div class="k">Tier du wiki</div><div class="v"><span class="tierbadge t-${t}">${t}</span> <a href="#tierlist" class="small">voir la tier list</a></div></div>` : ""}
+    ${u.hero && COMM ? (() => { const c = commOf(u.id); return `<div><div class="k">Avis des joueurs</div><div class="v">${c.t ? `<span class="tierbadge t-${c.t.tier}">${c.t.tier}</span> ${c.t.average.toFixed(1).replace(".", ",")}/5 · ${c.t.votes} votes` : `Pas encore classée (${c.votes}/15 votes)`}${c.battles ? `<div class="small muted">${fmt(c.battles)} combats joués avec elle</div>` : ""}</div></div>`; })() : ""}
     <div><div class="k">Type conseillé</div><div class="v">${TYPE_FR[rec.type]}</div></div>
     <div><div class="k">Duo de sphères idéal</div><div class="v">${esc(duo.join(" + ")) || "—"}</div></div>
     <div><div class="k">Duo facile en attendant</div><div class="v">${esc(duoEasy.join(" + ")) || "—"}</div></div>
@@ -1426,7 +1441,7 @@ function challengeHTML(c) {
   if (mode && mode.id === "chasseur") advice.unshift(L("Score du Frontier Hunter : étincelles, coups sur un élément faible, plusieurs ennemis tués au même tour, kills au BB, victoire rapide (surtout au tour 1), aucun objet utilisé et personne de tombé. Prends des BB/SBB de zone à beaucoup de coups.", "Frontier Hunter score: sparks, hits on a weak element, several enemies killed on the same turn, BB kills, quick wins (especially on turn 1), no items used and nobody defeated. Bring AoE BB/SBB with many hits."));
   if (c.immune.length) advice.push(`Les ennemis résistent à : ${c.immune.map((a) => AIL_FR[a] || a).join(", ")}. Inutile de miser sur ces altérations.`);
   return `<section class="panel challenge">
-    <div class="cover" style="background-image:url('${dungeonImg(c.dungeonId)}')"><div class="over head"><div style="min-width:0"><h3>${esc(c.name)}</h3><div class="small">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div></div><span class="diff">Difficulté ${Math.round(c.score)}</span></div></div>
+    <div class="cover" style="${coverBg(c)}"><div class="over head"><div style="min-width:0"><h3>${esc(c.name)}</h3><div class="small">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div></div><span class="diff">Difficulté ${Math.round(c.score)}</span></div></div>
     <div class="mini">${flags.join("")}</div>
     ${c.bosses.length ? `<div class="tablewrap"><table><thead><tr><th>Boss</th><th>Élément</th><th class="n">PV</th><th class="n">ATQ</th><th class="n">DÉF</th></tr></thead><tbody>
       ${c.bosses.map((b) => `<tr><td>${esc(b.name)}</td><td><span class="dot el-${esc(b.element)}"></span> ${EL_FR[b.element] || "—"}</td><td class="n">${fmt(b.hp)}</td><td class="n">${fmt(b.atk)}</td><td class="n">${fmt(b.def)}</td></tr>`).join("")}
@@ -1821,7 +1836,7 @@ function renderModes() {
       const list = D.challenges.filter((c) => m.test(c)).sort((a, b) => b.score - a.score);
       const noCont = list.filter((c) => c.continues === false).length;
       return `<section class="panel mode">
-        ${list.length ? `<div class="cover" style="background-image:url('${dungeonImg(list[0].dungeonId)}');margin-bottom:10px"><div class="over"><h3>${esc(m.name)}</h3></div></div>` : `<h3>${esc(m.name)}</h3>`}
+        ${list.length ? `<div class="cover" style="${coverBg(list[0])};margin-bottom:10px"><div class="over"><h3>${esc(m.name)}</h3></div></div>` : `<h3>${esc(m.name)}</h3>`}
         <p>${esc(m.rules)}</p>
         <p class="small muted">${list.length} quête${list.length > 1 ? "s" : ""}${noCont ? ` · ${noCont} sans continue` : ""}</p>
         <ul class="fx">${m.tips.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
@@ -2199,19 +2214,33 @@ const tierOf = (id) => { const t = computeTiers().byId.get(id); return t ? t.tie
 state.tierRole = ""; state.tierEl = [];
 function renderTierlist() {
   const T = computeTiers();
+  const voted = state.tierSrc === "joueurs" && COMM;
   main.innerHTML = `<h2 class="section-title">Tier list</h2>
-    <p class="lede">Classement calculé par le wiki pour les ${T.rows.length} unités jouables, à leur meilleure forme. La tier list votée par les joueurs existe sur le site du jeu, mais aucune unité n'y a encore les 15 votes nécessaires : <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">voir la tier list de la communauté</a>.</p>
+    <div class="forms" role="group" aria-label="Classement" style="margin:0 0 10px"><button type="button" data-src="wiki" aria-pressed="${!voted}">Calculée par le wiki</button>${COMM ? `<button type="button" data-src="joueurs" aria-pressed="${!!voted}">Votée par les joueurs</button>` : ""}</div>
+    <p class="lede">${voted ? `Tier list votée par les joueurs sur <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">le site du jeu</a> (notes de 1 à 5, classée à partir de 15 votes), données du ${new Date(COMM.date).toLocaleDateString("fr-FR")}. Les votes portent sur l'unité, pas sur une forme précise.` : `Classement calculé par le wiki pour les ${T.rows.length} unités jouables, à leur meilleure forme.`}</p>
     <div class="toolbar"><select id="tr" aria-label="Rôle"><option value="">Tous les rôles</option>${Object.entries(ROLE_FR).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>${elChips(state.tierEl, "tier")}</div>
     <div id="tl"></div>
     <section class="panel box" style="margin-top:14px"><h3>Comment la note est calculée</h3>
       <ul class="fx"><li>35 % statistiques au niveau max (ATQ, PV, REC, DÉF).</li><li>25 % utilité : soins, réduction des dégâts, remplissage des BB, immunités et boosts d'équipe.</li><li>20 % compétence de leader.</li><li>20 % puissance du BB et du SBB (l'UBB compte très peu : il est rare).</li><li>Petit bonus pour les formes Omni et 7★.</li></ul>
-      <p class="note">S = 10 % les mieux notées, A = 25 % suivantes, B = 35 %, C = le reste. Survole une unité pour voir sa note. Une ✓ verte signale une unité de ta collection.</p></section>`;
+      <p class="note">S = 10 % les mieux notées, A = 25 % suivantes, B = 35 %, C = le reste. Survole une unité pour voir sa note. Une ✓ verte signale une unité de ta collection.</p>
+      ${COMM ? `<p class="note">Votée par les joueurs : S à partir de 4,25 de moyenne, A de 3,6, B de 3, C de 2,4, D en dessous.</p>` : ""}</section>`;
   document.getElementById("tr").value = state.tierRole;
+  main.querySelectorAll("[data-src]").forEach((b) => b.addEventListener("click", () => { state.tierSrc = b.dataset.src; renderTierlist(); }));
   const draw = () => {
-    const rows = T.rows.filter((x) => (!state.tierRole || x.u.roles.list.includes(state.tierRole)) && (!state.tierEl.length || state.tierEl.includes(x.u.element)));
+    const keep = (u) => (!state.tierRole || u.roles.list.includes(state.tierRole)) && (!state.tierEl.length || state.tierEl.includes(u.element));
+    const link = (u, title) => `<a href="#u-${esc(u.id)}" class="${ownedCount(u.id) ? "owned" : ""}" title="${esc(title)}">${sigil(u.best.name, u.element, false, u.best.id)}<span>${esc(u.best.name)}</span></a>`;
+    const empty = `<span class="muted small" style="padding:14px">Aucune unité.</span>`;
+    if (voted) {
+      const avg = (x) => (x.c.t ? x.c.t.average : 0);
+      const rows = T.rows.map((x) => ({ u: x.u, c: commOf(x.u.id) })).filter((x) => keep(x.u)).sort((a, b) => avg(b) - avg(a));
+      const lane = (t, lab, list) => `<div class="tier"><div class="t t-${t}">${lab}</div><div class="units">${list.map((x) => link(x.u, x.c.t ? `Moyenne ${x.c.t.average.toFixed(2)} · ${x.c.t.votes} votes · ${fmt(x.c.battles)} combats` : `${x.c.votes}/15 votes`)).join("") || empty}</div></div>`;
+      document.getElementById("tl").innerHTML = COMM_TIERS.map(([t]) => lane(t, t, rows.filter((x) => x.c.t && x.c.t.tier === t))).join("") + (rows.some((x) => !x.c.t) ? lane("D", "?", rows.filter((x) => !x.c.t)) : "");
+      return;
+    }
+    const rows = T.rows.filter((x) => keep(x.u));
     document.getElementById("tl").innerHTML = ["S", "A", "B", "C"].map((t) => {
       const list = rows.filter((x) => x.tier === t);
-      return `<div class="tier"><div class="t t-${t}">${t}</div><div class="units">${list.map((x) => `<a href="#u-${esc(x.u.id)}" class="${ownedCount(x.u.id) ? "owned" : ""}" title="Note ${Math.round(x.score * 100)} · stats ${Math.round(x.parts.stat * 100)} · utilité ${Math.round(x.parts.util * 100)} · leader ${Math.round(x.parts.ls * 100)} · BB ${Math.round(x.parts.dmg * 100)}">${sigil(x.u.best.name, x.u.element, false, x.u.best.id)}<span>${esc(x.u.best.name)}</span></a>`).join("") || `<span class="muted small" style="padding:14px">Aucune unité.</span>`}</div></div>`;
+      return `<div class="tier"><div class="t t-${t}">${t}</div><div class="units">${list.map((x) => link(x.u, `Note ${Math.round(x.score * 100)} · stats ${Math.round(x.parts.stat * 100)} · utilité ${Math.round(x.parts.util * 100)} · leader ${Math.round(x.parts.ls * 100)} · BB ${Math.round(x.parts.dmg * 100)}`)).join("") || empty}</div></div>`;
     }).join("");
   };
   document.getElementById("tr").addEventListener("change", (e) => { state.tierRole = e.target.value; draw(); });
@@ -2408,7 +2437,7 @@ function renderItem(id) {
         ${EXCH && EXCH.items && EXCH.items[i.id] ? `<p class="src">Hall des échanges : ${fmt(EXCH.items[i.id].pts)} points de mérite${EXCH.items[i.id].stock ? ` (${EXCH.items[i.id].stock} par rotation)` : ""}</p>` : ""}
         ${GUILD().items[i.id] ? `<p class="src">Hall de guilde : ${fmt(GUILD().items[i.id].pts)} jetons de guilde</p>` : ""}
         ${where.length ? `<div class="tablewrap"><table class="drops"><thead><tr><th></th><th>Quête</th><th class="n">Par tour</th><th class="n">Énergie</th></tr></thead><tbody>
-          ${where.map((w) => { const c = D.challengeById.get(String(w.m)); return `<tr><td>${c ? `<img src="${dungeonImg(c.dungeonId)}" alt="" loading="lazy">` : ""}</td><td><strong>${esc(missionName(w.m))}</strong>${c ? `<div class="small muted">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div>` : ""}</td><td class="n">${w.e >= 1 ? fmt(Math.round(w.e * 10) / 10) : "≈ " + Math.round(w.e * 100) + " %"}</td><td class="n">${w.en ?? "—"}</td></tr>`; }).join("")}
+          ${where.map((w) => { const c = D.challengeById.get(String(w.m)); return `<tr><td>${c ? coverThumb(c) : ""}</td><td><strong>${esc(missionName(w.m))}</strong>${c ? `<div class="small muted">${esc(c.dungeon)}${c.area && c.area !== c.dungeon ? " · " + esc(c.area) : ""}</div>` : ""}</td><td class="n">${w.e >= 1 ? fmt(Math.round(w.e * 10) / 10) : "≈ " + Math.round(w.e * 100) + " %"}</td><td class="n">${w.en ?? "—"}</td></tr>`; }).join("")}
         </tbody></table></div><p class="note">Classées par exemplaires obtenus par point d'énergie. « Par tour » est une moyenne calculée d'après les taux du jeu.</p>`
         : `<p class="muted">Aucune quête ne fait tomber cet objet dans les fichiers du jeu. Il s'obtient sans doute en récompense, en boutique ou en ville.</p>`}
       </section>
@@ -2422,7 +2451,7 @@ function buildSearch() {
   for (const u of D.units) if (u.hero) out.push({ k: "Unité", t: u.best.name, extra: u.forms.map((f) => f.name).join(" "), href: `#u-${u.id}`, img: sigil(u.best.name, u.element, false, u.best.id) });
   for (const s of uniqueSpheres()) out.push({ k: "Sphère", t: sName(s), extra: s.name, href: `#s-${s.id}`, img: iconImg(s.icon, "icon", "") });
   for (const i of D.items.filter(itemAvailable)) out.push({ k: "Objet", t: iName(i), extra: i.name, href: `#i-${i.id}`, img: iconImg(i.icon, "icon", "") });
-  for (const c of D.challenges) out.push({ k: "Quête", t: c.name, extra: c.dungeon, href: "#defis", quest: c.name, img: `<img class="icon" src="${dungeonImg(c.dungeonId)}" alt="" loading="lazy" style="object-fit:cover;border-radius:6px">` });
+  for (const c of D.challenges) out.push({ k: "Quête", t: c.name, extra: c.dungeon, href: "#defis", quest: c.name, img: coverThumb(c, "icon dthumb") });
   for (const o of out) o.hay = (o.t + " " + o.extra).toLowerCase();
   return out;
 }
