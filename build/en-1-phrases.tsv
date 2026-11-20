@@ -1,4 +1,8 @@
 # Traduction anglaise : « texte français§§texte anglais », une entrée par ligne, appliquées dans l'ordre.
+Mes unités (${ownedHeroes.length} unités, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} exemplaires)§§My units (${ownedHeroes.length} units, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} copies)
+Une carte par forme que tu possèdes, avec le nombre d'exemplaires, leur type et leur niveau.§§One card per form you own, with the number of copies, their type and their level.
+`niv. ${e.level}`§§`lv. ${e.level}`
+"2 emplacements" : null§§"2 slots" : null
 >Ta forme · évolue jusqu'à ${RAR(u.best.rarity)}<§§>Your form · evolves up to ${RAR(u.best.rarity)}<
 <span class="mine">ta forme</span>§§<span class="mine">your form</span>
 Tier list votée par les joueurs sur <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">le site du jeu</a> (notes de 1 à 5, classée à partir de 15 votes), données du §§Tier list voted by players on <a href="https://rebornbf.com/community/tier-list" target="_blank" rel="noopener">the game's site</a> (scores from 1 to 5, ranked from 15 votes), data from 

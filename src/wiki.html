@@ -372,6 +372,8 @@ td { border-bottom-color: #ffffff0a; }
 .ucard-body .name { font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
 .ucard-body .meta { font-size: 12.5px; color: var(--mute); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .ucard-body .role { font-size: 11px; justify-self: start; }
+.ucard .count-badge { position: absolute; bottom: 8px; right: 8px; padding: 2px 8px; border-radius: 999px; background: #0b1222d9; color: var(--gold-hi); font-weight: 800; font-size: 13px; }
+.ucard .copies { list-style: none; margin: 2px 0 4px; padding: 0; font-size: 12px; color: var(--mute); display: grid; gap: 1px; }
 .picker .list { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 
 /* En-tête de fiche avec illustration */
@@ -983,6 +985,30 @@ function cardHTML(u, tag = "a") {
       <div class="meta"><span class="dot"></span>${EL_FR[u.element] || u.element} · <span class="rar">${RAR(f.rarity)}</span></div>${evolved ? "" : `<div class="small muted">Ta forme · évolue jusqu'à ${RAR(u.best.rarity)}</div>`}${role}</div></${tag}>`;
 }
 
+// Exemplaires d'une unité regroupés par forme (de la plus évoluée à la moins évoluée).
+function ownedByForm(u) {
+  const by = new Map();
+  for (const e of ownedEntries(u.id)) { if (!u.forms[e.form]) continue; if (!by.has(e.form)) by.set(e.form, []); by.get(e.form).push(e); }
+  return [...by.entries()].sort((a, b) => b[0] - a[0]).map(([form, list]) => ({ form, list, n: list.reduce((a, e) => a + e.count, 0) }));
+}
+const copyText = (e) => [e.type ? TYPE_FR[e.type] : null, e.level != null ? `niv. ${e.level}` : null, e.slot2 ? "2 emplacements" : null].filter(Boolean).join(" · ") || "—";
+function copyCardHTML(u, g) {
+  const f = u.forms[g.form];
+  const last = g.form === u.forms.length - 1;
+  const art = last ? artSrc(u) : null;
+  const roles = rolesOf(f);
+  const t = last && u.hero ? tierOf(u.id) : null;
+  // Exemplaires identiques (même type et même niveau) regroupés : « Anima · niv. 150 ×2 ».
+  const same = new Map();
+  for (const e of g.list) { const k = copyText(e); same.set(k, (same.get(k) || 0) + e.count); }
+  return `<a class="ucard el-${esc(u.element)}" href="#u-${esc(u.id)}" data-form-link="${g.form}">
+    <div class="ucard-art">${art ? `<img class="art" src="${art}" alt="" loading="lazy">` : sigil(f.name, u.element, true, f.id)}${t ? `<span class="tierbadge t-${t} corner">${t}</span>` : ""}<span class="count-badge">×${g.n}</span></div>
+    <div class="ucard-body"><div class="name">${esc(f.name)}</div>
+      <div class="meta"><span class="dot"></span>${EL_FR[u.element] || u.element} · <span class="rar">${RAR(f.rarity)}</span>${last ? "" : ` · <span class="muted">max ${RAR(u.best.rarity)}</span>`}</div>
+      <ul class="copies">${[...same.entries()].map(([k, n]) => `<li>${esc(k)}${n > 1 ? ` <strong>×${n}</strong>` : ""}</li>`).join("")}</ul>
+      ${roles.list[0] ? `<span class="role main">${ROLE_FR[roles.list[0]]}</span>` : `<span class="role">Fusion / évolution</span>`}</div></a>`;
+}
+
 /* ---------- Fiche d'une unité ---------- */
 function sourceText(s) {
   switch (s.kind) {
@@ -1017,7 +1043,7 @@ function briefHTML(u, f, roles, rec, g) {
   const t = u.hero ? tierOf(u.id) : null;
   const mine = COLL ? bestOwned(u.id) : null;
   const firstSource = g && g.sources && g.sources[0] ? sourceText(g.sources[0]) : "Source inconnue";
-  const own = !COLL ? `<a href="#collection">Importe ta collection</a>` : mine ? `Oui : ${esc(u.forms[mine.form].name)}${mine.type ? ` (${TYPE_FR[mine.type]})` : ""}${ownedCount(u.id) > 1 ? `, ${ownedCount(u.id)} exemplaires` : ""}` : `Pas encore. ${esc(firstSource)}`;
+  const own = !COLL ? `<a href="#collection">Importe ta collection</a>` : mine ? ownedByForm(u).map((g) => `${RAR(u.forms[g.form].rarity)} ×${g.n}`).join(", ") : `Pas encore. ${esc(firstSource)}`;
   return `<section class="panel brief">
     <div><div class="k">Rôle</div><div class="v">${roles.list.length ? roles.list.slice(0, 2).map((r) => ROLE_FR[r]).join(" et ") : "Matériau de fusion ou d'évolution"}</div></div>
     ${t ? `<div><div class="k">Tier du wiki</div><div class="v"><span class="tierbadge t-${t}">${t}</span> <a href="#tierlist" class="small">voir la tier list</a></div></div>` : ""}
@@ -1046,6 +1072,7 @@ function renderUnit(id) {
   const u = D.byId.get(id);
   if (!u) { main.innerHTML = `<a class="back" href="#unites">← Toutes les unités</a><div class="empty">Cette unité n'existe pas dans les données du jeu.</div>`; return; }
   const mineIdx = ownedFormIndex(u);
+  if (state.formLink && state.formLink.id === id) { state.form[id] = state.formLink.form; state.formLink = null; }
   const idx = state.form[id] ?? mineIdx ?? u.forms.length - 1;
   const f = u.forms[idx];
   const roles = rolesOf(f), rec = recommendType(f, roles);
@@ -2158,8 +2185,9 @@ function renderCollection() {
         <section class="panel box"><h3>Prêtes à évoluer</h3>${ready.length ? ready.map(evoRow).join("") : `<p class="muted">Aucune évolution n'a tous ses matériaux pour l'instant.</p>`}</section>
         <section class="panel box"><h3>Presque prêtes</h3>${almost.slice(0, 8).map(evoRow).join("") || `<p class="muted">Rien à signaler.</p>`}</section>
       </div>
-      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Mes unités (${ownedHeroes.length})</h3>
-      <div class="grid">${ownedHeroes.sort((a, b) => maxRarityNum(b) - maxRarityNum(a)).map((u) => cardHTML(u)).join("")}</div>
+      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Mes unités (${ownedHeroes.length} unités, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} exemplaires)</h3>
+      <p class="small muted" style="margin:0 0 8px">Une carte par forme que tu possèdes, avec le nombre d'exemplaires, leur type et leur niveau.</p>
+      <div class="grid">${ownedHeroes.sort((a, b) => maxRarityNum(b) - maxRarityNum(a)).flatMap((u) => ownedByForm(u).map((g) => copyCardHTML(u, g))).join("")}</div>
       <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Il te manque (${missingHeroes.length})</h3>
       <div class="grid">${missingHeroes.map((u) => cardHTML(u)).join("")}</div>
       ${invHTML}
@@ -2531,6 +2559,8 @@ function renderFarm() {
 
 /* ---------- Démarrage ---------- */
 load().then(() => {
+  // Carte d'un exemplaire : la fiche s'ouvre sur cette forme.
+  document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest("[data-form-link]"); if (a) state.formLink = { id: a.getAttribute("href").slice(3), form: Number(a.dataset.formLink) }; });
   window.addEventListener("hashchange", route);
   initSearch();
   route();
