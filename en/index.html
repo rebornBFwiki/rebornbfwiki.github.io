@@ -169,6 +169,7 @@ main { padding-top: 20px; }
 .hero h2 { font-size: 30px; color: var(--gold-hi); }
 .forms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .forms button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 13px; }
+.forms .mine { white-space: nowrap; display: inline-block; font-size: 11px; font-weight: 700; color: #0b1222; background: var(--good); border-radius: 999px; padding: 1px 7px; margin-left: 4px; }
 .forms button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-hi); background: #2b2412; }
 .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
 .box { padding: 14px 16px; min-width: 0; }
@@ -974,17 +975,20 @@ function bindChips(group, arr, cb) {
 }
 // Illustration de la meilleure forme (unités jouables seulement).
 const artSrc = (u) => (u && u.hero ? `${ASSET}art/${u.best.id}.png` : null);
+const ownedFormIndex = (u) => { const b = COLL ? bestOwned(u.id) : null; return b && u.forms[b.form] ? b.form : null; };
 function cardHTML(u, tag = "a") {
-  const f = u.best;
+  const oi = ownedFormIndex(u);
+  const f = oi != null ? u.forms[oi] : u.best;
+  const evolved = oi == null || oi === u.forms.length - 1;
   const attrs = tag === "a" ? `href="#u-${esc(u.id)}"` : `type="button" data-pick="${esc(u.id)}"`;
   const t = u.hero ? tierOf(u.id) : null;
   const mine = COLL && ownedCount(u.id) > 0;
-  const art = artSrc(u);
+  const art = evolved ? artSrc(u) : null;
   const role = u.hero ? (u.roles.list[0] ? `<span class="role main">${ROLE_FR[u.roles.list[0]]}</span>` : "") : `<span class="role">Fusion / evolution</span>`;
   return `<${tag} class="ucard el-${esc(u.element)}" ${attrs}>
     <div class="ucard-art">${art ? `<img class="art" src="${art}" alt="" loading="lazy">` : sigil(f.name, u.element, true, f.id)}${t ? `<span class="tierbadge t-${t} corner">${t}</span>` : ""}${mine ? `<span class="owned-dot" title="In your collection">✓</span>` : ""}</div>
     <div class="ucard-body"><div class="name">${esc(f.name)}</div>
-      <div class="meta"><span class="dot"></span>${EL_FR[u.element] || u.element} · <span class="rar">${RAR(f.rarity)}</span></div>${role}</div></${tag}>`;
+      <div class="meta"><span class="dot"></span>${EL_FR[u.element] || u.element} · <span class="rar">${RAR(f.rarity)}</span></div>${evolved ? "" : `<div class="small muted">Your form · evolves up to ${RAR(u.best.rarity)}</div>`}${role}</div></${tag}>`;
 }
 
 /* ---------- Fiche d'une unité ---------- */
@@ -1049,7 +1053,8 @@ function sphereDuoHTML(u, f, roles) {
 function renderUnit(id) {
   const u = D.byId.get(id);
   if (!u) { main.innerHTML = `<a class="back" href="#unites">← All units</a><div class="empty">This unit does not exist in the game data.</div>`; return; }
-  const idx = state.form[id] ?? u.forms.length - 1;
+  const mineIdx = ownedFormIndex(u);
+  const idx = state.form[id] ?? mineIdx ?? u.forms.length - 1;
   const f = u.forms[idx];
   const roles = rolesOf(f), rec = recommendType(f, roles);
   const g = D.guide.get(f.id);
@@ -1075,7 +1080,7 @@ function renderUnit(id) {
           <h2>${esc(f.name)}</h2>
           <div class="meta muted"><span class="rar">${RAR(f.rarity)}</span> · ${EL_FR[u.element] || u.element} · Cost ${f.cost ?? "?"} · Max level ${f.maxLevel} · 2 sphere slots</div>
           <div style="margin-top:6px">${roles.list.map((r, i) => `<span class="role${i === 0 ? " main" : ""}">${ROLE_FR[r]}</span>`).join(" ") || `<span class="role">Fusion / evolution</span>`}</div>
-          <div class="forms" role="group" aria-label="Forms">${u.forms.map((x, i) => `<button type="button" data-form="${i}" aria-pressed="${i === idx}">${RAR(x.rarity)} ${esc(x.name)}</button>`).join("")}</div>
+          <div class="forms" role="group" aria-label="Forms">${u.forms.map((x, i) => `<button type="button" data-form="${i}" aria-pressed="${i === idx}">${RAR(x.rarity)} ${esc(x.name)}${i === mineIdx ? ` <span class="mine">your form</span>` : ""}</button>`).join("")}</div>
         </div>
         ${artSrc(u) && idx === u.forms.length - 1 ? `<img class="uhero-art" src="${artSrc(u)}" alt="${esc(f.name)}">` : sigil(f.name, u.element, true, f.id)}
       </section>
