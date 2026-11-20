@@ -82,6 +82,7 @@ nav.tabs a { white-space: nowrap; }
 .cover { position: relative; height: 120px; border-radius: 10px; overflow: hidden; background: var(--panel-2) center/cover no-repeat; }
 .dthumb { display: inline-block; width: 64px; height: 40px; border-radius: 6px; vertical-align: middle; }
 .icon.dthumb { width: 36px; height: 36px; }
+.wavehead { margin: 14px 0 4px; font-size: 15px; color: var(--gold-hi); }
 .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b122200 30%, #0b1222e6 100%); }
 .cover .over { position: absolute; left: 12px; right: 12px; bottom: 8px; z-index: 1; }
 .cover .over h3 { margin: 0; text-shadow: 0 2px 4px #000; }
@@ -1605,9 +1606,26 @@ function condText(c) {
 }
 const every = (conds) => (conds.find((c) => c.type === "every_n_turns") || {}).n || null;
 // Transforme les règles d'IA en événements lisibles, triés : seuils de PV, tours, enchaînements, le reste.
-function bossTimeline(boss) {
+const invulnerable = (b) => arr(b.passives).some((p) => p.kind === "damage_reduction" && p.value >= 100 && (p.chance ?? 100) >= 100);
+// Les ennemis d'une vague partagent leurs signaux : la compétence de l'un peut déclencher celle d'un autre.
+function bossTimeline(boss, sibs = []) {
   const rules = arr(boss.ai), ev = [];
-  const setter = (flag) => rules.find((r) => arr(r.setFlags).some((f) => f.flag === flag && f.value === 1) && r.skill && !/^(end_turn|wait_action)$/.test(r.skill));
+  const owners = [boss, ...sibs.filter((o) => o.name !== boss.name)];
+  const real = (r) => r.skill && !/^(end_turn|wait_action)$/.test(r.skill);
+  const setter = (flag) => rules.find((r) => arr(r.setFlags).some((f) => f.flag === flag && f.value === 1) && real(r));
+  // Tout ce qui allume un signal : compétences de l'ennemi ou de ses voisins, et réactions (coups reçus…).
+  const lighters = (flag) => {
+    const out = [];
+    for (const o of owners) {
+      for (const r of arr(o.ai)) if (real(r) && arr(r.setFlags).some((f) => f.flag === flag && f.value === 1) && o.skills[r.skill]) out.push(Q(o.skills[r.skill].name) + (o === boss ? "" : " (" + o.name + ")"));
+      for (const x of arr(o.reactions)) if (arr(x.setFlags).some((f) => f.flag === flag && f.value === 1) && x.trigger === "hits_taken") out.push(L(x.hits + " coups reçus par son camp", x.hits + " hits taken by its side"));
+    }
+    return [...new Set(out)];
+  };
+  const resets = (flag) => owners.some((o) => arr(o.ai).some((r) => arr(r.setFlags).some((f) => f.flag === flag && f.value === 0)));
+  // Signal allumé d'office au 1er tour par une règle « signal éteint » de l'ennemi ou d'un voisin.
+  const turn1 = (flag) => owners.some((o) => arr(o.ai).some((r) => real(r) && (!r.chance || r.chance >= 100) && arr(r.conditions).some((c) => c.type === "flag_off") && arr(r.setFlags).some((f) => f.flag === flag && f.value === 1)));
+  const turn1Names = (flag) => [...new Set(owners.flatMap((o) => arr(o.ai).filter((r) => real(r) && o.skills[r.skill] && (!r.chance || r.chance >= 100) && arr(r.conditions).some((c) => c.type === "flag_off") && arr(r.setFlags).some((f) => f.flag === flag && f.value === 1)).map((r) => Q(o.skills[r.skill].name) + (o === boss ? "" : " (" + o.name + ")"))))];
   for (const r of rules) {
     if (!r.skill || r.skill === "end_turn") continue;
     const conds = arr(r.conditions);
@@ -1615,6 +1633,7 @@ function bossTimeline(boss) {
     const hpU = r.when === "hp_threshold_once" ? r.hpPercent : (conds.find((c) => c.type === "hp_under") || {}).hpPercent;
     const hpO = (conds.find((c) => c.type === "hp_over") || {}).hpPercent;
     const flagOn = conds.find((c) => c.type === "flag_on");
+    const flagOff = conds.find((c) => c.type === "flag_off");
     const cycle = conds.find((c) => c.type === "flag_cycle");
     if (r.skill === "wait_action") { if (once || conds.some((c) => c.type === "flag_off")) ev.push({ k: 0, sort: 999, text: L("Il passe son premier tour sans attaquer.", "It skips its first turn without attacking.") }); continue; }
     const what = skillText(boss, r.skill); if (!what) continue;
@@ -1624,6 +1643,28 @@ function bossTimeline(boss) {
     else if (hpU !== undefined) when.push(L(`Sous ${hpU} % de PV`, `Under ${hpU}% HP`));
     if (hpO !== undefined && !flagOn) when.push(L(`tant qu'il a plus de ${hpO} % de PV`, `while above ${hpO}% HP`));
     const srcName = (src) => { const nm = Q((boss.skills[src.skill] || {}).name || src.skill); const th = arr(src.conditions).find((c) => c.type === "hp_under"); return th && r !== src ? L(`${nm} des ${th.hpPercent} %`, `${nm} at ${th.hpPercent}%`) : nm; };
+    // Signal éteint au départ, allumé par la règle elle-même : premier tour, ou une seule fois dans le combat.
+    if (flagOff && conds.length === 1 && arr(r.setFlags).some((f) => f.flag === flagOff.flag && f.value === 1)) {
+      const first = !r.chance || r.chance >= 100, again = resets(flagOff.flag);
+      ev.push({ k: 2, sort: first ? 99 : 0, text: `${first ? (again ? L("Au 1er tour, puis de nouveau quand ce signal est remis à zéro", "On turn 1, then again whenever that signal is reset") : L("Au 1er tour", "On turn 1")) : L(`Une seule fois dans le combat (${r.chance} % de chances à chaque tour, dès le 1er tour)`, `Once per battle (${r.chance}% chance each turn, from turn 1)`)}${COLON()}${what}${TGT[r.target] ? L(`, en visant ${TGT[r.target][0]}`, `, targeting ${TGT[r.target][1]}`) : ""}.`, sid: r.skill, hp: null, cycle: null, target: r.target, turn1: true });
+      continue;
+    }
+    if (flagOn && !setter(flagOn.flag) && lighters(flagOn.flag).length) {
+      // Déclenché par un voisin ou une réaction ; « à chaque action » si rien ne l'éteint ensuite.
+      const names = lighters(flagOn.flag).join(L(" ou ", " or "));
+      const perm = (!r.chance || r.chance >= 100) && conds.length === 1 && !resets(flagOn.flag);
+      const tgt = TGT[r.target] ? L(`, en visant ${TGT[r.target][0]}`, `, targeting ${TGT[r.target][1]}`) : "";
+      ev.push({ k: 2, sort: 50, text: `${perm ? L(`Dès ${names} : à chaque action`, `From ${names} on: every action`) : L(`Après ${names}`, `After ${names}`)}${COLON()}${what}${tgt}.`, sid: r.skill, hp: null, cycle: null, target: r.target, perm, turn1: /Au 1er tour|Rally|Ralliement/.test(names) });
+      continue;
+    }
+    if (flagOn && setter(flagOn.flag) && (!r.chance || r.chance >= 100) && conds.length === 1 && !resets(flagOn.flag)) {
+      const src = setter(flagOn.flag);
+      const srcOn = arr(src.conditions).find((c) => c.type === "flag_on");
+      const early = srcOn && turn1(srcOn.flag);
+      const nm = Q(boss.skills[src.skill].name);
+      ev.push({ k: 2, sort: early ? 98 : 40, text: `${early ? L(`Dès le 1er tour (${turn1Names(srcOn.flag).join(" ou ")} le déclenche), puis à chaque action`, `From turn 1 (${turn1Names(srcOn.flag).join(" or ")} triggers it), then every action`) : L(`Après ${nm}, à chaque action`, `After ${nm}, every action`)}${COLON()}${what}.`, sid: r.skill, hp: null, cycle: null, target: r.target, perm: true });
+      continue;
+    }
     if (flagOn) {
       const src = setter(flagOn.flag);
       if (src) {
@@ -1644,7 +1685,14 @@ function bossTimeline(boss) {
     ev.push({ k, sort, text: `${cap(when.join(", "))}${COLON()}${what}${tgt}.`, sid: r.skill, hp: k === 1 ? hpU : null, cycle: cycle ? cycle.n : every(conds), target: r.target });
   }
   for (const x of arr(boss.reactions)) {
-    const what = skillText(boss, x.skill); if (!what) continue;
+    let what = skillText(boss, x.skill); if (!what) continue;
+    const lit = arr(x.setFlags).filter((f) => f.value === 1).map((f) => f.flag);
+    if (!arr((boss.skills[x.skill] || {}).effects).length && lit.length) {
+      const next = owners.flatMap((o) => arr(o.ai).filter((r) => real(r) && o.skills[r.skill] && arr(r.conditions).some((c) => c.type === "flag_on" && lit.includes(c.flag))).map((r) => Q(o.skills[r.skill].name)));
+      if (!next.length || lit.some((f) => rules.some((r) => arr(r.conditions).some((c) => c.type === "flag_on" && c.flag === f)))) continue;
+      what = L(`déclenche ${[...new Set(next)].join(", ")}`, `triggers ${[...new Set(next)].join(", ")}`);
+    }
+    if (x.trigger === "hits_taken" && x.of === "ally") { ev.push({ k: 2, sort: 0, text: L(`Après ${x.hits} coups reçus par son camp (tous ennemis confondus)${COLON()}${what}.`, `After ${x.hits} hits taken by its side (all enemies together)${COLON()}${what}.`) }); continue; }
     const T = { hits_taken: [`Après ${x.hits} coups reçus`, `After taking ${x.hits} hits`], ubb: ["Quand tu lances un UBB", "When you cast a UBB"], item_used: ["Quand tu utilises un objet Ange gardien", "When you use an Angel Idol item"], revived: ["Quand une de tes unités est ressuscitée", "When one of your units is revived"], loss_capped: ["Quand il a perdu trop de PV en un tour", "When it loses too much HP in one turn"], hold_reached: ["Quand un effet d'UBB est maintenu", "When a UBB effect is held"] }[x.trigger] || ["En réaction", "In reaction"];
     ev.push({ k: 2, sort: 0, text: `${L(T[0], T[1])}${COLON()}${what}.` });
   }
@@ -1678,8 +1726,16 @@ const needMitig = (dmg) => Math.min(95, Math.max(0, Math.ceil((1 - (TYPICAL.hp *
 // La Garde divise les dégâts reçus par deux (code du jeu : guardMultiplier = 0,5), en plus de la réduction de dégâts.
 const guardAlt = (dmg) => { const g = needMitig(dmg * 0.5); return g === 0 ? L(", ou la Garde seule", ", or Guard alone") : g < 95 ? L(`, ou ${g} % avec la Garde`, `, or ${g}% with Guard`) : ""; };
 // Plan de bataille : ce qu'il faut emporter et comment gérer chaque moment dangereux.
-function battlePlan(boss) {
+function battlePlan(boss, sibs = []) {
   const plan = [], prep = [];
+  if (invulnerable(boss)) {
+    const target = sibs.filter((o) => !invulnerable(o)).sort((a, b) => b.stats.hp - a.stats.hp)[0];
+    plan.push(L(`Il est invulnérable : il ne prend aucun dégât. Ne l'attaque pas${target ? `, mets tous tes coups sur ${target.name}` : ""}.`, `It is invulnerable: it takes no damage. Do not attack it${target ? `, put all your hits on ${target.name}` : ""}.`));
+  }
+  if (boss.stats.hp >= 5000000 && !invulnerable(boss)) {
+    const per = Math.ceil(boss.stats.hp / 10 / 100000) * 100000;
+    prep.push(L(`${fmt(boss.stats.hp)} PV : pour le battre en une dizaine de tours, il faut environ ${fmt(per)} dégâts par tour. Prends tes plus gros attaquants, des unités ${counterOf(boss.element).map((e) => EL_FR[e]).join(" ou ")} (sa faiblesse) ou une unité qui ajoute cet élément aux attaques de l'équipe, et les boosts d'élément faible et d'étincelle.`, `${fmt(boss.stats.hp)} HP: to beat it in about ten turns you need around ${fmt(per)} damage per turn. Bring your biggest attackers, ${counterOf(boss.element).map((e) => EL_FR[e]).join(" or ")} units (its weakness) or a unit that adds that element to the team's attacks, and weak-element and spark boosts.`));
+  }
   const sk = Object.entries(boss.skills || {});
   const all = sk.flatMap(([, s]) => arr(s.effects).map((e) => ({ e, s })));
   const foe = (e) => !(e.target === "self" || e.target === "party" || e.target === "ally");
@@ -1709,7 +1765,20 @@ function battlePlan(boss) {
   const res = Object.entries(boss.resists || {}).filter(([, v]) => v >= 90).map(([k]) => AIL_FR[k] || k);
   if (res.length) prep.push(L(`Il résiste à : ${res.join(", ")}. Inutile de compter sur ces altérations.`, `It resists: ${res.join(", ")}. Do not count on these ailments.`));
   // Le déroulé : moments clés.
-  const tl = bossTimeline(boss);
+  const tl = bossTimeline(boss, sibs);
+  // Coup de zone possible dès le 1er tour : il faut entrer dans la vague déjà protégé.
+  for (const x of tl.filter((t) => t.turn1 && t.sid)) {
+    const big = arr((boss.skills[x.sid] || {}).effects).filter((e) => e.id === "attack.aoe" && !e.hpDamage).map((e) => hitEstimate(boss, e)).sort((a, b) => b - a)[0];
+    if (big && big > TYPICAL.hp * 0.4) plan.unshift(L(`Dès le 1er tour, il peut lancer ${Q(boss.skills[x.sid].name)} sur toute l'équipe (≈ ${fmt(big)} dégâts par unité). Entre dans ce combat avec la réduction de dégâts et la DÉF déjà actives : lance ces SBB au dernier tour de la vague précédente, PV pleins.`, `From turn 1 it can cast ${Q(boss.skills[x.sid].name)} on the whole team (≈ ${fmt(big)} damage per unit). Enter this battle with damage reduction and DEF already active: cast those SBBs on the last turn of the previous wave, at full HP.`));
+  }
+  // Attaque en boucle à chaque action : rythme à tenir.
+  for (const x of tl.filter((t) => t.perm && t.sid)) {
+    const fx = arr((boss.skills[x.sid] || {}).effects);
+    const pct = fx.find((e) => e.hpDamage && foe(e));
+    const n = boss.acts ? (boss.acts.min === boss.acts.max ? boss.acts.min : `${boss.acts.min}–${boss.acts.max}`) : 1;
+    plan.push(L(`${x.text.split(COLON())[0]}, il lance ${Q(boss.skills[x.sid].name)} ${n} fois par tour${pct ? `, et chaque coup retire ${pct.hpDamage.low} % des PV max de l'unité touchée` : ""}${fx.some((e) => e.id === "buff_removal") ? L(" et ses buffs", "") : ""}. Soigne toute l'équipe à chaque tour et relance ta réduction de dégâts chaque tour : c'est une course, il faut le finir vite.`,
+      `${x.text.split(COLON())[0]}, it casts ${Q(boss.skills[x.sid].name)} ${n} time(s) per turn${pct ? `, each hit removing ${pct.hpDamage.low}% of the max HP of the unit hit` : ""}${fx.some((e) => e.id === "buff_removal") ? " and its buffs" : ""}. Heal the whole team every turn and recast your damage reduction every turn: it is a race, finish it fast.`));
+  }
   // Ce qu'il lance au tour suivant une compétence (charge puis coup), selon ses PV à ce moment-là.
   const followUp = (sid, hp) => {
     const setters = arr(boss.ai).filter((r) => r.skill === sid && arr(r.setFlags).some((f) => f.value === 1));
@@ -1744,7 +1813,7 @@ function battlePlan(boss) {
     plan.push(step);
   }
   // Moments liés aux tours (tour N, tous les N tours, enchaînements) : ce qu'il faut faire juste avant.
-  for (const x of tl.filter((t) => t.k === 2 && t.sid && danger(t.sid))) {
+  for (const x of tl.filter((t) => t.k === 2 && t.sid && danger(t.sid) && !t.perm && !t.turn1)) {
     const s = boss.skills[x.sid]; if (!s) continue;
     const fx = arr(s.effects);
     const pctHp = fx.find((e) => e.hpDamage && foe(e));
@@ -1770,20 +1839,26 @@ function battlePlan(boss) {
 }
 function fightHTML(fight) {
   if (!fight) return `<p class="muted small">${L("Le comportement de ces ennemis n'est pas détaillé dans les fichiers du jeu.", "These enemies' behaviour is not detailed in the game files.")}</p>`;
-  return fight.waves.map((w) => w.enemies.map((b) => {
-    const bp = battlePlan(b);
+  return fight.waves.map((w) => {
+    const groups = [];
+    for (const b of w.enemies) { const g = groups.find((x) => x.b.name === b.name && x.b.stats.hp === b.stats.hp); if (g) g.n++; else groups.push({ b, n: 1 }); }
+    groups.sort((a, b) => invulnerable(a.b) - invulnerable(b.b) || b.b.stats.hp - a.b.stats.hp);
+    const title = `${w.wave === fight.total ? L(`Combat final (vague ${w.wave})`, `Final battle (wave ${w.wave})`) : L(`Vague ${w.wave} sur ${fight.total}`, `Wave ${w.wave} of ${fight.total}`)}${COLON()}${groups.map((g) => esc(g.b.name) + (g.n > 1 ? ` ×${g.n}` : "")).join(", ")}`;
+    return `<h4 class="wavehead">${title}</h4>` + groups.map(({ b, n }) => {
+    const bp = battlePlan(b, w.enemies.filter((o) => o !== b));
     const acts = b.acts ? (b.acts.min === b.acts.max ? b.acts.min : b.acts.min + "–" + b.acts.max) : null;
     return `<div class="fight">
-      <h4>${w.wave === fight.total ? L("Combat final", "Final battle") : L(`Vague ${w.wave} sur ${fight.total}`, `Wave ${w.wave} of ${fight.total}`)}${COLON()}${esc(b.name)} <span class="dot el-${esc(b.element)}"></span> <span class="muted small">${EL_FR[b.element] || ""} · ${fmt(b.stats.hp)} ${L("PV", "HP")} · ${SN("atk")} ${fmt(b.stats.atk)} · ${SN("def")} ${fmt(b.stats.def)}${acts ? L(` · ${acts} action${b.acts.max > 1 ? "s" : ""} par tour`, ` · ${acts} action${b.acts.max > 1 ? "s" : ""} per turn`) : ""}</span></h4>
+      <h4>${esc(b.name)}${n > 1 ? ` ×${n}` : ""}${invulnerable(b) ? ` <span class="tag">${L("invulnérable", "invulnerable")}</span>` : ""} <span class="dot el-${esc(b.element)}"></span> <span class="muted small">${EL_FR[b.element] || ""} · ${fmt(b.stats.hp)} ${L("PV", "HP")} · ${SN("atk")} ${fmt(b.stats.atk)} · ${SN("def")} ${fmt(b.stats.def)}${acts ? L(` · ${acts} action${b.acts.max > 1 ? "s" : ""} par tour`, ` · ${acts} action${b.acts.max > 1 ? "s" : ""} per turn`) : ""}</span></h4>
       ${bp.prep.length ? `<div class="small muted">${L("À préparer", "To prepare")}</div><ul class="fx">${bp.prep.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
       ${bp.plan.length ? `<div class="small muted">${L("Plan de bataille", "Battle plan")}</div><ol class="steps">${bp.plan.map((t) => `<li>${esc(t)}</li>`).join("")}</ol>` : ""}
       ${bp.timeline.length ? `<details><summary class="small">${L("Tout ce qu'il fait, dans l'ordre", "Everything it does, in order")}</summary><ul class="fx">${bp.timeline.map((t) => `<li>${esc(t.text)}</li>`).join("")}</ul></details>` : ""}
     </div>`;
-  }).join("")).join("") + `<p class="note">${L("Déroulé lu dans le comportement des boss (fichiers du jeu). Dégâts estimés avec la formule du jeu pour une unité Omni typique (8 500 PV, 2 600 DÉF), sans faiblesse élémentaire ni réduction : ce sont des ordres de grandeur.", "Sequence read from the bosses' behaviour (game files). Damage estimated with the game formula for a typical Omni unit (8,500 HP, 2,600 DEF), without elemental weakness or reduction: these are rough figures.")}</p>`;
+  }).join("");
+  }).join("") + `<p class="note">${L("Déroulé lu dans le comportement des boss (fichiers du jeu). Dégâts estimés avec la formule du jeu pour une unité Omni typique (8 500 PV, 2 600 DÉF), sans faiblesse élémentaire ni réduction : ce sont des ordres de grandeur.", "Sequence read from the bosses' behaviour (game files). Damage estimated with the game formula for a typical Omni unit (8,500 HP, 2,600 DEF), without elemental weakness or reduction: these are rough figures.")}</p>`;
 }
 // Besoins d'un combat, lus dans le comportement de ses boss.
 function fightNeeds(fight) {
-  const n = { mitig: 0.3, heal: 0.35, bc: 0.2, buff: 0.2, status: 0.2, angel: false, defIgnore: false, noCrit: false, ail: [] };
+  const n = { mitig: 0.3, heal: 0.35, bc: 0.2, buff: 0.2, status: 0.2, angel: false, defIgnore: false, noCrit: false, ail: [], hugeHp: 0, ailHard: false };
   if (!fight) return n;
   for (const w of fight.waves) for (const b of w.enemies) {
     for (const s of Object.values(b.skills || {})) for (const e of arr(s.effects)) {
@@ -1793,8 +1868,9 @@ function fightNeeds(fight) {
       if (e.hpDamage && e.hpDamage.low >= 100) n.angel = true;
       if (e.hpDamage) n.heal = 0.5;
       if (/^bb\.(drain|set|gain_block)$|^buff_removal$/.test(e.id)) n.bc = 0.45;
-      if (e.id.startsWith("ailment.inflict.")) { n.status = 0.55; n.ail.push(e.id.split(".")[2]); }
+      if (e.id.startsWith("ailment.inflict.")) { n.status = 0.55; n.ail.push(e.id.split(".")[2]); if ((e.value || 0) >= 100) n.ailHard = true; }
     }
+    if (!invulnerable(b)) n.hugeHp = Math.max(n.hugeHp, b.stats.hp >= 5000000 ? b.stats.hp : 0);
     if (b.stats.def >= 3000) n.defIgnore = true;
     if (arr(b.passives).some((p) => p.kind === "crit_resist")) n.noCrit = true;
   }
@@ -1813,7 +1889,18 @@ async function buildTeamFor(c) {
     + (n.defIgnore && formHas(x.f, /^attack\.def_ignore$/) ? 0.3 : 0)
     + (n.ail.length && !team.some((t) => formHas(t.f, /^ailment\.null$/)) && formHas(x.f, /^ailment\.null$/) ? 0.3 : 0)
     + (fh ? Math.min(0.6, aoeHits(x.f) / 40) + (formHas(x.f, /^buff\.(spark_dmg|add_element|elem_weak_dmg)$/) && !team.some((t) => formHas(t.f, /^buff\.(spark_dmg|add_element|elem_weak_dmg)$/)) ? 0.35 : 0) : 0);
-  const p = proposeTeam(enemy, { pool, trial: !fh && (c.score >= 80 || n.mitig > 0.5 || n.angel), need: { heal: n.heal, mitig: fh ? Math.min(n.mitig, 0.4) : n.mitig, bc: n.bc, buff: n.noCrit ? 0.1 : fh ? 0.4 : n.buff, status: n.status }, bonus });
+  // Gros PV : dégâts du SBB (ATQ × multiplicateur) et boosts d'ATQ d'équipe comptent beaucoup plus.
+  const burst = (f) => { let m = 0; for (const w of ["bb", "sbb"]) if (f.bursts && f.bursts[w]) walk(f.bursts[w].effects, (e) => { if (/^attack\.(aoe|st|random)$/.test(e.id)) m = Math.max(m, e.value || 0); }); return (((f.stats || {}).max || {}).atk || 0) * m; };
+  // Unité qui ajoute l'élément fort contre le boss aux attaques de l'équipe : tout le monde frappe sa faiblesse.
+  const strongIdx = counterOf(enemy).map((e) => ELEMENTS.indexOf(e));
+  const enabler = (f) => { let ok = false; for (const w of ["bb", "sbb"]) if (f.bursts && f.bursts[w]) walk(f.bursts[w].effects, (e) => { if (e.id === "buff.add_element" && e.target === "party" && strongIdx.includes(e.value)) ok = true; }); return ok; };
+  const race = (x, team) => !n.hugeHp ? 0 : Math.min(1.2, burst(x.f) / 30000) * 0.8
+    + (enabler(x.f) && !team.some((t) => enabler(t.f)) ? 1.6 : 0)
+    + (formHas(x.f, /^buff\.atk$/) && !team.some((t) => formHas(t.f, /^buff\.atk$/)) ? 0.3 : 0);
+  // Altération infligée à coup sûr : une immunité qu'un retrait de buffs ne peut pas enlever (compétence de leader).
+  const lsNull = (x) => !!(x.f.leaderSkill && JSON.stringify(x.f.leaderSkill.effects).includes('"ailment.null"'));
+  const bonus2 = (x, team) => bonus(x, team) + race(x, team);
+  const p = proposeTeam(enemy, { pool, preferLeader: n.ailHard && pool.some(lsNull) ? lsNull : null, bonus: bonus2, trial: !fh && (c.score >= 80 || n.mitig > 0.5 || n.angel), need: { heal: n.heal, mitig: fh ? Math.min(n.mitig, 0.4) : n.mitig, bc: n.bc, buff: n.noCrit ? 0.1 : fh ? 0.4 : n.buff, status: n.status } });
   if (p) loadProposal(p);
 }
 state.defisMode = "";
@@ -2031,7 +2118,8 @@ function proposeTeam(enemy, opts = {}) {
   // En défi difficile (opts.trial), la communauté conseille un leader défensif : réduction des dégâts, PV/DÉF,
   // remplissage des BB ou immunité, plutôt qu'un leader d'attaque ou de critique.
   const leaderVal = (x) => (opts.trial ? lsDefense(x.f) * 1.2 + x.ls * 0.4 : x.ls * 1.2) * elemFactor(x.u, enemy) + x.power * 0.5 * elemFactor(x.u, enemy);
-  const leader = pool.slice().sort((a, b) => leaderVal(b) - leaderVal(a))[0];
+  const leaders = opts.preferLeader ? pool.filter(opts.preferLeader) : pool;
+  const leader = (leaders.length ? leaders : pool).slice().sort((a, b) => leaderVal(b) - leaderVal(a))[0];
   const team = [leader];
   const need = needsElements(leader.f);
   while (team.length < 5) {
