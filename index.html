@@ -1731,6 +1731,8 @@ function battlePlan(boss, sibs = []) {
   if (invulnerable(boss)) {
     const target = sibs.filter((o) => !invulnerable(o)).sort((a, b) => b.stats.hp - a.stats.hp)[0];
     plan.push(L(`Il est invulnérable : il ne prend aucun dégât. Ne l'attaque pas${target ? `, mets tous tes coups sur ${target.name}` : ""}.`, `It is invulnerable: it takes no damage. Do not attack it${target ? `, put all your hits on ${target.name}` : ""}.`));
+    // Constaté en jeu (Unholy Tower 171-180) : en Auto, la cible reste sur cet ennemi et les coups sur une cible sont perdus.
+    if (target) plan.push(L(`Ne joue pas cette vague en Auto : le jeu garde pour cible ${boss.name}, et tes attaques sur une seule cible ne font rien. Touche ${target.name} pour le cibler, puis lance tes BB toi-même.`, `Do not play this wave on Auto: the game keeps ${boss.name} as the target, and your single-target attacks do nothing. Tap ${target.name} to target it, then cast your BBs yourself.`));
   }
   if (boss.stats.hp >= 5000000 && !invulnerable(boss)) {
     const per = Math.ceil(boss.stats.hp / 10 / 100000) * 100000;
