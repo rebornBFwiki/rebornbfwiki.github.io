@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reborn Wiki - account export
 // @namespace    reborn-wiki
-// @version      2.1
+// @version      2.2
 // @description  Copies your Brave Frontier: Reborn units, spheres and items (read-only) to paste into Reborn Wiki. / Copie tes unités, sphères et objets (lecture seule) pour Reborn Wiki.
 // @match        https://rebornbf.com/*
 // @grant        none
@@ -14,17 +14,18 @@
   window.__bfrExport = true;
 
   // Lecture seule. Le script ne modifie rien sur ton compte :
-  // - unités : la copie que le jeu garde dans ton navigateur (IndexedDB « bfr-player ») ;
+  // - unités : la liste à jour du serveur (la même lecture « get_roster » que le jeu au chargement),
+  //   ou, si elle échoue, la copie que le jeu garde dans ton navigateur (IndexedDB « bfr-player », parfois en retard) ;
   // - sphères et objets : les mêmes lectures que les pages Objets du jeu, avec ta propre session.
   const SUPABASE = 'https://vdvgusidfpcnywclwrkh.supabase.co';
   const KEY = 'sb_publishable_SelxJqdvtb2vuRUVCz8OEA_3jMEv7rC';
   const fr = (navigator.language || '').toLowerCase().startsWith('fr');
   const T = fr
-    ? { idle: 'Copier mon compte pour Reborn Wiki', reading: 'Lecture du compte…', none: 'Aucune unité trouvée : ouvre « Unité › Voir les unités » puis réessaie', done: (u, s, i) => `Copié : ${u} unités, ${s} sphères, ${i} objets. Colle-le dans le wiki`, fail: 'Copie impossible : réessaie', partial: 'sphères/objets non lus : ' }
-    : { idle: 'Copy my account for Reborn Wiki', reading: 'Reading your account…', none: 'No unit found: open Unit › View Units and try again', done: (u, s, i) => `Copied: ${u} units, ${s} spheres, ${i} items. Paste it into the wiki`, fail: 'Copy failed: try again', partial: 'spheres/items not read: ' };
+    ? { idle: 'Copier mon compte pour Reborn Wiki', reading: 'Lecture du compte…', none: 'Aucune unité trouvée : ouvre « Unité › Voir les unités » puis réessaie', done: (u, s, i) => `Copié : ${u} unités, ${s} sphères, ${i} objets. Colle-le dans le wiki`, fail: 'Copie impossible : réessaie', partial: 'à vérifier : ' }
+    : { idle: 'Copy my account for Reborn Wiki', reading: 'Reading your account…', none: 'No unit found: open Unit › View Units and try again', done: (u, s, i) => `Copied: ${u} units, ${s} spheres, ${i} items. Paste it into the wiki`, fail: 'Copy failed: try again', partial: 'to check: ' };
   const LABEL = T.idle;
 
-  function readRoster() {
+  function readCachedRoster() {
     return new Promise((resolve) => {
       let req;
       try { req = indexedDB.open('bfr-player'); } catch (e) { return resolve(null); }
@@ -84,9 +85,28 @@
     } catch (e) { errors.push(table + ' réseau'); return null; }
   }
 
+  // Liste complète des unités, lue sur le serveur comme le fait le jeu (lecture seule).
+  async function readServerRoster() {
+    const token = accessToken();
+    if (!token) return null;
+    try {
+      const r = await fetch(`${SUPABASE}/rest/v1/rpc/get_roster`, {
+        method: 'POST',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: '{}',
+      });
+      if (!r.ok) { errors.push('get_roster ' + r.status); return null; }
+      const j = await r.json();
+      const ro = j && j.roster ? j.roster : j;
+      return ro && Array.isArray(ro.units) && Array.isArray(ro.stacks) ? ro : null;
+    } catch (e) { errors.push('get_roster réseau'); return null; }
+  }
+
   async function buildExport() {
     errors.length = 0;
-    const roster = await readRoster();
+    const server = await readServerRoster();
+    const roster = server || (await readCachedRoster());
+    if (!server) errors.push(fr ? 'unités lues dans le cache' : 'units read from cache');
     const [ownedSpheres, ownedItems] = await Promise.all([
       readTable('owned_spheres', 'id, sphere_id'),
       readTable('owned_items', 'item_id, count'),
@@ -95,7 +115,7 @@
     const units = [];
     if (roster) {
       for (const u of roster.units || []) {
-        units.push({ unit: u.unit_id, form: u.form_id, level: u.level, type: typeOf(u.unit_type), slot2: u.second_sphere_slot === true, count: 1, key: u.id });
+        units.push({ unit: u.unit_id, form: u.form_id, level: u.level, type: typeOf(u.unit_type), slot2: u.second_sphere_slot === true, count: 1, key: u.id || u.owned_unit_id });
       }
       for (const s of roster.stacks || []) {
         units.push({ unit: s.unit_id, form: s.form_id, level: null, type: typeOf(s.unit_type), count: Number(s.count) || 1 });
