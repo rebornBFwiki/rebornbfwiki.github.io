@@ -290,6 +290,9 @@ abbr[title] { text-decoration: underline dotted; cursor: help; }
 .brief .k { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); }
 .brief .v { font-weight: 600; }
 .bar { height: 6px; background: var(--panel-2); border-radius: 999px; overflow: hidden; margin-top: 3px; }
+.typemix { display: grid; gap: 8px; }
+.typemix .tm-head { display: flex; justify-content: space-between; }
+.typemix p { margin: 3px 0 0; color: var(--mute); }
 .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-hi)); border-radius: inherit; }
 .stats { display: grid; gap: 8px; }
 .stats .row { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
@@ -759,29 +762,41 @@ function rolesOf(f) {
   const main = top && top[1] > 0 ? top[0] : "dmg";
   return { scores: s, list: order.map(([k]) => k), main, conv };
 }
+// Répartition conseillée entre les types (en %), avec la raison de chacun. Un type n'est pas imposé :
+// un soigneur qui réduit aussi les dégâts (Elimo) peut viser Oracle pour soigner plus ou Anima pour survivre.
+// Poids : Breaker suit les dégâts ; Oracle les soins (ils montent avec la REC) ; Anima la survie des unités
+// dont la valeur est leur SBB (réduction, BB, boosts, immunité, altérations) ; Guardian la DÉF ;
+// Lord un peu de tout. Une conversion de stat en ATQ (DÉF, PV, REC) pousse fort le type qui la donne.
+function typeMix(f, roles) {
+  const s = roles.scores;
+  const w = {
+    breaker: s.dmg + s.inflict * 0.15,
+    oracle: s.heal * 1.25,
+    anima: s.mitig * 0.6 + s.bc * 0.6 + s.status * 0.5 + s.buff * 0.5 + s.inflict * 0.4 + s.heal * 0.2,
+    guardian: s.mitig * 0.35,
+  };
+  const conv = { def: "guardian", hp: "anima", rec: "oracle" };
+  // La conversion vaut autant que les dégâts de l'unité : elle les augmente directement.
+  for (const [k, t] of Object.entries(conv)) if (roles.conv.has(k)) w[t] += Math.max(3, s.dmg);
+  w.lord = 0.12 * Object.values(s).reduce((a, x) => a + x, 0);
+  const total = Object.values(w).reduce((a, x) => a + x, 0) || 1;
+  // Pourcentages arrondis à 5, les types sous 5 % sont retirés, puis on ramène la somme à 100.
+  let mix = Object.entries(w).map(([type, v]) => ({ type, pct: Math.round((v / total) * 20) * 5 })).filter((x) => x.pct >= 5).sort((a, b) => b.pct - a.pct);
+  if (!mix.length) mix = [{ type: "lord", pct: 100 }];
+  mix[0].pct += 100 - mix.reduce((a, x) => a + x.pct, 0);
+  const sup = [s.mitig >= 0.8 && "sa réduction de dégâts", s.bc >= 0.8 && "le remplissage des BB", s.buff >= 0.8 && "ses boosts d'équipe", s.status >= 0.8 && "sa protection contre les altérations", s.inflict >= 0.8 && "les altérations qu'il inflige"].filter(Boolean);
+  const why = {
+    breaker: roles.conv.size ? "Ses dégâts restent bons, mais sa conversion de stat compte plus." : `Ses BB et SBB frappent fort : Breaker lui donne le plus d'ATQ par niveau, au prix d'un peu de DÉF.`,
+    oracle: roles.conv.has("rec") ? "Ses BB convertissent la REC en ATQ : Oracle, qui donne le plus de REC, augmente ce bonus." : "Ses soins montent avec la REC : Oracle en donne le plus par niveau, il soigne donc plus.",
+    anima: roles.conv.has("hp") ? "Ses BB convertissent les PV en ATQ : Anima, qui donne le plus de PV, augmente ce bonus." : `Sa valeur vient de ${sup.length ? sup.slice(0, -1).join(", ") + (sup.length > 1 ? " et " : "") + sup[sup.length - 1] : "son soutien"} : il doit survivre pour relancer son SBB, et Anima donne le plus de PV.`,
+    guardian: roles.conv.has("def") ? "Ses BB convertissent la DÉF en ATQ : Guardian, qui donne le plus de DÉF, augmente ce bonus." : "Guardian donne le plus de DÉF : utile s'il doit encaisser les coups à la place des autres.",
+    lord: "Lord ne sacrifie aucune stat : un choix sûr si tu hésites ou si l'unité fait un peu de tout.",
+  };
+  return mix.map((x) => ({ ...x, why: why[x.type] }));
+}
 function recommendType(f, roles) {
-  if (roles.conv.has("def")) return { type: "guardian", why: "Ses BB convertissent la DÉF en ATQ : chaque point de DÉF gagné rend toute l'équipe plus forte." };
-  if (roles.conv.has("hp")) return { type: "anima", why: "Ses BB convertissent les PV en ATQ : le gros bonus de PV d'Anima profite à toute l'équipe." };
-  if (roles.conv.has("rec")) return { type: "oracle", why: "Ses BB convertissent la REC en ATQ : Oracle augmente directement ce bonus." };
-  // Une unité de soutien vaut par les effets de son SBB, pas par ses dégâts : elle doit surtout survivre
-  // pour le relancer chaque tour. Breaker est réservé aux unités dont le rôle principal est de frapper.
-  const sc = roles.scores;
-  const support = Math.max(sc.heal, sc.mitig, sc.bc, sc.buff, sc.status);
-  switch (roles.main) {
-    case "heal": return { type: "oracle", why: "C'est un soigneur : ses soins montent avec la REC, et Oracle donne +2 à +4 REC par niveau. Si tu manques de PV en défis, Anima reste un bon choix." };
-    case "mitig": return { type: "anima", why: "C'est un défenseur : s'il tombe, la réduction de dégâts disparaît. Anima donne +5 à +10 PV par niveau." };
-    case "bc": return { type: "anima", why: "Il remplit les jauges de BB de l'équipe : il doit rester en vie, d'où les PV d'Anima." };
-    case "status": return { type: "anima", why: "Il protège des altérations : sa survie compte plus que ses dégâts." };
-    case "buff": return sc.dmg >= sc.buff * 0.9
-      ? { type: "breaker", why: "Il booste l'équipe mais frappe aussi très fort : Breaker augmente ses propres dégâts." }
-      : { type: "anima", why: "Sa valeur vient des boosts de son SBB, relancés chaque tour : il doit surtout survivre. Anima lui donne des PV ; ses dégâts comptent moins." };
-    case "inflict": return sc.dmg >= 1.5 && support < 1
-      ? { type: "breaker", why: "Il affaiblit l'ennemi tout en frappant fort : Breaker augmente ses dégâts." }
-      : { type: "anima", why: "Il affaiblit l'ennemi (altérations, baisses de stats) : ses effets comptent plus que ses dégâts, donc on le rend plus solide." };
-    default: return support >= 1 && support >= sc.dmg
-      ? { type: "anima", why: "Il frappe, mais apporte aussi du soutien à l'équipe : mieux vaut qu'il survive." }
-      : { type: "breaker", why: "C'est un attaquant : son BB et son SBB frappent fort. Breaker augmente son ATQ, au prix d'un peu de DÉF." };
-  }
+  const mix = typeMix(f, roles);
+  return { type: mix[0].type, why: mix[0].why, mix };
 }
 function statsAt(f, type) {
   const g = TYPE_GAINS[type || "lord"], L = f.maxLevel || 1, out = {};
@@ -1078,7 +1093,7 @@ function briefHTML(u, f, roles, rec, g) {
     <div><div class="k">Rôle</div><div class="v">${roles.list.length ? roles.list.slice(0, 2).map((r) => ROLE_FR[r]).join(" et ") : "Matériau de fusion ou d'évolution"}</div></div>
     ${t ? `<div><div class="k">Tier du wiki</div><div class="v"><span class="tierbadge t-${t}">${t}</span> <a href="#tierlist" class="small">voir la tier list</a></div></div>` : ""}
     ${u.hero && COMM ? (() => { const c = commOf(u.id); return `<div><div class="k">Avis des joueurs</div><div class="v">${c.t ? `<span class="tierbadge t-${c.t.tier}">${c.t.tier}</span> ${c.t.average.toFixed(1).replace(".", ",")}/5 · ${c.t.votes} votes` : `Pas encore classée (${c.votes}/15 votes)`}${c.battles ? `<div class="small muted">${fmt(c.battles)} combats joués avec elle</div>` : ""}</div></div>`; })() : ""}
-    <div><div class="k">Type conseillé</div><div class="v">${TYPE_FR[rec.type]}</div></div>
+    <div><div class="k">Types conseillés</div><div class="v">${rec.mix.slice(0, 2).map((x) => `${TYPE_FR[x.type]} ${x.pct} %`).join(", ")}</div></div>
     <div><div class="k">Duo de sphères idéal</div><div class="v">${esc(duo.join(" + ")) || "—"}</div></div>
     <div><div class="k">Duo facile en attendant</div><div class="v">${esc(duoEasy.join(" + ")) || "—"}</div></div>
     <div><div class="k">Fort contre</div><div class="v">${dangerFor(u.element).map((e) => EL_FR[e]).join(", ")}</div></div>
@@ -1137,8 +1152,9 @@ function renderUnit(id) {
       <nav class="jump" aria-label="Aller à">${[["sec-type", "Type"], ["sec-stats", "Stats"], ["sec-skills", "Compétences"], ["sec-spheres", "Sphères"], ["sec-evo", "Évolution"], ["sec-src", "Obtention"]].map(([id, lab]) => `<button type="button" data-jump="${id}">${lab}</button>`).join("")}</nav>
       <div class="cols">
         <section class="panel box" id="sec-type">
-          <h3>Type conseillé : ${TYPE_FR[rec.type]}</h3>
-          <p class="advice">${esc(rec.why)}</p>
+          <h3>Types conseillés</h3>
+          <p class="small muted" style="margin:0 0 8px">Une préférence, pas une obligation : choisis selon ce qui manque à ton équipe.</p>
+          <div class="typemix">${rec.mix.map((x) => `<div class="tm"><div class="tm-head"><strong>${TYPE_FR[x.type]}</strong><span>${x.pct} %</span></div><div class="bar"><i style="width:${x.pct}%"></i></div><p class="small">${esc(x.why)}</p></div>`).join("")}</div>
           <div class="tablewrap" style="margin-top:10px"><table>
             <thead><tr><th>Type au niv. ${f.maxLevel}</th><th class="n">PV</th><th class="n">ATQ</th><th class="n">DÉF</th><th class="n">REC</th></tr></thead>
             <tbody>${types.map(({ t, s }) => `<tr class="${t === rec.type ? "best" : ""}"><td>${TYPE_FR[t]}${t === rec.type ? " ★" : ""}</td>
@@ -1366,7 +1382,7 @@ function slotHTML(x, i, mod) {
     <div class="who">${sigil(x.f.name, x.u.element, false, x.f.id)}<div style="min-width:0"><a class="name" href="#u-${esc(x.u.id)}">${esc(x.f.name)}</a><div class="small muted">${RAR(x.f.rarity)} · ${roles.list.slice(0, 2).map((r) => ROLE_FR[r]).join(", ") || "—"}</div></div></div>
     <label class="small muted" for="f${i}">Forme</label>
     <select class="field" id="f${i}" data-slot-form="${i}">${x.u.forms.map((f, k) => `<option value="${k}" ${f === x.f ? "selected" : ""}>${RAR(f.rarity)} ${esc(f.name)}</option>`).join("")}</select>
-    <div class="advice small"><strong>Conseil : ${TYPE_FR[rec.type]}</strong>. ${esc(rec.why)}</div>
+    <div class="advice small"><strong>Conseil : ${TYPE_FR[rec.type]} (${rec.mix[0].pct} %)${rec.mix[1] ? `, sinon ${TYPE_FR[rec.mix[1].type]} (${rec.mix[1].pct} %)` : ""}</strong>. ${esc(rec.why)}</div>
     <label class="small muted" for="t${i}">Type de ton unité</label>
     <select class="field" id="t${i}" data-slot-type="${i}"><option value="">Comme conseillé (${TYPE_FR[rec.type]})</option>${TYPES.map((t) => `<option value="${t}" ${cur === t ? "selected" : ""}>${TYPE_FR[t]}</option>`).join("")}</select>
     ${cur && cur !== rec.type ? `<div class="small down">Une Type Frog vers ${TYPE_FR[rec.type]} conviendrait mieux${rec.type === "rex" ? "" : ""}.</div>` : ""}
