@@ -711,17 +711,38 @@ const ROLE_WEIGHT = { bb: 0.8, sbb: 1, ubb: 0.15, ls: 0.6, es: 0.6 };
 function rolesOf(f) {
   const s = { heal: 0, mitig: 0, bc: 0, buff: 0, status: 0, inflict: 0, dmg: 0 };
   const conv = new Set();
+  let addEl = false; // ajout d'éléments compté une seule fois (Shida en ajoute six)
   const add = (e, w) => {
     const k = ROLE_WEIGHT[w] ?? 1;
     const id = e.id || "";
-    if (/^heal\.|damage_to_heal|hc\.efficacy|^drop\.hc$|revive/.test(id)) s.heal += 1.2 * k;
-    if (/^mitigation$|elemental_mitigation|barrier|angel_idol|chance_mitigation|guard_mitigation|^buff\.def$/.test(id)) s.mitig += 1.2 * k;
-    if (/^bb\.fill|^drop\.bc$|bc_per_turn|^od\.fill/.test(id)) s.bc += (id === "bb.fill_instant" && e.value >= 8 ? 1.4 : 1) * k;
-    if (/^buff\.(atk|spark_dmg|crit_rate|crit_dmg|bb_atk|elem_weak_dmg|add_element)$|^attack\.def_ignore$/.test(id) && e.target === "party") s.buff += k;
+    // Chaque effet compte selon son ampleur : un petit bonus de cristaux ou d'ATQ ajouté à une grosse attaque
+    // ne fait pas d'une unité un soutien (ex. Lario : SBB ×4,9 de zone + 20 % de cristaux BB → attaquant).
+    const v = Number(e.value) || 0;
+    const sz = (x, full, cap = 1) => Math.min(cap, x / full);
+    if (/^drop\.hc$|hc\.efficacy/.test(id)) s.heal += sz(v, 50, 0.5) * k;
+    else if (/^heal\.|damage_to_heal|revive/.test(id)) s.heal += 1.2 * k;
+    if (/^mitigation$|angel_idol|guard_mitigation/.test(id)) s.mitig += 1.2 * k;
+    else if (/elemental_mitigation|chance_mitigation/.test(id)) s.mitig += 0.5 * k;
+    else if (/barrier/.test(id)) s.mitig += 0.8 * k;
+    else if (id === "buff.def" && e.target === "party") s.mitig += sz(v, 1.2, 1) * k;
+    if (id === "bb.fill_instant") s.bc += sz(v, 6, 1.4) * k;
+    else if (id === "bb.fill_per_turn" || id === "bc_per_turn" || id === "passive.bc_per_turn") s.bc += sz(v, 4, 1.2) * k;
+    else if (id === "drop.bc") s.bc += sz(v, 50, 0.5) * k;
+    else if (/^bb\.fill|^od\.fill/.test(id)) s.bc += 0.6 * k;
+    if (e.target === "party") {
+      if (id === "buff.atk") s.buff += sz(v, 1, 1.2) * k;
+      else if (/^buff\.(spark_dmg|crit_dmg)$/.test(id)) s.buff += sz(v, 1, 1) * k;
+      else if (id === "buff.crit_rate") s.buff += sz(v, 0.5, 1) * k;
+      else if (id === "buff.bb_atk") s.buff += sz(v, 2.5, 1) * k;
+      else if (id === "buff.elem_weak_dmg") s.buff += sz(v, 0.75, 1) * k;
+      else if (id === "buff.add_element" && !addEl) { addEl = true; s.buff += 0.8 * k; }
+      else if (id === "attack.def_ignore") s.buff += 0.5 * k;
+    }
     if (/ailment\.null|ailment\.cure|status_counter|debuff\.null|ailment_resist/.test(id)) s.status += k;
     if (/ailment\.inflict|add_ailment|^debuff\.(atk_down|def_down|spark_vuln|crit_vuln|elem_vuln)/.test(id)) s.inflict += 0.7 * k;
     // Dégâts : multiplicateur total de chaque BB/SBB (médiane ≈ 2,7 en BB, 5 en SBB), plafonné à ×10 par burst.
-    if (/^attack\./.test(id) && atk[w] !== undefined) atk[w] += e.value || 0;
+    // Seules les vraies attaques comptent (pas « ignore la DÉF », valeur 100, ni le bonus selon les PV).
+    if (/^attack\.(aoe|st|random|element_target)$/.test(id) && atk[w] !== undefined) atk[w] += e.value || 0;
     if (/^buff\.self_(atk|spark)/.test(id)) s.dmg += k;
     const m = id.match(/^buff\.atk_from_(def|hp|rec)$/);
     if (m && w !== "ubb") conv.add(m[1]);
@@ -757,7 +778,7 @@ function recommendType(f, roles) {
     case "inflict": return sc.dmg >= 1.5 && support < 1
       ? { type: "breaker", why: "It weakens the enemy while hitting hard: Breaker raises its damage." }
       : { type: "anima", why: "It weakens the enemy (ailments, stat downs): its effects matter more than its damage, so we make it sturdier." };
-    default: return support >= 1 && support >= sc.dmg * 0.8
+    default: return support >= 1 && support >= sc.dmg
       ? { type: "anima", why: "It hits, but also supports the party: better keep it alive." }
       : { type: "breaker", why: "It is an attacker: its BB and SBB hit hard. Breaker raises its ATK at the cost of some DEF." };
   }
