@@ -452,7 +452,7 @@ td { border-bottom-color: #ffffff0a; }
 </main>
 
 <footer class="wrap">
-  Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données du jeu <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com) via sa Data API officielle, version du 17 novembre 2026. Images tirées des packs officiels. Site non commercial, affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn. <strong>Brave Frontier © Alim/gumi</strong>
+  Reborn Wiki est un wiki de fan non officiel, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">code source sur GitHub</a>. Données du jeu <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com) via sa Data API officielle, version du 26 novembre 2026 (Release 9). Images tirées des packs officiels. Site non commercial, affilié ni à Alim, ni à gumi, ni à l'équipe de Reborn. <strong>Brave Frontier © Alim/gumi</strong>
 </footer>
 
 <script>
@@ -1429,12 +1429,12 @@ function openPicker(slot) {
 /* ---------- Modes de jeu et défis ---------- */
 const MODES = [
   { id: "histoire", name: "Histoire", test: (c) => c.areaType === "story",
-    rules: "Les huit terres de Grand Gaia, de Mistral à Cordelica. Coûte de l'énergie, les continues sont permis.",
+    rules: "Les onze terres de Grand Gaia, de Mistral à Mirvana : la Release 9 a ajouté Ryvern, Agni et Mirvana (114 quêtes, après Lizeria). Coûte de l'énergie, les continues sont permis.",
     tips: ["Aligne des unités qui dominent l'élément des boss de la zone : ×1,5 de dégâts pour toi, ×0,5 pour eux.",
       "Monte une équipe équilibrée : deux attaquants, un soigneur, un défenseur et un soutien BB.",
       "Capture les unités de chaque zone : elles servent souvent de matériaux d'évolution."] },
   { id: "farm", name: "Donjons de farm", test: (c) => [100000, 100001, 100310, 100600].includes(c.areaId),
-    rules: "Rassemblement des âmes, Renforcement, Ruines et Jardin de la parade. Certaines parades sont limitées à 5 tours par jour.",
+    rules: "Rassemblement des âmes, Renforcement (avec le Sanctuaire des âmes Lv. 1 à 4 depuis la Release 9), Ruines et Jardin de la parade. Certaines parades sont limitées à 5 tours par jour.",
     tips: ["Toujours le niveau 3 : c'est le plus rentable en Zel comme en Karma.",
       "Contre les métaux et les joyaux, très résistants, privilégie les unités qui ignorent la DÉF et frappent souvent.",
       "Revends les unités Jewel capturées : jusqu'à 300 000 Zel le Golden God."] },
@@ -1450,11 +1450,13 @@ const MODES = [
     rules: "Tour en dix paliers, plus sa face sombre. Les derniers paliers et le Prologue XE interdisent les continues et limitent les objets à 2.",
     tips: ["Sans continue, une seule erreur coûte la course : mitigation, soins et Ange gardien sont obligatoires.",
       "Avec 2 objets seulement, choisis des soins de groupe et un remède aux altérations.",
-      "Une unité Anima ou Guardian en défenseur évite les morts sur les gros coups."] },
+      "Une unité Anima ou Guardian en défenseur évite les morts sur les gros coups.",
+      "Depuis la Release 9, la Synthèse monte au niveau 24 : Revive, Revive Light, Fujin Tonic et Goddess Idol se fabriquent. Contre les boss qui retirent un pourcentage des PV (Ziz, étage 171-180), garde des Goddess Idol et des Revive dans ton lot d'objets."] },
   { id: "epreuves", name: "Épreuves", test: (c) => c.areaId === 800051 || c.areaId === 2000000 || c.areaId === 800020,
-    rules: "Épreuve des dieux, Épreuves de test et La tromperie de Leon : peu de combats, des boss très résistants.",
+    rules: "Épreuve des dieux, Épreuves de test et La tromperie de Leon : peu de combats, des boss très résistants. La Release 9 ajoute les épreuves 004, 005, X1, X2, X3, La menace verte et La terreur pourpre (orbes, sphères Xentar et Blighted Seal, Sphere Frog).",
     tips: ["Peu de vagues mais beaucoup de PV : ce sont les SBB lancés à chaque tour et les étincelles qui font les dégâts. L'UBB, rare, sert à finir une phase.",
-      "Regarde les altérations du boss avant de partir et équipe une sphère d'immunité si personne ne la donne."] },
+      "Regarde les altérations du boss avant de partir et équipe une sphère d'immunité si personne ne la donne.",
+      "Limite d'étoiles (facultative) : 6★ maximum pour les épreuves 001 à 005, X1, X2, La menace verte et La terreur pourpre, 7★ pour X3. Active-la pour ta première victoire : elle rapporte 5 gemmes, une Type Frog, une Sphere Frog et une Legend Stone, une fois par épreuve. Tes unités plus évoluées combattent avec leur meilleure forme sous la limite, au niveau max."] },
   { id: "chasseur", name: "Frontier Hunter", test: (c) => c.areaId === 1000010,
     rules: "Mode classé ouvert 5 jours à chaque mise à jour (2 jours après sa sortie, à 00:00 UTC). 3 Orbes de chasseur par jour, 15 par saison, cumulables jusqu'à la fin. Quatre quêtes en chaîne : Entrée, Milieu, Fin, puis Terminus. Pas de continue, pas d'objets personnels (tu choisis un lot d'objets fourni), 20 minutes par course, Auto désactivé au départ.",
     tips: ["Le score récompense les étincelles, les coups sur un élément faible, plusieurs ennemis tués au même tour, les kills au BB et les victoires rapides (surtout au tour 1) : privilégie des BB/SBB de zone à beaucoup de coups, des boosts d'étincelle et d'élément.",
@@ -2001,15 +2003,9 @@ function renderModes() {
         ${list.length ? `<p class="small" style="margin-top:8px">Les plus dures : ${list.slice(0, 3).map((c) => `<strong>${esc(c.name)}</strong> (${Math.round(c.score)})`).join(", ")}</p>` : ""}
         <button type="button" class="btn" data-mode="${m.id}">Voir les défis de ce mode</button>
       </section>`; }).join("")}
-      <section class="panel mode">
-        <h3>Arène</h3>
-        <p>Les combats d'arène sont joués par l'IA : chaque unité a son propre comportement d'arène dans les données du jeu.</p>
-        <ul class="fx">
-          <li>Privilégie les attaques de zone et les unités qui remplissent vite les jauges de BB : l'IA lance les BB dès qu'ils sont prêts.</li>
-          <li>Une compétence de leader qui monte les PV et l'ATQ de toute l'équipe aide plus qu'un effet sous condition.</li>
-        </ul>
-        <p class="note">Les règles détaillées de l'arène ne sont pas dans les fichiers lus : ces conseils restent généraux.</p>
-      </section>
+      <section class="panel mode"><h3>Grandes Quêtes</h3><p>Huit quêtes à plusieurs escouades, ouvertes dès la Release 9, réservées aux unités <strong>6★ maximum</strong>.</p><ul class="fx"><li>Elles donnent les cristaux 5★ → 6★ de Karl, Grahdens, Paris, Lugina et Seria (Saphir, Rubis, Améthyste, Topaze, Émeraude, plus un Communicator et une Sphere Frog). Un cristal utilisé ? Refais la quête à 100 % pour en regagner un.</li><li>« La longue journée de Lin » fait rejoindre Lin à ton équipe.</li><li>Limite automatique : une unité plus évoluée combat avec sa meilleure forme 6★, au niveau max. Tes unités Omni restent donc utiles.</li><li>Certaines demandent 2 à 4 escouades : prépare plusieurs équipes équilibrées plutôt qu'une seule très forte.</li></ul><p class="note">Ces quêtes passent par un système à part : leurs combats ne sont pas encore dans les défis du wiki.</p></section>
+      <section class="panel mode"><h3>Arène des défis</h3><p>Du vrai PvP contre les escouades d'autres joueurs : chaque jour, une route de 10 adversaires de plus en plus forts (de 0,7× à 1,8× ta puissance), avec des coffres après le 3e, le 6e et le 10e.</p><ul class="fx"><li>Tes PV et tes jauges de BB restent d'un combat à l'autre, et une unité tombée reste au sol jusqu'à la réinitialisation du jour, sauf potion.</li><li>Règles : <strong>pas de sphères</strong>, BB à 75 % et SBB à 60 % de leurs dégâts, cristaux de soin réduits de moitié, altérations d'un seul tour, et une condition de combat au hasard par adversaire.</li><li>Score : 30 × Brave Bonus (de 0,33 à 2 selon la force de l'adversaire), ×2 pour un KO complet, encore ×2 au premier essai. Trois ligues (2★, 4★, 6★), les 10 % du haut montent chaque lundi.</li><li>Sans sphères, la survie compte plus : prends des soigneurs et des défenseurs solides par eux-mêmes, et garde des potions pour relever une unité clé.</li><li>La boutique (pièces d'or et d'argent) vend Sphere Frogs, Type Frogs, Legend Stones, deux sphères rares, des Summon Points et des potions.</li></ul></section>
+      <section class="panel mode"><h3>Arène Vortex : Infernal Showdown</h3><p>Saison de PvP de 6 jours, puis décompte et récompenses. <strong>Unités Feu uniquement, 7★ maximum</strong> (les Omni combattent en 7★). 10 orbes par jour, rendus à 00:00 UTC.</p><ul class="fx"><li>Points de tournoi : de 10 à 200 par victoire, plus en battant quelqu'un mieux classé ; une défaite donne quand même 10 points et on n'en perd jamais.</li><li>Équilibrage : réduction des dégâts plafonnée à 20 %, soins plafonnés à 20 000, effets de BC −50 %, remplissage et boosts de BB −30 %, résistance au KO deux fois au plus.</li><li>Avec la réduction plafonnée, mise sur les PV, la DÉF et les dégâts : une équipe Feu qui frappe vite gagne avant de s'user.</li><li>Récompenses : neuf titres, classements du jour et de la saison (gemmes, tickets d'invocation, Duel Tokens), un badge de saison et la boutique permanente des Duel Tokens.</li></ul><p class="note">Une nouvelle saison, avec son propre thème, revient à chaque mise à jour.</p></section>
     </div>`;
   main.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => { state.defisMode = b.dataset.mode; location.hash = "#defis"; }));
 }

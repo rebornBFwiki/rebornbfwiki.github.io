@@ -452,7 +452,7 @@ td { border-bottom-color: #ffffff0a; }
 </main>
 
 <footer class="wrap">
-  Reborn Wiki is an unofficial fan wiki, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">source code on GitHub</a>. Game data from <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com) through its official Data API, November 17, 2026 version. Images from the official art packs. Non-commercial site, not affiliated with Alim, gumi or the Reborn team. <strong>Brave Frontier © Alim/gumi</strong>
+  Reborn Wiki is an unofficial fan wiki, <a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io">source code on GitHub</a>. Game data from <a href="https://rebornbf.com">Brave Frontier: Reborn</a> (rebornbf.com) through its official Data API, November 26, 2026 version (Release 9). Images from the official art packs. Non-commercial site, not affiliated with Alim, gumi or the Reborn team. <strong>Brave Frontier © Alim/gumi</strong>
 </footer>
 
 <script>
@@ -1429,12 +1429,12 @@ function openPicker(slot) {
 /* ---------- Modes de jeu et défis ---------- */
 const MODES = [
   { id: "histoire", name: "Story", test: (c) => c.areaType === "story",
-    rules: "The eight lands of Grand Gaia, from Mistral to Cordelica. Costs energy; continues are allowed.",
+    rules: "The eleven lands of Grand Gaia, from Mistral to Mirvana: Release 9 added Ryvern, Agni and Mirvana (114 quests, after Lizeria). Costs energy, continues are allowed.",
     tips: ["Field units strong against the zone's boss element: ×1.5 damage for you, ×0.5 for them.",
       "Build a balanced party: two attackers, a healer, a defender and a BB support.",
       "Capture the units of each zone: they are often evolution materials."] },
   { id: "farm", name: "Farming dungeons", test: (c) => [100000, 100001, 100310, 100600].includes(c.areaId),
-    rules: "Gathering of Souls, Enhancement, the Ruins and Parade Garden. Some parades are limited to 5 runs a day.",
+    rules: "Soul Gathering, Enhancement (with the Soul Sanctuary Lv. 1 to 4 since Release 9), Ruins and Parade Garden. Some parades are limited to 5 runs a day.",
     tips: ["Always level 3: it pays best for both Zel and Karma.",
       "Against metal and jewel units, which are very tough, favour units that ignore DEF and hit often.",
       "Sell the Jewel units you capture: up to 300,000 Zel for a Golden God."] },
@@ -1450,11 +1450,13 @@ const MODES = [
     rules: "A ten-stage tower plus its Dark Side. The last stages and the XE Prologue forbid continues and limit items to 2.",
     tips: ["With no continues, one mistake ends the run: mitigation, healing and Angel Idol are a must.",
       "With only 2 items, pick party heals and an ailment cure.",
-      "An Anima or Guardian defender prevents deaths on big hits."] },
+      "An Anima or Guardian defender prevents deaths on big hits.",
+      "Since Release 9, Synthesis goes up to level 24: Revive, Revive Light, Fujin Tonic and Goddess Idol can be crafted. Against bosses that remove a percentage of HP (Ziz, floor 171-180), keep Goddess Idols and Revives in your item set."] },
   { id: "epreuves", name: "Trials", test: (c) => c.areaId === 800051 || c.areaId === 2000000 || c.areaId === 800020,
-    rules: "Trial of the Gods, the Test Trials and Leon's Deception: few battles, very tough bosses.",
+    rules: "Trial of the Gods, Trial Tests and Leon's Deceit: few battles, very sturdy bosses. Release 9 adds trials 004, 005, X1, X2, X3, The Green Menace and The Crimson Terror (orbs, Xentar and Blighted Seal spheres, Sphere Frog).",
     tips: ["Few waves but lots of HP: SBBs cast every turn and sparks do the damage. The UBB is rare: use it to finish a phase.",
-      "Check the boss's ailments before you go, and equip an immunity sphere if nobody provides it."] },
+      "Check the boss's ailments before you go, and equip an immunity sphere if nobody provides it.",
+      "Star limit (optional): 6★ max for trials 001 to 005, X1, X2, The Green Menace and The Crimson Terror, 7★ for X3. Turn it on for your first clear: it pays 5 Gems, a Type Frog, a Sphere Frog and a Legend Stone, once per trial. Your more evolved units fight as their best form under the limit, at max level."] },
   { id: "chasseur", name: "Frontier Hunter", test: (c) => c.areaId === 1000010,
     rules: "Ranked mode open for 5 days with each release (2 days after it goes live, at 00:00 UTC). 3 Hunter Orbs a day, 15 a season, carried over until the end. Four chained quests: Entrance, Middle, End, then Terminus. No continues, no personal items (you pick a provided item set), 20 minutes per run, Auto off at the start.",
     tips: ["The score rewards sparks, hits on a weak element, several enemies killed on the same turn, BB kills and quick wins (especially on turn 1): favour AoE BB/SBB with many hits, spark and element buffs.",
@@ -2001,15 +2003,9 @@ function renderModes() {
         ${list.length ? `<p class="small" style="margin-top:8px">Hardest: ${list.slice(0, 3).map((c) => `<strong>${esc(c.name)}</strong> (${Math.round(c.score)})`).join(", ")}</p>` : ""}
         <button type="button" class="btn" data-mode="${m.id}">See this mode's challenges</button>
       </section>`; }).join("")}
-      <section class="panel mode">
-        <h3>Arena</h3>
-        <p>Arena battles are played by the AI: each unit has its own arena behaviour in the game data.</p>
-        <ul class="fx">
-          <li>Favour AoE attacks and units that fill BB gauges quickly: the AI casts BBs as soon as they are ready.</li>
-          <li>A Leader Skill that boosts the whole party's HP and ATK helps more than a conditional effect.</li>
-        </ul>
-        <p class="note">The detailed arena rules are not in the files we read: this advice stays general.</p>
-      </section>
+      <section class="panel mode"><h3>Grand Quests</h3><p>Eight multi-squad quests, open since Release 9, limited to <strong>6★ max</strong> units.</p><ul class="fx"><li>They give the 5★ → 6★ crystals for Karl, Grahdens, Paris, Lugina and Seria (Sapphire, Ruby, Amethyst, Topaz, Emerald, plus a Communicator and a Sphere Frog). Used a crystal? Clear the quest at 100% again to earn another.</li><li>"Lin's Long Day" makes Lin join your team.</li><li>Automatic cap: a more evolved unit fights as its best 6★ form, at max level. Your Omni units stay useful.</li><li>Some need 2 to 4 squads: prepare several balanced teams rather than a single very strong one.</li></ul><p class="note">These quests use a separate system: their battles are not in the wiki's challenges yet.</p></section>
+      <section class="panel mode"><h3>Challenge Arena</h3><p>Real PvP against other players' squads: each day, a route of 10 opponents that grow stronger (from 0.7× to 1.8× your power), with chests after the 3rd, 6th and 10th.</p><ul class="fx"><li>Your HP and BB gauges carry from fight to fight, and a fallen unit stays down until the daily reset, unless a potion revives it.</li><li>Rules: <strong>no spheres</strong>, BB at 75% and SBB at 60% of their damage, Heart Crystals heal half, statuses last one turn, and a random battle condition per opponent.</li><li>Score: 30 × Brave Bonus (0.33 to 2 depending on the opponent's strength), ×2 for a full KO, ×2 again on a first try. Three leagues (2★, 4★, 6★), the top 10% move up each Monday.</li><li>With no spheres, survival matters more: bring healers and defenders that hold up on their own, and keep potions to revive a key unit.</li><li>The shop (Gold and Silver Coins) sells Sphere Frogs, Type Frogs, Legend Stones, two rare spheres, Summon Points and potions.</li></ul></section>
+      <section class="panel mode"><h3>Vortex Arena: Infernal Showdown</h3><p>A 6-day PvP season, then counting and rewards. <strong>Fire units only, 7★ max</strong> (Omni units fight as 7★). 10 orbs a day, refilled at 00:00 UTC.</p><ul class="fx"><li>Tournament Points: 10 to 200 per win, more for beating someone ranked higher; a loss still gives 10 points and you never lose any.</li><li>Balancing: damage reduction capped at 20%, healing capped at 20,000, BC effects −50%, BB fill and boosts −30%, KO resistance twice at most.</li><li>With reduction capped, rely on HP, DEF and damage: a Fire team that hits fast wins before it wears down.</li><li>Rewards: nine titles, daily and season leaderboards (Gems, Summon Tickets, Duel Tokens), a season badge and the permanent Duel Token bazaar.</li></ul><p class="note">A new season, with its own theme, comes back with each release.</p></section>
     </div>`;
   main.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => { state.defisMode = b.dataset.mode; location.hash = "#defis"; }));
 }

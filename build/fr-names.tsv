@@ -1,8 +1,17 @@
 area.100	Mistral
+area.1000	Mirvana
 area.100000	Rassemblement des âmes
 area.100001	Renforcement
+area.1000010	Frontier Hunter
 area.100310	Ruines de lumière et ténèbres
 area.100600	Jardin de la parade
+area.101500	Flammes affectueuses
+area.101600	Zéro absolu
+area.101700	Voix de Gaia
+area.101800	Au nom du tonnerre
+area.101900	Sous la protection du ciel
+area.102000	Envoûté par la lune
+area.150000	Chroniques de Grand Gaia
 area.200	Morgan
 area.20000	Cordelica
 area.2000000	Test d'Épreuve
@@ -11,13 +20,19 @@ area.400	Amdahl
 area.500	Encervis
 area.600	Palmyna
 area.700	Lizeria
+area.800	Ryvern
 area.800011	Unholy Tower
+area.800012	Unholy Tower - Face sombre -
+area.800013	Prologue XE
 area.800020	La tromperie de Leon
 area.800051	Épreuve des dieux
-area.800052	Cauchemar infernal
+area.900	Agni
 dungeon.1	Prairie du débutant
 dungeon.10	Prairie de l'aventurier
+dungeon.1000	Grotte des ténèbres
 dungeon.100000	Rassemblement des âmes
+dungeon.1000060	Frontier Hunter saison 6
+dungeon.100050	Terrain d'entraînement des âmes
 dungeon.100100	Paradis des fées
 dungeon.100200	Grotte de l'avidité
 dungeon.100300	Jardin divin
@@ -27,7 +42,22 @@ dungeon.100400	Vestiges de l'éternité
 dungeon.100500	Pays du sommeil doré
 dungeon.100600	Parade de métal !
 dungeon.100650	Parade de joyaux !
+dungeon.1010	Plaine enneigée d'Arvest
+dungeon.101500	Flammes affectueuses
+dungeon.101600	Zéro absolu
+dungeon.101700	Voix de Gaia
+dungeon.101800	Au nom du tonnerre
+dungeon.101900	Sous la protection du ciel
+dungeon.1020	Océan d'arbres de Marleg
+dungeon.102000	Envoûté par la lune
 dungeon.102720	Jardin des diablotins
+dungeon.1030	Marais de la pluie éternelle
+dungeon.1040	Cap Narasta
+dungeon.1050	Ruines de Mirvana
+dungeon.1060	Tour des dieux
+dungeon.1070	Donjon d'Agni
+dungeon.150000	Croisade des six héros
+dungeon.150003	Tourmenteur aux dix ailes
 dungeon.20	Grotte des flammes
 dungeon.200	Désert de Kagan
 dungeon.20000	Grottes de Greskya
@@ -90,22 +120,50 @@ dungeon.760	Le Pont noir
 dungeon.770	Tour de la destruction
 dungeon.780	Lac souterrain de Golzo
 dungeon.80	Tour de Mistral
+dungeon.800	Creux de Glomore
 dungeon.800011	Unholy Tower
+dungeon.800012	Unholy Tower - Face sombre -
+dungeon.800013	Prologue XE
 dungeon.800020	La tromperie de Leon
 dungeon.800051	Épreuve des dieux
-dungeon.800052	Cauchemar infernal
+dungeon.800100	Refuge des bulbes
+dungeon.810	Zone enneigée de Khelne
+dungeon.820	Forêt de Stokhelna
+dungeon.830	Ruines d'Azura
+dungeon.840	Monts Ryvern
+dungeon.850	Grotte des abysses
+dungeon.860	La tour blanche
+dungeon.900	Empire d'Agni
+dungeon.910	Côte d'Agniria
+dungeon.920	Plateau de Granasta
+dungeon.930	Sommet tonnant de Navara
+dungeon.940	Tombeau du roi
+dungeon.950	Crique de Lognea
+dungeon.960	Sanctuaire océanique d'Albina
 mission.1	Bases du combat
 mission.10	Début de l'aventure
+mission.1000	Rugissements ardents
 mission.100000	Terre sacrée des âmes Lv. 1
 mission.100001	Terre sacrée des âmes Lv. 2
 mission.100002	Terre sacrée des âmes Lv. 3
+mission.1000060	Frontière inexplorée - Entrée 6
+mission.1000061	Frontière inexplorée - Milieu 6
+mission.1000062	Frontière inexplorée - Fin 6
+mission.1000063	Frontière inexplorée - Terminus 6
+mission.100050	Sanctuaire des âmes Lv. 1
+mission.100051	Sanctuaire des âmes Lv. 2
+mission.100052	Sanctuaire des âmes Lv. 3
+mission.100053	Sanctuaire des âmes Lv. 4
+mission.1001	Une torche dans les ténèbres
 mission.100100	Jardin des nymphes
 mission.100101	Jardin des esprits
 mission.100102	Jardin des idoles
 mission.100103	Jarres fantômes
+mission.1002	Le commandant du feu
 mission.100200	La boîte des désirs Lv. 1
 mission.100201	La boîte des désirs Lv. 2
 mission.100202	La boîte des désirs Lv. 3
+mission.1003	Rencontre avec les flammes
 mission.100300	Ruines du feu Lv. 3
 mission.100301	Ruines de l'eau Lv. 3
 mission.100302	Ruines de la terre Lv. 3
@@ -121,6 +179,7 @@ mission.100322	Sanctuaire de la terre Lv. 6
 mission.100323	Sanctuaire du tonnerre Lv. 6
 mission.100324	Sanctuaire de la lumière Lv. 6
 mission.100325	Sanctuaire des ténèbres Lv. 6
+mission.1004	Épée de feu
 mission.100400	L'esprit errant Lv. 1
 mission.100401	L'esprit errant Lv. 2
 mission.100402	L'esprit errant Lv. 3
@@ -141,9 +200,76 @@ mission.100614	Méga parade de métal
 mission.100650	Parade de joyaux !
 mission.100651	Super parade de joyaux
 mission.100652	Méga parade de joyaux
+mission.1010	Combat contre le dragon de glace
+mission.1011	Étapes enneigées
+mission.1012	Braver la glace
+mission.1013	Princesse des neiges
+mission.1014	Le blizzard commence
+mission.101700	Flammes affectueuses Lv. 3
+mission.101701	Flammes affectueuses Lv. 4
+mission.101800	Zéro absolu Lv. 3
+mission.101801	Zéro absolu Lv. 4
+mission.101900	Voix de Gaia Lv. 3
+mission.101901	Voix de Gaia Lv. 4
+mission.1020	Chasseur dans la verdure
+mission.102000	Au nom du tonnerre Lv. 3
+mission.102001	Au nom du tonnerre Lv. 4
+mission.1021	Épreuves dans la forêt
+mission.102100	Sous la protection du ciel Lv. 3
+mission.102101	Sous la protection du ciel Lv. 4
+mission.1022	Jolies petites fleurs
+mission.102200	Envoûté par la lune Lv. 3
+mission.102201	Envoûté par la lune Lv. 4
+mission.1023	Les arbres majestueux
+mission.1024	Duel sous les fleurs
 mission.102920	Jardin des diablotins
+mission.1030	La foudre frappe
+mission.1031	L'épreuve de la tempête de feu
+mission.1032	Lame du cœur
+mission.1033	Orage foudroyant à fendre la terre
+mission.1034	Orage final
+mission.1040	La foudre au cœur
+mission.1041	Le tir lointain
+mission.1042	Protéger à tout prix
+mission.1043	Éclat imminent
+mission.1044	Lumière d'en haut
+mission.1045	La lumière du jour derrière elle
+mission.1050	Ceux qui vivent par l'épée
+mission.1051	Percer les ténèbres impénétrables
+mission.1052	Le noir sans fin
+mission.1053	Protecteur, destructeur
+mission.1054	Errance dans les ruines
+mission.1055	Jours brisés
+mission.1060	Danse dans les nuages
+mission.1061	Prière à l'aube
+mission.1062	Baigné de pourpre
+mission.1063	Le halo doré
+mission.1064	Le champ de bataille arc-en-ciel
+mission.1065	Le héros ardent
+mission.1066	L'empereur divin
 mission.11	Monstres de la prairie
 mission.12	Gardiens de la prairie
+mission.150000	Jeunes flammes
+mission.150001	L'épreuve du feu
+mission.150002	Dieu suprême du feu
+mission.150010	Une épéiste modeste
+mission.150011	Un dessein hérité
+mission.150012	Déesse de la glace
+mission.150020	La graine de la pique démoniaque
+mission.150021	Renaissance de l'arbre-monde
+mission.150022	La sublimation de la forêt
+mission.150030	Le chasseur de primes solitaire
+mission.150031	Dans les ombres brillantes
+mission.150032	Le fou sans égal
+mission.150040	Talent caché
+mission.150041	Le tourment d'un épéiste
+mission.150042	La volonté d'Urias
+mission.150050	Un empire et un chevalier
+mission.150051	Un vœu de vengeance
+mission.150052	Le dévoreur de dieux
+mission.150300	Disciple de la ruine
+mission.150301	Lumière aux cinq couleurs
+mission.150302	L'issue du combat
 mission.2	Élément et compétence
 mission.20	Grotte des flammes dansantes
 mission.200	Le désert brûlant
@@ -151,6 +277,10 @@ mission.20000	Porte de l'enfer
 mission.2000000	Épreuve n° 001
 mission.2000001	Épreuve n° 002
 mission.2000002	Épreuve n° 003
+mission.2000003	Épreuve n° 004
+mission.2000004	La menace verte
+mission.2000005	Épreuve n° 005
+mission.2000006	La terreur pourpre
 mission.20001	Assassins des grottes
 mission.20002	Le festin des bandits
 mission.20003	Caresse du vent brûlant
@@ -447,9 +577,26 @@ mission.774	Ère de la mortalité
 mission.775	Barrière d'extermination
 mission.776	La machine à cadavres
 mission.780	La présence sous la surface
+mission.800	Combat sur une nouvelle terre
+mission.801	Le chemin brûlant
+mission.802	Terre embrasée
+mission.803	Flammes au vent vif
+mission.804	Le barrage du capitaine dragon
 mission.81	La tour céleste
+mission.810	Un monde blanc
+mission.811	Debout dans la neige
+mission.812	La reine couronnée d'arc-en-ciel
+mission.813	Une vague de lames
+mission.814	Le tireur rapide
 mission.82	Monstres du couloir
+mission.820	La paix fragile de la forêt
+mission.821	Un jour dans les bois
+mission.822	Le Guardian de la forêt ancienne
+mission.823	Le rugissement de la forêt
+mission.824	Les arbres de Sal
 mission.83	L'escalier de l'épreuve
+mission.830	La troupe du tonnerre
+mission.8300031	Épreuve n° X2
 mission.8301001	Unholy Tower, étage 1-10
 mission.8302001	Unholy Tower, étage 11-20
 mission.8303001	Unholy Tower, étage 21-30
@@ -459,22 +606,103 @@ mission.8306001	Unholy Tower, étage 51-60
 mission.8307001	Unholy Tower, étage 61-70
 mission.8308001	Unholy Tower, étage 71-80
 mission.8309001	Unholy Tower, étage 81-90
+mission.831	Le secret de la lame
 mission.8310001	Unholy Tower, étage 91-100
+mission.8311001	Unholy Tower, étage 101-110
 mission.8311002	Bande de voleurs
+mission.8311010	Champs pourpres
+mission.8312001	Unholy Tower, étage 111-120
 mission.8312002	Soulèvement intrépide
+mission.8312010	Champs brumeux
+mission.8313001	Unholy Tower, étage 121-130
 mission.8313002	Le règne sur Agni
+mission.8313010	Champs moussus
+mission.8314001	Unholy Tower, étage 131-140
+mission.8314010	Champs électriques
+mission.8315001	Unholy Tower, étage 141-150
+mission.8315010	Champs radieux
+mission.8316001	Unholy Tower, étage 151-160
+mission.8316010	Champs d'ombre
+mission.8317001	Unholy Tower, étage 161-170
+mission.8318001	Unholy Tower, étage 171-180
+mission.8319001	Unholy Tower, étage 181-190
+mission.832	Ce qui hante les ruines
+mission.8320001	Unholy Tower, étage 191-200
+mission.8322001	Innocence perdue
+mission.8323001	Duo de vertu
+mission.833	La chute de la forteresse de foudre
+mission.834	La lance de la justice
+mission.8360021	Épreuve n° X1
+mission.8360041	Épreuve n° X3
 mission.8380000	Épreuve 01 - Désir ardent
-mission.8380130	Le chemin peu fréquenté
 mission.8381000	Épreuve 02 - Force destructrice
-mission.8381130	Sentiers déments
 mission.8382000	Épreuve 03 - Défense ultime
-mission.8382130	Les terres hantées
 mission.8383000	Épreuve 04 - Barrière ardente
-mission.8383130	Revanche démoniaque
 mission.8384000	Épreuve 05 - Rage divine
-mission.8384130	Possession infernale
 mission.8385000	Épreuve 06 - Vigueur alliée
-mission.8385130	Une croisée inexplorée
 mission.84	Les piliers de la force
+mission.840	La jeune fille au pégase
+mission.841	Le coup de feu funeste
+mission.842	Volonté céleste
+mission.843	Le guerrier et le dragon
+mission.844	Conviction maléfique
 mission.85	Le Gigantor forgé
+mission.850	Ténèbres épaisses
+mission.851	Les ombres enroulées
+mission.852	Le roi du monde d'en bas
+mission.853	Peur inébranlable
+mission.854	Une fin glorieuse et sanglante
+mission.860	Empennes d'anticipation
+mission.861	La formation indestructible
+mission.862	Immobilité glaciale
+mission.863	Enfoncer le coin
+mission.864	Esprits ralliés
+mission.865	Défi démesuré
+mission.866	Le rugissement du triomphe
 mission.90	Endormi dans la glace
+mission.900	Danse Hotatsu
+mission.901	Bravoure sauvage
+mission.902	La table de la vierge de feu
+mission.903	Le chevalier pourpre
+mission.904	Lumière guide
+mission.910	Sérénade dans les vagues
+mission.911	Le flot de glace scintillant
+mission.912	Les limites de la sagesse et du courage
+mission.913	Taillade inébranlable
+mission.914	La glace qui entrave
+mission.920	Verdure écrasante
+mission.921	Équilibre des forces
+mission.922	Noble rugissement
+mission.923	Le pouvoir qui protège
+mission.924	Sacrifier son corps
+mission.930	Le son de la destruction
+mission.931	Accumulation de foudre
+mission.932	Combo pulvérisant
+mission.933	Lames de foudre
+mission.934	L'heure de vaincre
+mission.940	S'envoler dans le ciel
+mission.941	Là où pointe la lumière
+mission.942	Le garde du corps royal
+mission.943	La lumière qui terrasse le mal
+mission.944	Pierre tombale de lumière
+mission.950	Souhait éternel
+mission.951	Vivre pour le combat
+mission.952	Lié par les ténèbres
+mission.953	Libéré par les ombres
+mission.954	Une offrande de mort
+mission.960	Piliers de verdure
+mission.961	La porte rouge
+mission.962	La salle dorée
+mission.963	Le couloir bleu
+mission.964	L'autel blanc
+mission.965	Le candélabre noir
+mission.966	Intrus dans l'esprit
+mission.970	Le tyran emprisonné
+area.800052	Cauchemar infernal
+dungeon.800052	Cauchemar infernal
+mission.8380130	Le chemin peu fréquenté
+mission.8381130	Sentiers déments
+mission.8382130	Les terres hantées
+mission.8383130	Revanche démoniaque
+mission.8384130	Possession infernale
+mission.8385130	Une croisée inexplorée
