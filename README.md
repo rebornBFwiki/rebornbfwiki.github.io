@@ -13,6 +13,7 @@ Le script [`tools/bfr-collection.user.js`](tools/bfr-collection.user.js) s'insta
 - `src/wiki.html` : la source unique du site.
 - `build/api.ps1` : télécharge la [Data API officielle](https://rebornbf.com/product/data) (unités, sphères, objets, bannières, drops, recettes de forge, tier list votée et utilisation des unités) et les packs d'images officiels (vignettes, icônes, sprites de combat d'où viennent les poses des unités). Les fichiers sont gardés en cache et ne sont retéléchargés que si leur nom change.
 - `build/build.ps1` : génère `index.html` (français) et `en/index.html` (anglais, d'après `build/en-*.tsv`).
+- `build/world-merge.js` : depuis la Release 9, le jeu publie son monde en un index et un fichier par zone (`world-index.*.json`, `world-area-*.json`, listés dans le manifeste de contenu de ses scripts). Ce script les recompose en `world.merged.json` (variantes d'ennemis fusionnées) pour les scripts ci-dessous.
 - `build/challenges.ps1` : recalcule `data/challenges.json` et `data/challenges-en.json` à partir du fichier `world` public du jeu.
 - `build/fights.ps1` : extrait le comportement des boss des défis (IA, compétences, passifs) dans `data/fights.json`, d'où le wiki tire le déroulé et le plan de bataille de chaque combat.
 - `data/` : données du jeu (Data API, plus le guide, les noms français et le monde des quêtes, qui ne sont pas encore dans l'API). Les images de `assets/` viennent uniquement des packs officiels.
