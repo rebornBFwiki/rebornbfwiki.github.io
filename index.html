@@ -293,6 +293,13 @@ abbr[title] { text-decoration: underline dotted; cursor: help; }
 .typemix { display: grid; gap: 8px; }
 .typemix .tm-head { display: flex; justify-content: space-between; }
 .typemix p { margin: 3px 0 0; color: var(--mute); }
+.importbar .ib-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.importbar details { margin-top: 6px; }
+.importbar kbd { font: 600 11px/1 system-ui; padding: 2px 5px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-2); }
+.colltabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 14px 0 12px; }
+.colltabs button { font: inherit; font-weight: 600; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--mute); cursor: pointer; }
+.colltabs button[aria-selected="true"] { border-color: var(--gold); color: var(--gold-hi); background: #2b2412; }
+.colltabs .cnt { font-size: 11px; opacity: .8; margin-left: 2px; }
 .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-hi)); border-radius: inherit; }
 .stats { display: grid; gap: 8px; }
 .stats .row { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
@@ -2270,111 +2277,146 @@ function loadProposal(p) {
 function bindProposals(root) {
   root.querySelectorAll("[data-load-prop]").forEach((b) => b.addEventListener("click", () => loadProposal(PROPS[Number(b.dataset.loadProp)])));
 }
+// Nouvelle page « Ma collection » : import en un geste en haut, contenu en onglets.
+const COLL_TABS = [["resume", "Résumé"], ["booster", "À booster"], ["equipes", "Équipes"], ["unites", "Mes unités"], ["manque", "Il me manque"], ["inventaire", "Sphères et objets"]];
+function importCollection(text, msg) {
+  try {
+    const c = parseCollection(text);
+    if (!c.entries.length) throw new Error("Aucune unité reconnue dans ce texte.");
+    COLL = c; store.set("codex-collection", c); renderCollection();
+    const m = document.getElementById("collMsg"); if (m) { m.textContent = `Collection importée : ${c.entries.length} lignes d'unités.`; m.className = "small have"; }
+  } catch (e) { if (msg) { msg.textContent = e.message || "Import impossible."; msg.className = "small down"; } }
+}
 function renderCollection() {
-  const importBox = `
-    <section class="panel box">
-      <h3>${COLL ? "Mettre à jour ma collection" : "Importer ma collection"}</h3>
-      <ol class="steps">
-        <li>Installe le script <strong>bfr-collection.user.js</strong> (version 2.3 ou plus) dans Tampermonkey, comme la macro.</li>
-        <li>Dans le jeu, ouvre <strong>Unité › Voir les unités</strong>, puis clique sur <strong>Copier mon compte pour Reborn Wiki</strong> en bas à droite. Le script lit tes unités, tes sphères et tes objets, sans rien modifier.</li>
-        <li>Colle le texte ici, puis clique sur Importer.</li>
-      </ol>
-      <label class="small muted" for="collText" style="display:block;margin-top:10px">Texte copié depuis le jeu</label>
-      <textarea class="field" id="collText" placeholder="BFRCODEX2:{…}"></textarea>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn primary" id="collImport">Importer</button>${COLL ? `<button type="button" class="btn" id="collClear">Effacer ma collection</button>` : ""}</div>
+  const tab = COLL_TABS.some(([k]) => k === state.collTab) ? state.collTab : (state.collTab = store.get("codex-colltab", "resume"));
+  // Barre d'import : toujours en haut, un clic (presse-papiers) ou Ctrl+V n'importe où sur la page.
+  const importBar = `<section class="panel box importbar">
+      <div class="ib-row">
+        <button type="button" class="btn primary" id="collPaste">${COLL ? "Mettre à jour depuis le presse-papiers" : "Importer depuis le presse-papiers"}</button>
+        <span class="small muted">${COLL ? `Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}.` : ""} Ou fais simplement <kbd>Ctrl</kbd>+<kbd>V</kbd> sur cette page.</span>
+      </div>
       <p class="small" id="collMsg" role="status"></p>
-      <p class="note">La collection reste dans ton navigateur : elle n'est envoyée nulle part.</p>
+      <details class="small"><summary>Comment copier mon compte ? / Coller à la main</summary>
+        <ol class="steps">
+          <li>Installe le script <strong>bfr-collection.user.js</strong> (version 2.3 ou plus) dans Tampermonkey, comme la macro.</li>
+          <li>Dans le jeu, clique sur <strong>Copier mon compte pour Reborn Wiki</strong> en bas à droite (accueil ou liste des unités). Le script lit tes unités, tes sphères et tes objets, sans rien modifier.</li>
+          <li>Reviens ici et clique sur le bouton du haut, ou fais Ctrl+V.</li>
+        </ol>
+        <textarea class="field" id="collText" placeholder="BFRCODEX2:{…}"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn" id="collImport">Importer ce texte</button>${COLL ? `<button type="button" class="btn" id="collClear">Effacer ma collection</button>` : ""}</div>
+        <p class="note">La collection reste dans ton navigateur : elle n'est envoyée nulle part.</p>
+      </details>
     </section>`;
   if (!COLL) {
     main.innerHTML = `<h2 class="section-title">Ma collection</h2>
-      <p class="lede">Importe ton compte pour voir ton taux de collection, les unités qui te manquent et celles prêtes à évoluer, tes sphères et tes objets, les sphères que tu peux forger, et des équipes proposées avec tes unités.</p>${importBox}`;
-  } else {
-    const heroes = D.units.filter((u) => u.hero);
-    const ownedHeroes = heroes.filter((u) => ownedCount(u.id) > 0);
+      <p class="lede">Importe ton compte pour voir ton taux de collection, les unités qui te manquent et celles prêtes à évoluer, tes sphères et tes objets, les sphères que tu peux forger, et des équipes proposées avec tes unités.</p>${importBar}`;
+    bindCollectionImport();
+    return;
+  }
+  const heroes = D.units.filter((u) => u.hero);
+  const ownedHeroes = heroes.filter((u) => ownedCount(u.id) > 0);
+  const pctOf = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const missingHeroes = heroes.filter((u) => ownedCount(u.id) === 0).sort((a, b) => maxRarityNum(b) - maxRarityNum(a));
+  const inv = hasInventory();
+  const fg = inv ? forgeable() : { now: [], almost: [] };
+  const sphereCount = inv ? Object.values(COLL.spheres).reduce((a, o) => a + (o.count || 0), 0) : 0;
+  // Évolutions prêtes ou presque.
+  const ready = [], almost = [];
+  for (const u of ownedHeroes) {
+    const b = bestOwned(u.id), f = u.forms[b.form];
+    if (!f || !f.evolution || !u.forms[b.form + 1]) continue;
+    const mats = (f.evolution.units || []).map((m) => ({ ...m, have: ownedCount(m.unit), mu: D.byId.get(m.unit) }));
+    const missing = mats.filter((m) => m.have < m.count);
+    (missing.length ? almost : ready).push({ u, f, next: u.forms[b.form + 1], mats, zel: f.evolution.zel || 0, missing: missing.length });
+  }
+  almost.sort((a, b) => a.missing - b.missing);
+  const boostRows = ownedHeroes.map(boostRow).filter((r) => r && r.todo.length && /^[SA]$/.test(tierOf(r.u.id) || ""));
+  const counts = { resume: "", booster: boostRows.length, equipes: "", unites: ownedHeroes.length, manque: missingHeroes.length, inventaire: inv ? sphereCount : "" };
+  const tabs = `<nav class="colltabs" role="tablist">${COLL_TABS.map(([k, n]) => `<button type="button" role="tab" data-ctab="${k}" aria-selected="${k === tab}">${n}${counts[k] !== "" ? ` <span class="cnt">${counts[k]}</span>` : ""}</button>`).join("")}</nav>`;
+  let body = "";
+  if (tab === "resume") {
     const omni = ownedHeroes.filter((u) => { const b = bestOwned(u.id); return u.forms[b.form] && u.forms[b.form].rarity === "omni"; });
-    const formsOwned = new Set(COLL.entries.map((e) => e.unit + ":" + e.form)).size;
-    const pctOf = (a, b) => (b ? Math.round((a / b) * 100) : 0);
-    const byEl = ELEMENTS.map((e) => { const all = heroes.filter((u) => u.element === e); const own = all.filter((u) => ownedCount(u.id) > 0); return { e, all: all.length, own: own.length }; });
-    // Prêtes à évoluer : forme possédée qui a une évolution, et tous les matériaux possédés.
-    const ready = [], almost = [];
-    for (const u of ownedHeroes) {
-      const b = bestOwned(u.id), f = u.forms[b.form];
-      if (!f || !f.evolution || !u.forms[b.form + 1]) continue;
-      const mats = (f.evolution.units || []).map((m) => ({ ...m, have: ownedCount(m.unit), mu: D.byId.get(m.unit) }));
-      const missing = mats.filter((m) => m.have < m.count);
-      (missing.length ? almost : ready).push({ u, f, next: u.forms[b.form + 1], mats, zel: f.evolution.zel || 0, missing: missing.length });
-    }
-    almost.sort((a, b) => a.missing - b.missing);
+    const byEl = ELEMENTS.map((e) => { const all = heroes.filter((u) => u.element === e); return { e, all: all.length, own: all.filter((u) => ownedCount(u.id) > 0).length }; });
     const evoRow = (x) => `<div class="sph"><div>${sigil(x.f.name, x.u.element, false, x.f.id)} <a href="#u-${esc(x.u.id)}"><strong>${esc(x.f.name)}</strong></a> → <strong>${esc(x.next.name)}</strong> <span class="muted small">${fmt(x.zel)} Zel</span></div>
       <div class="small">${x.mats.map((m) => `<span class="${m.have >= m.count ? "have" : "lack"}">${m.have}/${m.count}</span> ${esc(m.mu ? m.mu.best.name : m.unit)}`).join(" · ")}</div></div>`;
-    const missingHeroes = heroes.filter((u) => ownedCount(u.id) === 0).sort((a, b) => maxRarityNum(b) - maxRarityNum(a));
-    const inv = hasInventory();
-    const mySpheres = inv ? Object.entries(COLL.spheres).map(([id, o]) => ({ s: D.sphereById.get(id), ...o })).filter((x) => x.s && x.count > 0)
-      .sort((a, b) => (b.s.rarity || 0) - (a.s.rarity || 0) || sName(a.s).localeCompare(sName(b.s))) : [];
-    const myItems = inv ? Object.entries(COLL.items).map(([id, n]) => ({ i: D.itemById.get(id), n })).filter((x) => x.i && x.n > 0)
-      .sort((a, b) => iName(a.i).localeCompare(iName(b.i))) : [];
-    const battleItems = myItems.filter((x) => x.i.kind !== "material"), mats = myItems.filter((x) => x.i.kind === "material");
-    const fg = forgeable();
-    const invRow = (icon, href, name, n, extra) => `<a class="inv" href="${href}">${icon || `<span class="sigil" aria-hidden="true">◆</span>`}<span class="nm">${esc(name)}</span><span class="num">×${fmt(n)}</span>${extra || ""}</a>`;
-    const invHTML = !inv ? `<section class="panel box" style="margin-top:14px"><h3>Sphères et objets</h3><p>Ta collection vient de l'ancien script, qui ne lisait que les unités. Installe la version 2 et réimporte pour voir tes sphères, tes objets, la Forge et des équipes avec tes sphères.</p></section>` : `
-      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Forge à sphères avec ton inventaire</h3>
-      <p class="small muted" style="margin:0 0 8px">Calculé avec tes objets et tes sphères. Le Karma et le niveau de ta Forge ne sont pas lus : vérifie-les en jeu. Une sphère équipée doit être retirée avant de servir de matériau.</p>
-      <div class="cols">
-        <section class="panel box"><h3>Forgeables maintenant (${fg.now.length})</h3>${fg.now.slice(0, 12).map(forgeRow).join("") || `<p class="muted">Aucune recette n'a tous ses matériaux.</p>`}</section>
-        <section class="panel box"><h3>Il manque un seul matériau (${fg.almost.length})</h3>${fg.almost.slice(0, 12).map(forgeRow).join("") || `<p class="muted">Rien à signaler.</p>`}</section>
-      </div>
-      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Mes sphères (${mySpheres.reduce((a, x) => a + x.count, 0)})</h3>
-      <div class="invgrid">${mySpheres.map((x) => invRow(iconImg(x.s.icon, "icon", ""), `#s-${esc(x.s.id)}`, sName(x.s), x.count, x.on ? `<span class="small muted">${x.on} équipée${x.on > 1 ? "s" : ""}</span>` : "")).join("") || `<p class="muted">Aucune sphère.</p>`}</div>
-      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Objets de combat (${battleItems.length})</h3>
-      <div class="invgrid">${battleItems.map((x) => invRow(iconImg(x.i.icon, "icon", ""), `#i-${esc(x.i.id)}`, iName(x.i), x.n)).join("") || `<p class="muted">Aucun objet de combat.</p>`}</div>
-      <details style="margin-top:12px"><summary><strong>Matériaux (${mats.length})</strong></summary>
-        <div class="invgrid" style="margin-top:8px">${mats.map((x) => invRow(iconImg(x.i.icon, "icon", ""), `#i-${esc(x.i.id)}`, iName(x.i), x.n)).join("")}</div></details>`;
-    main.innerHTML = `<h2 class="section-title">Ma collection</h2>
-      <p class="lede">Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}. ${COLL.unknown && COLL.unknown.length ? `${COLL.unknown.length} nom${COLL.unknown.length > 1 ? "s" : ""} non reconnu${COLL.unknown.length > 1 ? "s" : ""} : ${esc(COLL.unknown.slice(0, 6).join(", "))}.` : ""}</p>
-      <div class="bigstat">
+    body = `<div class="bigstat">
         <div><b>${ownedHeroes.length}/${heroes.length}</b><span>unités jouables possédées (${pctOf(ownedHeroes.length, heroes.length)} %)</span><div class="bar"><i style="width:${pctOf(ownedHeroes.length, heroes.length)}%"></i></div></div>
         <div><b>${omni.length}</b><span>unités en forme Omni</span></div>
-        <div><b>${formsOwned}</b><span>formes différentes possédées</span></div>
         <div><b>${ready.length}</b><span>évolutions prêtes</span></div>
-        ${inv ? `<div><b>${mySpheres.reduce((a, x) => a + x.count, 0)}</b><span>sphères, dont ${fg.now.length} à forger maintenant</span></div>` : ""}
+        <div><b>${boostRows.length}</b><span>unités A ou S à booster</span></div>
+        ${inv ? `<div><b>${fg.now.length}</b><span>sphères à forger maintenant</span></div>` : ""}
       </div>
-      <section class="panel box" style="margin-top:14px">
-        <h3>Équipes proposées avec tes unités</h3>
-        <p class="small muted">Le wiki choisit un leader parmi tes unités, complète avec les plus fortes en couvrant soins, défense, BB, boosts et altérations${inv ? ", puis répartit tes sphères" : ""}. Ta meilleure forme et ton vrai type sont pris en compte.</p>
-        <label class="small muted" for="goal">Pour quel combat ?</label>
-        <select class="field" id="goal" style="max-width:320px">${GOALS.map((g) => `<option value="${g.id}" ${g.id === (state.goal || "") ? "selected" : ""}>${esc(g.label)}</option>`).join("")}</select>
-        <div id="props" style="margin-top:10px"></div>
-      </section>
       <section class="panel box" style="margin-top:14px"><h3>Par élément</h3><div class="stats">
         ${byEl.map((x) => `<div class="row"><span class="dot el-${x.e}"></span><div><div class="small">${EL_FR[x.e]}</div><div class="bar"><i style="width:${pctOf(x.own, x.all)}%"></i></div></div><span class="num small">${x.own}/${x.all}</span></div>`).join("")}
       </div></section>
       <div class="cols" style="margin-top:14px">
         <section class="panel box"><h3>Prêtes à évoluer</h3>${ready.length ? ready.map(evoRow).join("") : `<p class="muted">Aucune évolution n'a tous ses matériaux pour l'instant.</p>`}</section>
         <section class="panel box"><h3>Presque prêtes</h3>${almost.slice(0, 8).map(evoRow).join("") || `<p class="muted">Rien à signaler.</p>`}</section>
-      </div>
-      ${boostHTML(ownedHeroes)}
-      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Mes unités (${ownedHeroes.length} unités, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} exemplaires)</h3>
-      <p class="small muted" style="margin:0 0 8px">Une carte par forme que tu possèdes, avec le nombre d'exemplaires, leur type et leur niveau.</p>
-      <div class="grid">${ownedHeroes.sort((a, b) => maxRarityNum(b) - maxRarityNum(a)).flatMap((u) => ownedByForm(u).map((g) => copyCardHTML(u, g))).join("")}</div>
-      <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Il te manque (${missingHeroes.length})</h3>
-      <div class="grid">${missingHeroes.map((u) => cardHTML(u)).join("")}</div>
-      ${invHTML}
-      <div style="margin-top:16px">${importBox}</div>`;
+      </div>`;
+  } else if (tab === "booster") {
+    body = boostHTML(ownedHeroes);
+  } else if (tab === "equipes") {
+    body = `<section class="panel box">
+        <p class="small muted" style="margin-top:0">Le wiki choisit un leader parmi tes unités, complète avec les plus fortes en couvrant soins, défense, BB, boosts et altérations${inv ? ", puis répartit tes sphères" : ""}. Ta meilleure forme et ton vrai type sont pris en compte.</p>
+        <label class="small muted" for="goal">Pour quel combat ?</label>
+        <select class="field" id="goal" style="max-width:320px">${GOALS.map((g) => `<option value="${g.id}" ${g.id === (state.goal || "") ? "selected" : ""}>${esc(g.label)}</option>`).join("")}</select>
+        <div id="props" style="margin-top:10px"></div>
+      </section>`;
+  } else if (tab === "unites") {
+    body = `<p class="small muted" style="margin:0 0 8px">${ownedHeroes.length} unités, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} exemplaires. Une carte par forme que tu possèdes, avec le nombre d'exemplaires, leur type et leur niveau.</p>
+      <div class="grid">${ownedHeroes.sort((a, b) => maxRarityNum(b) - maxRarityNum(a)).flatMap((u) => ownedByForm(u).map((g) => copyCardHTML(u, g))).join("")}</div>`;
+  } else if (tab === "manque") {
+    body = `<p class="small muted" style="margin:0 0 8px">Ouvre une fiche pour voir où obtenir l'unité (invocation, capture, récompense…).</p><div class="grid">${missingHeroes.map((u) => cardHTML(u)).join("")}</div>`;
+  } else if (tab === "inventaire") {
+    if (!inv) body = `<section class="panel box"><p>Ta collection vient de l'ancien script, qui ne lisait que les unités. Installe la version 2.3 et réimporte pour voir tes sphères, tes objets et la Forge.</p></section>`;
+    else {
+      const mySpheres = Object.entries(COLL.spheres).map(([id, o]) => ({ s: D.sphereById.get(id), ...o })).filter((x) => x.s && x.count > 0).sort((a, b) => (b.s.rarity || 0) - (a.s.rarity || 0) || sName(a.s).localeCompare(sName(b.s)));
+      const myItems = Object.entries(COLL.items).map(([id, n]) => ({ i: D.itemById.get(id), n })).filter((x) => x.i && x.n > 0).sort((a, b) => iName(a.i).localeCompare(iName(b.i)));
+      const battleItems = myItems.filter((x) => x.i.kind !== "material"), mats = myItems.filter((x) => x.i.kind === "material");
+      const invRow = (icon, href, name, n, extra) => `<a class="inv" href="${href}">${icon || `<span class="sigil" aria-hidden="true">◆</span>`}<span class="nm">${esc(name)}</span><span class="num">×${fmt(n)}</span>${extra || ""}</a>`;
+      body = `<div class="cols">
+          <section class="panel box"><h3>Forgeables maintenant (${fg.now.length})</h3>${fg.now.slice(0, 12).map(forgeRow).join("") || `<p class="muted">Aucune recette n'a tous ses matériaux.</p>`}</section>
+          <section class="panel box"><h3>Il manque un seul matériau (${fg.almost.length})</h3>${fg.almost.slice(0, 12).map(forgeRow).join("") || `<p class="muted">Rien à signaler.</p>`}</section>
+        </div>
+        <p class="small muted">Le Karma et le niveau de ta Forge ne sont pas lus : vérifie-les en jeu. Une sphère équipée doit être retirée avant de servir de matériau.</p>
+        <details open style="margin-top:12px"><summary><strong>Mes sphères (${sphereCount})</strong></summary>
+          <div class="invgrid" style="margin-top:8px">${mySpheres.map((x) => invRow(iconImg(x.s.icon, "icon", ""), `#s-${esc(x.s.id)}`, sName(x.s), x.count, x.on ? `<span class="small muted">${x.on} équipée${x.on > 1 ? "s" : ""}</span>` : "")).join("") || `<p class="muted">Aucune sphère.</p>`}</div></details>
+        <details style="margin-top:12px"><summary><strong>Objets de combat (${battleItems.length})</strong></summary>
+          <div class="invgrid" style="margin-top:8px">${battleItems.map((x) => invRow(iconImg(x.i.icon, "icon", ""), `#i-${esc(x.i.id)}`, iName(x.i), x.n)).join("") || `<p class="muted">Aucun objet de combat.</p>`}</div></details>
+        <details style="margin-top:12px"><summary><strong>Matériaux (${mats.length})</strong></summary>
+          <div class="invgrid" style="margin-top:8px">${mats.map((x) => invRow(iconImg(x.i.icon, "icon", ""), `#i-${esc(x.i.id)}`, iName(x.i), x.n)).join("")}</div></details>`;
+    }
+  }
+  main.innerHTML = `<h2 class="section-title">Ma collection</h2>${importBar}${tabs}<div class="collbody">${body}</div>`;
+  main.querySelectorAll("[data-ctab]").forEach((b) => b.addEventListener("click", () => { state.collTab = b.dataset.ctab; store.set("codex-colltab", state.collTab); renderCollection(); }));
+  if (tab === "equipes") {
     const drawProps = () => { const box = document.getElementById("props"); box.innerHTML = proposalsHTML(state.goal || ""); bindProposals(box); };
     document.getElementById("goal").addEventListener("change", (e) => { state.goal = e.target.value; drawProps(); });
     drawProps();
   }
-  document.getElementById("collImport").addEventListener("click", () => {
-    const msg = document.getElementById("collMsg");
+  bindCollectionImport();
+}
+function bindCollectionImport() {
+  const msg = document.getElementById("collMsg");
+  document.getElementById("collImport").addEventListener("click", () => importCollection(document.getElementById("collText").value, msg));
+  document.getElementById("collPaste").addEventListener("click", async () => {
     try {
-      const c = parseCollection(document.getElementById("collText").value);
-      if (!c.entries.length) throw new Error("Aucune unité reconnue dans ce texte.");
-      COLL = c; store.set("codex-collection", c); renderCollection();
-    } catch (e) { msg.textContent = e.message || "Import impossible."; msg.className = "small down"; }
+      const text = await navigator.clipboard.readText();
+      if (!/BFRCODEX/.test(text)) { msg.textContent = "Le presse-papiers ne contient pas ton compte : clique d'abord sur « Copier mon compte pour Reborn Wiki » dans le jeu."; msg.className = "small down"; return; }
+      importCollection(text, msg);
+    } catch (e) {
+      msg.textContent = "Ton navigateur bloque la lecture du presse-papiers : fais Ctrl+V sur cette page, ou colle le texte dans la zone « Coller à la main »."; msg.className = "small down";
+    }
   });
   const clr = document.getElementById("collClear");
   if (clr) clr.addEventListener("click", () => { COLL = null; store.set("codex-collection", null); renderCollection(); });
 }
+// Ctrl+V n'importe où sur la page Ma collection : import direct si le texte vient du script.
+document.addEventListener("paste", (e) => {
+  if (!/^#collection/.test(location.hash) || (e.target && /^(TEXTAREA|INPUT)$/.test(e.target.tagName))) return;
+  const text = (e.clipboardData || window.clipboardData).getData("text");
+  if (/BFRCODEX/.test(text)) { e.preventDefault(); importCollection(text, document.getElementById("collMsg")); }
+});
 
 /* ---------- Tier list ---------- */
 // Note calculée : statistiques au niveau max, utilité (soins, défense, BB, statuts, boosts),

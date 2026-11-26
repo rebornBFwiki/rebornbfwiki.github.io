@@ -1,4 +1,35 @@
 # Traduction anglaise : « texte français§§texte anglais », une entrée par ligne, appliquées dans l'ordre.
+const COLL_TABS = [["resume", "Résumé"], ["booster", "À booster"], ["equipes", "Équipes"], ["unites", "Mes unités"], ["manque", "Il me manque"], ["inventaire", "Sphères et objets"]];§§const COLL_TABS = [["resume", "Summary"], ["booster", "To boost"], ["equipes", "Teams"], ["unites", "My units"], ["manque", "Missing"], ["inventaire", "Spheres and items"]];
+"Aucune unité reconnue dans ce texte."§§"No unit recognised in this text."
+`Collection importée : ${c.entries.length} lignes d'unités.`§§`Collection imported: ${c.entries.length} unit lines.`
+"Import impossible."§§"Import failed."
+${COLL ? "Mettre à jour depuis le presse-papiers" : "Importer depuis le presse-papiers"}§§${COLL ? "Update from clipboard" : "Import from clipboard"}
+${COLL ? `Importée le ${new Date(COLL.date).toLocaleString("fr-FR")}.` : ""} Ou fais simplement <kbd>Ctrl</kbd>+<kbd>V</kbd> sur cette page.§§${COLL ? `Imported on ${new Date(COLL.date).toLocaleString("fr-FR")}.` : ""} Or just press <kbd>Ctrl</kbd>+<kbd>V</kbd> on this page.
+<summary>Comment copier mon compte ? / Coller à la main</summary>§§<summary>How do I copy my account? / Paste by hand</summary>
+<li>Installe le script <strong>bfr-collection.user.js</strong> (version 2.3 ou plus) dans Tampermonkey, comme la macro.</li>§§<li>Install the <strong>bfr-collection.user.js</strong> script (version 2.3 or later) in Tampermonkey.</li>
+<li>Dans le jeu, clique sur <strong>Copier mon compte pour Reborn Wiki</strong> en bas à droite (accueil ou liste des unités). Le script lit tes unités, tes sphères et tes objets, sans rien modifier.</li>§§<li>In the game, click <strong>Copy my account for Reborn Wiki</strong> at the bottom right (home or unit list). The script reads your units, spheres and items without changing anything.</li>
+<li>Reviens ici et clique sur le bouton du haut, ou fais Ctrl+V.</li>§§<li>Come back here and click the button at the top, or press Ctrl+V.</li>
+>Importer ce texte</button>§§>Import this text</button>
+>Effacer ma collection</button>§§>Clear my collection</button>
+<span>unités A ou S à booster</span>§§<span>A or S units to boost</span>
+<span>sphères à forger maintenant</span>§§<span>spheres to forge now</span>
+${ownedHeroes.length} unités, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} exemplaires. Une carte par forme que tu possèdes, avec le nombre d'exemplaires, leur type et leur niveau.§§${ownedHeroes.length} units, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} copies. One card per form you own, with the number of copies, their type and their level.
+Ouvre une fiche pour voir où obtenir l'unité (invocation, capture, récompense…).§§Open a page to see where to get the unit (summon, capture, reward…).
+Ta collection vient de l'ancien script, qui ne lisait que les unités. Installe la version 2.3 et réimporte pour voir tes sphères, tes objets et la Forge.§§Your collection comes from the old script, which only read units. Install version 2.3 and re-import to see your spheres, items and the Forge.
+Le Karma et le niveau de ta Forge ne sont pas lus : vérifie-les en jeu. Une sphère équipée doit être retirée avant de servir de matériau.§§Your Karma and Forge level are not read: check them in game. An equipped sphere must be removed before it can be used as a material.
+<strong>Mes sphères (${sphereCount})</strong>§§<strong>My spheres (${sphereCount})</strong>
+<strong>Objets de combat (${battleItems.length})</strong>§§<strong>Battle items (${battleItems.length})</strong>
+<strong>Matériaux (${mats.length})</strong>§§<strong>Materials (${mats.length})</strong>
+"Le presse-papiers ne contient pas ton compte : clique d'abord sur « Copier mon compte pour Reborn Wiki » dans le jeu."§§"The clipboard does not hold your account: first click \"Copy my account for Reborn Wiki\" in the game."
+"Ton navigateur bloque la lecture du presse-papiers : fais Ctrl+V sur cette page, ou colle le texte dans la zone « Coller à la main »."§§"Your browser blocks clipboard reading: press Ctrl+V on this page, or paste the text in the \"Paste by hand\" box."
+<h3>Forgeables maintenant (${fg.now.length})</h3>§§<h3>Forgeable now (${fg.now.length})</h3>
+<h3>Il manque un seul matériau (${fg.almost.length})</h3>§§<h3>One material missing (${fg.almost.length})</h3>
+<span>unités en forme Omni</span>§§<span>units in Omni form</span>
+<span>évolutions prêtes</span>§§<span>evolutions ready</span>
+<h3>Par élément</h3>§§<h3>By element</h3>
+<h3>Prêtes à évoluer</h3>§§<h3>Ready to evolve</h3>
+<h3>Presque prêtes</h3>§§<h3>Almost ready</h3>
+<label class="small muted" for="goal">Pour quel combat ?</label>§§<label class="small muted" for="goal">For which battle?</label>
 Installe le script <strong>bfr-collection.user.js</strong> (version 2.3 ou plus) dans§§Install the <strong>bfr-collection.user.js</strong> script (version 2.3 or later) in
 <h3>À booster</h3><p class="small">Réimporte ton compte avec le script <strong>2.3 ou plus</strong> pour voir, unité par unité, l'évolution, le niveau, le BB et le SBB, les lutins et le 2e emplacement de sphère qu'il te reste à faire.</p>§§<h3>To boost</h3><p class="small">Re-import your account with script <strong>2.3 or later</strong> to see, unit by unit, the evolution, level, BB and SBB, imps and second sphere slot you still have to do.</p>
 <h3>À booster</h3>§§<h3>To boost</h3>
