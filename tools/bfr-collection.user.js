@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reborn Wiki - account export
 // @namespace    reborn-wiki
-// @version      2.2
+// @version      2.3
 // @description  Copies your Brave Frontier: Reborn units, spheres and items (read-only) to paste into Reborn Wiki. / Copie tes unités, sphères et objets (lecture seule) pour Reborn Wiki.
 // @match        https://rebornbf.com/*
 // @grant        none
@@ -115,7 +115,9 @@
     const units = [];
     if (roster) {
       for (const u of roster.units || []) {
-        units.push({ unit: u.unit_id, form: u.form_id, level: u.level, type: typeOf(u.unit_type), slot2: u.second_sphere_slot === true, count: 1, key: u.id || u.owned_unit_id });
+        // Niveaux de BB/SBB (1 à 10, il faut 10 pour les Enhancements) et lutins (bonus de stats, plafonnés par forme).
+        const imps = u.imps && typeof u.imps === 'object' ? { hp: Number(u.imps.hp) || 0, atk: Number(u.imps.atk) || 0, def: Number(u.imps.def) || 0, rec: Number(u.imps.rec) || 0 } : null;
+        units.push({ unit: u.unit_id, form: u.form_id, level: u.level, type: typeOf(u.unit_type), slot2: u.second_sphere_slot === true, count: 1, key: u.id || u.owned_unit_id, bb: Number(u.bb_level) || 1, sbb: Number(u.sbb_level) || 1, imps });
       }
       for (const s of roster.stacks || []) {
         units.push({ unit: s.unit_id, form: s.form_id, level: null, type: typeOf(s.unit_type), count: Number(s.count) || 1 });

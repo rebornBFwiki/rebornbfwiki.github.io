@@ -2010,6 +2010,41 @@ function renderModes() {
   main.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => { state.defisMode = b.dataset.mode; location.hash = "#defis"; }));
 }
 
+/* ---------- À booster : ce qu'il reste à faire sur tes meilleures unités ---------- */
+// Pour l'exemplaire le plus avancé de chaque unité : évolution, niveau, BB/SBB (10 pour les Enhancements),
+// lutins (plafond de la forme) et 2e emplacement de sphère. Classé par tier du wiki puis par avis des joueurs.
+const IMP_STATS = [["hp", "HP"], ["atk", "ATK"], ["def", "DEF"], ["rec", "REC"]];
+const IMP_UNITS = { hp: "vigor-imp-molin", atk: "power-imp-pakpak", def: "guard-imp-ganju", rec: "healing-imp-fwahl" };
+function boostRow(u) {
+  const b = bestOwned(u.id); if (!b) return null;
+  const f = u.forms[b.form], last = u.forms.length - 1, max = u.forms[last];
+  const todo = [];
+  if (b.form < last) todo.push(`Evolve to ${RAR(max.rarity)}`);
+  const lvl = lvlNum(b.level);
+  if (b.level != null && lvl < (f.maxLevel || 0)) todo.push(`Level ${b.level}/${f.maxLevel}`);
+  const bbOk = b.bb != null && b.bb >= 10 && b.sbb != null && b.sbb >= 10;
+  if (b.bb != null && (b.bb < 10 || (f.bursts && f.bursts.sbb && b.sbb < 10))) todo.push(`BB ${b.bb}/10${f.bursts && f.bursts.sbb ? `, SBB ${b.sbb}/10` : ""}`);
+  const caps = f.impCaps || null;
+  const impLack = caps && b.imps ? IMP_STATS.filter(([k]) => (b.imps[k] || 0) < (caps[k] || 0)) : [];
+  if (impLack.length) todo.push(`Imps: ${impLack.map(([k, n]) => `${n} ${b.imps[k]}/${caps[k]}`).join(", ")}`);
+  if (!b.slot2 && b.level != null && (f.sphereSlots || 1) < 2) todo.push("2nd sphere slot closed");
+  const ready = f.rarity === "omni" && lvl >= 150 && bbOk;
+  return { u, f, b, todo, ready, known: b.bb != null };
+}
+function boostHTML(heroes) {
+  if (!COLL || !COLL.entries.some((e) => e.bb != null)) return `<section class="panel box" style="margin-top:14px"><h3>To boost</h3><p class="small">Re-import your account with script <strong>2.3 or later</strong> to see, unit by unit, the evolution, level, BB and SBB, imps and second sphere slot you still have to do.</p></section>`;
+  const T = computeTiers();
+  const rank = (u) => ({ S: 0, A: 1, B: 2, C: 3 }[tierOf(u.id)] ?? 4) * 10 - ((commOf(u.id).t || {}).average || 0);
+  const rows = heroes.map(boostRow).filter(Boolean).sort((a, b) => rank(a.u) - rank(b.u));
+  const ready = rows.filter((r) => r.ready), todo = rows.filter((r) => r.todo.length && (tierOf(r.u.id) === "S" || tierOf(r.u.id) === "A"));
+  const stock = IMP_STATS.map(([k, n]) => `${n} ×${fmt(ownedCount(IMP_UNITS[k]))}`).join(" · ");
+  const line = (r) => `<tr><td><a href="#u-${esc(r.u.id)}" class="row-ico" style="align-items:center">${sigil(r.f.name, r.u.element, false, r.f.id)}<span><strong>${esc(r.f.name)}</strong> <span class="muted small">${RAR(r.f.rarity)}${tierOf(r.u.id) ? " · tier " + tierOf(r.u.id) : ""}</span></span></a></td><td>${r.todo.map((x) => `<div class="small">${esc(x)}</div>`).join("") || `<span class="have small">Everything maxed</span>`}</td></tr>`;
+  return `<section class="panel box" style="margin-top:14px"><h3>To boost</h3>
+    <p class="small muted" style="margin:0 0 8px">Your units rated A or S by the wiki, with what is left to do on your most advanced copy. BB and SBB go up by fusing a duplicate of the same character (guaranteed) or Burst Frogs; both must be at level 10, on a level-150 Omni, to open Enhancements (SP). Your imps in stock: ${stock}.</p>
+    ${ready.length ? `<p class="small"><span class="have">Ready for Enhancements:</span> ${ready.map((r) => `<a href="#u-${esc(r.u.id)}">${esc(r.f.name)}</a>`).join(", ")}</p>` : ""}
+    <div class="tablewrap"><table><thead><tr><th>Unit</th><th>Left to do</th></tr></thead><tbody>${todo.map(line).join("") || `<tr><td colspan="2" class="muted">Your A and S units are all maxed.</td></tr>`}</tbody></table></div></section>`;
+}
+
 /* ---------- Ma collection ---------- */
 // Le script d'export copie les libellés de la liste d'unités du jeu, préfixés par BFRCODEX1:.
 // Exemple de libellé : « Witch Liza, 1★, Lord, Lv.1, 2 exemplaires ».
@@ -2022,7 +2057,8 @@ function parseCollection2(data) {
     const u = fi ? fi.unit : D.byId.get(x.unit);
     if (!u) { unknown.push(x.form || x.unit); continue; }
     const type = TYPES.includes(x.type) ? x.type : null;
-    entries.push({ unit: u.id, form: fi ? fi.index : 0, count: Number(x.count) || 1, type, level: x.level ?? null, slot2: !!x.slot2 });
+    const imps = x.imps && typeof x.imps === "object" ? { hp: +x.imps.hp || 0, atk: +x.imps.atk || 0, def: +x.imps.def || 0, rec: +x.imps.rec || 0 } : null;
+    entries.push({ unit: u.id, form: fi ? fi.index : 0, count: Number(x.count) || 1, type, level: x.level ?? null, slot2: !!x.slot2, bb: x.bb ?? null, sbb: x.sbb ?? null, imps });
   }
   const spheres = {}, items = {};
   for (const [id, o] of Object.entries(data.spheres || {})) { if (D.sphereById.has(id)) spheres[id] = { count: Number(o.count) || 0, on: (o.on || []).length }; else unknown.push(id); }
@@ -2239,7 +2275,7 @@ function renderCollection() {
     <section class="panel box">
       <h3>${COLL ? "Update my collection" : "Import my collection"}</h3>
       <ol class="steps">
-        <li>Install the <strong>bfr-collection.user.js</strong> script (version 2.2 or later) in Tampermonkey (<a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io/tree/main/tools">download it here</a>).</li>
+        <li>Install the <strong>bfr-collection.user.js</strong> script (version 2.3 or later) in Tampermonkey, comme la macro.</li>
         <li>In the game, open <strong>Unit › View Units</strong>, then click <strong>Copy my account for Reborn Wiki</strong> at the bottom right. The script reads your units, spheres and items without changing anything.</li>
         <li>Paste the text here, then click Import.</li>
       </ol>
@@ -2316,6 +2352,7 @@ function renderCollection() {
         <section class="panel box"><h3>Ready to evolve</h3>${ready.length ? ready.map(evoRow).join("") : `<p class="muted">No evolution has all its materials yet.</p>`}</section>
         <section class="panel box"><h3>Almost ready</h3>${almost.slice(0, 8).map(evoRow).join("") || `<p class="muted">Nothing to report.</p>`}</section>
       </div>
+      ${boostHTML(ownedHeroes)}
       <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">My units (${ownedHeroes.length} units, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} copies)</h3>
       <p class="small muted" style="margin:0 0 8px">One card per form you own, with the number of copies, their type and their level.</p>
       <div class="grid">${ownedHeroes.sort((a, b) => maxRarityNum(b) - maxRarityNum(a)).flatMap((u) => ownedByForm(u).map((g) => copyCardHTML(u, g))).join("")}</div>

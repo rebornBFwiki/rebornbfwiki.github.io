@@ -1,4 +1,18 @@
 # Traduction anglaise : « texte français§§texte anglais », une entrée par ligne, appliquées dans l'ordre.
+Installe le script <strong>bfr-collection.user.js</strong> (version 2.3 ou plus) dans§§Install the <strong>bfr-collection.user.js</strong> script (version 2.3 or later) in
+<h3>À booster</h3><p class="small">Réimporte ton compte avec le script <strong>2.3 ou plus</strong> pour voir, unité par unité, l'évolution, le niveau, le BB et le SBB, les lutins et le 2e emplacement de sphère qu'il te reste à faire.</p>§§<h3>To boost</h3><p class="small">Re-import your account with script <strong>2.3 or later</strong> to see, unit by unit, the evolution, level, BB and SBB, imps and second sphere slot you still have to do.</p>
+<h3>À booster</h3>§§<h3>To boost</h3>
+Tes unités classées A ou S par le wiki, avec ce qu'il reste à faire sur ton exemplaire le plus avancé. Le BB et le SBB montent en fusionnant un doublon du même personnage (à coup sûr) ou des Burst Frogs ; il faut les deux au niveau 10, sur une Omni niveau 150, pour ouvrir les Enhancements (SP). Tes lutins en stock : §§Your units rated A or S by the wiki, with what is left to do on your most advanced copy. BB and SBB go up by fusing a duplicate of the same character (guaranteed) or Burst Frogs; both must be at level 10, on a level-150 Omni, to open Enhancements (SP). Your imps in stock: 
+<span class="have">Prêtes pour les Enhancements :</span>§§<span class="have">Ready for Enhancements:</span>
+<th>Unité</th><th>Reste à faire</th>§§<th>Unit</th><th>Left to do</th>
+`Tout est au max`§§`Everything maxed`
+<span class="have small">Tout est au max</span>§§<span class="have small">Everything maxed</span>
+Tes unités A et S sont toutes au maximum.§§Your A and S units are all maxed.
+`Évoluer jusqu'à ${RAR(max.rarity)}`§§`Evolve to ${RAR(max.rarity)}`
+`Niveau ${b.level}/${f.maxLevel}`§§`Level ${b.level}/${f.maxLevel}`
+`Lutins : ${impLack§§`Imps: ${impLack
+"2e emplacement de sphère fermé"§§"2nd sphere slot closed"
+const IMP_STATS = [["hp", "PV"], ["atk", "ATQ"], ["def", "DÉF"], ["rec", "REC"]];§§const IMP_STATS = [["hp", "HP"], ["atk", "ATK"], ["def", "DEF"], ["rec", "REC"]];
 "Les onze terres de Grand Gaia, de Mistral à Mirvana : la Release 9 a ajouté Ryvern, Agni et Mirvana (114 quêtes, après Lizeria). Coûte de l'énergie, les continues sont permis."§§"The eleven lands of Grand Gaia, from Mistral to Mirvana: Release 9 added Ryvern, Agni and Mirvana (114 quests, after Lizeria). Costs energy, continues are allowed."
 "Rassemblement des âmes, Renforcement (avec le Sanctuaire des âmes Lv. 1 à 4 depuis la Release 9), Ruines et Jardin de la parade. Certaines parades sont limitées à 5 tours par jour."§§"Soul Gathering, Enhancement (with the Soul Sanctuary Lv. 1 to 4 since Release 9), Ruins and Parade Garden. Some parades are limited to 5 runs a day."
 "Épreuve des dieux, Épreuves de test et La tromperie de Leon : peu de combats, des boss très résistants. La Release 9 ajoute les épreuves 004, 005, X1, X2, X3, La menace verte et La terreur pourpre (orbes, sphères Xentar et Blighted Seal, Sphere Frog)."§§"Trial of the Gods, Trial Tests and Leon's Deceit: few battles, very sturdy bosses. Release 9 adds trials 004, 005, X1, X2, X3, The Green Menace and The Crimson Terror (orbs, Xentar and Blighted Seal spheres, Sphere Frog)."
@@ -367,7 +381,7 @@ Une compétence de leader qui monte les PV et l'ATQ de toute l'équipe aide plus
 Les règles détaillées de l'arène ne sont pas dans les fichiers lus : ces conseils restent généraux.§§The detailed arena rules are not in the files we read: this advice stays general.
 "Ce texte ne vient pas du script d'export : il doit commencer par BFRCODEX2."§§"This text does not come from the export script: it must start with BFRCODEX2."
 "Mettre à jour ma collection" : "Importer ma collection"§§"Update my collection" : "Import my collection"
-<li>Installe le script <strong>bfr-collection.user.js</strong> (version 2.2 ou plus) dans Tampermonkey, comme la macro.</li>§§<li>Install the <strong>bfr-collection.user.js</strong> script (version 2.2 or later) in Tampermonkey (<a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io/tree/main/tools">download it here</a>).</li>
+<li>Installe le script <strong>bfr-collection.user.js</strong> (version 2.3 ou plus) dans Tampermonkey, comme la macro.</li>§§<li>Install the <strong>bfr-collection.user.js</strong> script (version 2.3 or later) in Tampermonkey (<a href="https://github.com/rebornBFwiki/rebornbfwiki.github.io/tree/main/tools">download it here</a>).</li>
 <li>Dans le jeu, ouvre <strong>Unité › Voir les unités</strong>, puis clique sur <strong>Copier mon compte pour Reborn Wiki</strong> en bas à droite. Le script lit tes unités, tes sphères et tes objets, sans rien modifier.</li>§§<li>In the game, open <strong>Unit › View Units</strong>, then click <strong>Copy my account for Reborn Wiki</strong> at the bottom right. The script reads your units, spheres and items without changing anything.</li>
 <li>Colle le texte ici, puis clique sur Importer.</li>§§<li>Paste the text here, then click Import.</li>
 Texte copié depuis le jeu§§Text copied from the game

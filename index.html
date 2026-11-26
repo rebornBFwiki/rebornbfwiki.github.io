@@ -2010,6 +2010,41 @@ function renderModes() {
   main.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => { state.defisMode = b.dataset.mode; location.hash = "#defis"; }));
 }
 
+/* ---------- À booster : ce qu'il reste à faire sur tes meilleures unités ---------- */
+// Pour l'exemplaire le plus avancé de chaque unité : évolution, niveau, BB/SBB (10 pour les Enhancements),
+// lutins (plafond de la forme) et 2e emplacement de sphère. Classé par tier du wiki puis par avis des joueurs.
+const IMP_STATS = [["hp", "PV"], ["atk", "ATQ"], ["def", "DÉF"], ["rec", "REC"]];
+const IMP_UNITS = { hp: "vigor-imp-molin", atk: "power-imp-pakpak", def: "guard-imp-ganju", rec: "healing-imp-fwahl" };
+function boostRow(u) {
+  const b = bestOwned(u.id); if (!b) return null;
+  const f = u.forms[b.form], last = u.forms.length - 1, max = u.forms[last];
+  const todo = [];
+  if (b.form < last) todo.push(`Évoluer jusqu'à ${RAR(max.rarity)}`);
+  const lvl = lvlNum(b.level);
+  if (b.level != null && lvl < (f.maxLevel || 0)) todo.push(`Niveau ${b.level}/${f.maxLevel}`);
+  const bbOk = b.bb != null && b.bb >= 10 && b.sbb != null && b.sbb >= 10;
+  if (b.bb != null && (b.bb < 10 || (f.bursts && f.bursts.sbb && b.sbb < 10))) todo.push(`BB ${b.bb}/10${f.bursts && f.bursts.sbb ? `, SBB ${b.sbb}/10` : ""}`);
+  const caps = f.impCaps || null;
+  const impLack = caps && b.imps ? IMP_STATS.filter(([k]) => (b.imps[k] || 0) < (caps[k] || 0)) : [];
+  if (impLack.length) todo.push(`Lutins : ${impLack.map(([k, n]) => `${n} ${b.imps[k]}/${caps[k]}`).join(", ")}`);
+  if (!b.slot2 && b.level != null && (f.sphereSlots || 1) < 2) todo.push("2e emplacement de sphère fermé");
+  const ready = f.rarity === "omni" && lvl >= 150 && bbOk;
+  return { u, f, b, todo, ready, known: b.bb != null };
+}
+function boostHTML(heroes) {
+  if (!COLL || !COLL.entries.some((e) => e.bb != null)) return `<section class="panel box" style="margin-top:14px"><h3>À booster</h3><p class="small">Réimporte ton compte avec le script <strong>2.3 ou plus</strong> pour voir, unité par unité, l'évolution, le niveau, le BB et le SBB, les lutins et le 2e emplacement de sphère qu'il te reste à faire.</p></section>`;
+  const T = computeTiers();
+  const rank = (u) => ({ S: 0, A: 1, B: 2, C: 3 }[tierOf(u.id)] ?? 4) * 10 - ((commOf(u.id).t || {}).average || 0);
+  const rows = heroes.map(boostRow).filter(Boolean).sort((a, b) => rank(a.u) - rank(b.u));
+  const ready = rows.filter((r) => r.ready), todo = rows.filter((r) => r.todo.length && (tierOf(r.u.id) === "S" || tierOf(r.u.id) === "A"));
+  const stock = IMP_STATS.map(([k, n]) => `${n} ×${fmt(ownedCount(IMP_UNITS[k]))}`).join(" · ");
+  const line = (r) => `<tr><td><a href="#u-${esc(r.u.id)}" class="row-ico" style="align-items:center">${sigil(r.f.name, r.u.element, false, r.f.id)}<span><strong>${esc(r.f.name)}</strong> <span class="muted small">${RAR(r.f.rarity)}${tierOf(r.u.id) ? " · tier " + tierOf(r.u.id) : ""}</span></span></a></td><td>${r.todo.map((x) => `<div class="small">${esc(x)}</div>`).join("") || `<span class="have small">Tout est au max</span>`}</td></tr>`;
+  return `<section class="panel box" style="margin-top:14px"><h3>À booster</h3>
+    <p class="small muted" style="margin:0 0 8px">Tes unités classées A ou S par le wiki, avec ce qu'il reste à faire sur ton exemplaire le plus avancé. Le BB et le SBB montent en fusionnant un doublon du même personnage (à coup sûr) ou des Burst Frogs ; il faut les deux au niveau 10, sur une Omni niveau 150, pour ouvrir les Enhancements (SP). Tes lutins en stock : ${stock}.</p>
+    ${ready.length ? `<p class="small"><span class="have">Prêtes pour les Enhancements :</span> ${ready.map((r) => `<a href="#u-${esc(r.u.id)}">${esc(r.f.name)}</a>`).join(", ")}</p>` : ""}
+    <div class="tablewrap"><table><thead><tr><th>Unité</th><th>Reste à faire</th></tr></thead><tbody>${todo.map(line).join("") || `<tr><td colspan="2" class="muted">Tes unités A et S sont toutes au maximum.</td></tr>`}</tbody></table></div></section>`;
+}
+
 /* ---------- Ma collection ---------- */
 // Le script d'export copie les libellés de la liste d'unités du jeu, préfixés par BFRCODEX1:.
 // Exemple de libellé : « Witch Liza, 1★, Lord, Lv.1, 2 exemplaires ».
@@ -2022,7 +2057,8 @@ function parseCollection2(data) {
     const u = fi ? fi.unit : D.byId.get(x.unit);
     if (!u) { unknown.push(x.form || x.unit); continue; }
     const type = TYPES.includes(x.type) ? x.type : null;
-    entries.push({ unit: u.id, form: fi ? fi.index : 0, count: Number(x.count) || 1, type, level: x.level ?? null, slot2: !!x.slot2 });
+    const imps = x.imps && typeof x.imps === "object" ? { hp: +x.imps.hp || 0, atk: +x.imps.atk || 0, def: +x.imps.def || 0, rec: +x.imps.rec || 0 } : null;
+    entries.push({ unit: u.id, form: fi ? fi.index : 0, count: Number(x.count) || 1, type, level: x.level ?? null, slot2: !!x.slot2, bb: x.bb ?? null, sbb: x.sbb ?? null, imps });
   }
   const spheres = {}, items = {};
   for (const [id, o] of Object.entries(data.spheres || {})) { if (D.sphereById.has(id)) spheres[id] = { count: Number(o.count) || 0, on: (o.on || []).length }; else unknown.push(id); }
@@ -2239,7 +2275,7 @@ function renderCollection() {
     <section class="panel box">
       <h3>${COLL ? "Mettre à jour ma collection" : "Importer ma collection"}</h3>
       <ol class="steps">
-        <li>Installe le script <strong>bfr-collection.user.js</strong> (version 2.2 ou plus) dans Tampermonkey, comme la macro.</li>
+        <li>Installe le script <strong>bfr-collection.user.js</strong> (version 2.3 ou plus) dans Tampermonkey, comme la macro.</li>
         <li>Dans le jeu, ouvre <strong>Unité › Voir les unités</strong>, puis clique sur <strong>Copier mon compte pour Reborn Wiki</strong> en bas à droite. Le script lit tes unités, tes sphères et tes objets, sans rien modifier.</li>
         <li>Colle le texte ici, puis clique sur Importer.</li>
       </ol>
@@ -2316,6 +2352,7 @@ function renderCollection() {
         <section class="panel box"><h3>Prêtes à évoluer</h3>${ready.length ? ready.map(evoRow).join("") : `<p class="muted">Aucune évolution n'a tous ses matériaux pour l'instant.</p>`}</section>
         <section class="panel box"><h3>Presque prêtes</h3>${almost.slice(0, 8).map(evoRow).join("") || `<p class="muted">Rien à signaler.</p>`}</section>
       </div>
+      ${boostHTML(ownedHeroes)}
       <h3 class="section-title" style="font-size:19px;margin:18px 0 8px">Mes unités (${ownedHeroes.length} unités, ${fmt(ownedHeroes.reduce((a, u) => a + ownedCount(u.id), 0))} exemplaires)</h3>
       <p class="small muted" style="margin:0 0 8px">Une carte par forme que tu possèdes, avec le nombre d'exemplaires, leur type et leur niveau.</p>
       <div class="grid">${ownedHeroes.sort((a, b) => maxRarityNum(b) - maxRarityNum(a)).flatMap((u) => ownedByForm(u).map((g) => copyCardHTML(u, g))).join("")}</div>
